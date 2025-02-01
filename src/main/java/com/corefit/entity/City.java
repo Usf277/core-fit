@@ -12,5 +12,10 @@ public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
     private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "governorate_id")
+    private Governorate governorate;
 }
