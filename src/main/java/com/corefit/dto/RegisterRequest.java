@@ -63,20 +63,20 @@ public class RegisterRequest {
         this.birthDate = birthDate;
     }
 
-    public Governorate getGovernorate() {
-        return governorate;
-    }
-
-    public void setGovernorate(Governorate governorate) {
-        this.governorate = governorate;
-    }
-
     public City getCity() {
         return city;
     }
 
     public void setCity(City city) {
         this.city = city;
+    }
+
+    public Governorate getGovernorate() {
+        return governorate;
+    }
+
+    public void setGovernorate(Governorate governorate) {
+        this.governorate = governorate;
     }
 
     public String getType() {

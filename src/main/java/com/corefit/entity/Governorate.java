@@ -17,7 +17,4 @@ public class Governorate {
     private long id;
 
     private String name;
-
-    @OneToMany
-    private Set<City> cities = new HashSet<>();
 }
