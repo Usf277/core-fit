@@ -52,6 +52,7 @@ public class AuthService {
     }
 
     public String login(LoginRequest request) {
+        System.out.println(request);
         return userRepository.findByEmail(request.getEmail())
                 .filter(user -> passwordEncoder.matches(request.getPassword(), user.getPassword()))
                 .map(user -> jwtUtil.generateToken(user.getId()))
