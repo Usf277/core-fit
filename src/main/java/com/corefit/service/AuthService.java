@@ -7,20 +7,22 @@ import com.corefit.entity.User;
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
 import com.corefit.repository.UserRepo;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
     private final UserRepo userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    public AuthService(UserRepo userRepository, BCryptPasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
     }
+
 
 
     public String register(RegisterRequest request) {
@@ -52,7 +54,7 @@ public class AuthService {
     public String login(LoginRequest request) {
         return userRepository.findByEmail(request.getEmail())
                 .filter(user -> passwordEncoder.matches(request.getPassword(), user.getPassword()))
-                .map(user -> jwtUtil.generateToken(user.getEmail()))
+                .map(user -> jwtUtil.generateToken(user.getId()))
                 .orElse("Invalid Credentials!");
     }
 }

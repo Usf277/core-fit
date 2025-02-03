@@ -15,7 +15,7 @@ public class City {
 
     private String name;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "governorate_id")
     private Governorate governorate;
 }
