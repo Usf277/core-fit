@@ -1,12 +1,9 @@
 package com.corefit.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+
 
 @Entity
-@Setter
-@Getter
 @Table(name = "cities")
 public class City {
     @Id
@@ -18,4 +15,28 @@ public class City {
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "governorate_id")
     private Governorate governorate;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Governorate getGovernorate() {
+        return governorate;
+    }
+
+    public void setGovernorate(Governorate governorate) {
+        this.governorate = governorate;
+    }
 }

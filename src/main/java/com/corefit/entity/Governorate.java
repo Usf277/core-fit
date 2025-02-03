@@ -1,15 +1,9 @@
 package com.corefit.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
-@Setter
-@Getter
+
 @Table(name = "governorats")
 public class Governorate {
     @Id
@@ -17,4 +11,20 @@ public class Governorate {
     private long id;
 
     private String name;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
