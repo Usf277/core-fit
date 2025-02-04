@@ -15,8 +15,11 @@ public class GovernorateService {
 
 
     public Governorate insert(Governorate governorate) {
-
         return governorateRepo.save(governorate);
+    }
+
+    public Governorate findById(long id) {
+        return governorateRepo.findById(id);
     }
 
     public List<Governorate> getAll() {

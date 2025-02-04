@@ -20,6 +20,10 @@ public class CityService {
         return "City Saved Successfully";
     }
 
+    public City findById(long id) {
+        return cityRepo.findById(id);
+    }
+
 
     public List<City> getAllCities() {
         return cityRepo.findAll();

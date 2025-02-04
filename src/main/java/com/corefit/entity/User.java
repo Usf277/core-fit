@@ -25,10 +25,10 @@ public class User {
 
     private Date birthDate;
 
-    @OneToOne
+    @ManyToOne
     private Governorate governorate;
 
-    @OneToOne
+    @ManyToOne
     private City city;
 
     @Enumerated(EnumType.STRING)
