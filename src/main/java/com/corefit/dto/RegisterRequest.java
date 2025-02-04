@@ -1,7 +1,4 @@
 package com.corefit.dto;
-
-import com.corefit.entity.City;
-import com.corefit.entity.Governorate;
 import java.util.Date;
 
 public class RegisterRequest {
@@ -11,8 +8,8 @@ public class RegisterRequest {
     private String password;
     private String gender;
     private Date birthDate;
-    private Governorate governorate;
-    private City city;
+    private Long governorateId;
+    private Long cityId;
     private String type;
 
     public String getUsername() {
@@ -63,20 +60,20 @@ public class RegisterRequest {
         this.birthDate = birthDate;
     }
 
-    public City getCity() {
-        return city;
+    public Long getGovernorateId() {
+        return governorateId;
     }
 
-    public void setCity(City city) {
-        this.city = city;
+    public void setGovernorateId(Long governorateId) {
+        this.governorateId = governorateId;
     }
 
-    public Governorate getGovernorate() {
-        return governorate;
+    public Long getCityId() {
+        return cityId;
     }
 
-    public void setGovernorate(Governorate governorate) {
-        this.governorate = governorate;
+    public void setCityId(Long cityId) {
+        this.cityId = cityId;
     }
 
     public String getType() {

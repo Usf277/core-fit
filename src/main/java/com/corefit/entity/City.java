@@ -12,8 +12,8 @@ public class City {
 
     private String name;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "governorate_id")
+    @ManyToOne
+    @JoinColumn(name = "governorate_id", nullable = false)
     private Governorate governorate;
 
     public long getId() {

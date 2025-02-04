@@ -1,5 +1,6 @@
 package com.corefit.controller;
 
+import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.LoginRequest;
 import com.corefit.dto.RegisterRequest;
 import com.corefit.service.AuthService;
@@ -18,12 +19,12 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest request) {
+    public GeneralResponse<String> register(@RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public GeneralResponse<?> login(@RequestBody LoginRequest request) {
         return authService.login(request);
     }
 }

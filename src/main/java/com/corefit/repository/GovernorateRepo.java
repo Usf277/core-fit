@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GovernorateRepo extends JpaRepository<Governorate, Long> {
+
+    public Governorate findById(long id);
 }

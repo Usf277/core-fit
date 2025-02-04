@@ -1,6 +1,7 @@
 package com.corefit.service;
 
 import com.corefit.config.JwtUtil;
+import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.LoginRequest;
 import com.corefit.dto.RegisterRequest;
 import com.corefit.entity.User;
@@ -10,54 +11,65 @@ import com.corefit.repository.UserRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 public class AuthService {
     private final UserRepo userRepository;
     private final JwtUtil jwtUtil;
-
     private final PasswordEncoder passwordEncoder;
+    private final GovernorateService governorateService;
+    private final CityService cityService;
 
-    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, GovernorateService governorateService, CityService cityService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.governorateService = governorateService;
+        this.cityService = cityService;
     }
 
-
-
-    public String register(RegisterRequest request) {
+    public GeneralResponse<String> register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return "Email already exists!";
+            return new GeneralResponse<>("Email already exists!");
         }
 
         if (userRepository.findByPhone(request.getPhone()).isPresent()) {
-            return "Phone already exists!";
+            return new GeneralResponse<>("Phone already exists!");
         }
 
         User user = new User();
-
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhone(request.getPhone());
         user.setGender(Gender.valueOf(request.getGender()));
         user.setBirthDate(request.getBirthDate());
-        user.setGovernorate(request.getGovernorate());
-        user.setCity(request.getCity());
+        user.setGovernorate(governorateService.findById(request.getGovernorateId()));
+        user.setCity(cityService.findById(request.getCityId()));
         user.setType(UserType.valueOf(request.getType()));
 
         userRepository.save(user);
 
-        return "User registered successfully!";
+        return new GeneralResponse<>("User registered successfully!");
     }
 
-    public String login(LoginRequest request) {
-        System.out.println(request);
+    public GeneralResponse<?> login(LoginRequest request) {
         return userRepository.findByEmail(request.getEmail())
                 .filter(user -> passwordEncoder.matches(request.getPassword(), user.getPassword()))
-                .map(user -> jwtUtil.generateToken(user.getId()))
-                .orElse("Invalid Credentials!");
+                .map(user -> {
+                    String token = jwtUtil.generateToken(user.getId());
+
+
+                    Map<String, Object> data = new HashMap<>();
+
+                    data.put("token", token);
+                    data.put("user", user);
+
+                    return new GeneralResponse<>("Login Successful", data);
+
+                })
+                .orElse(new GeneralResponse<>("Invalid Credentials"));
     }
 }
-
-
