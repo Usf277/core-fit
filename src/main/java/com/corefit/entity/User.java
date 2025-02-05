@@ -2,7 +2,10 @@ package com.corefit.entity;
 
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -23,9 +26,10 @@ public class User {
 
     private String username;
 
-    private Date birthDate;
+    private LocalDate birthDate;
 
     @ManyToOne
+    @JsonIgnore
     private Governorate governorate;
 
     @ManyToOne
@@ -79,11 +83,11 @@ public class User {
         this.username = username;
     }
 
-    public Date getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 
