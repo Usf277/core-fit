@@ -4,6 +4,8 @@ import com.corefit.config.JwtUtil;
 import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.LoginRequest;
 import com.corefit.dto.RegisterRequest;
+import com.corefit.dto.UserDto;
+import com.corefit.entity.City;
 import com.corefit.entity.User;
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
@@ -11,6 +13,7 @@ import com.corefit.repository.UserRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,8 +49,11 @@ public class AuthService {
         user.setPhone(request.getPhone());
         user.setGender(Gender.valueOf(request.getGender()));
         user.setBirthDate(request.getBirthDate());
-        user.setGovernorate(governorateService.findById(request.getGovernorateId()));
-        user.setCity(cityService.findById(request.getCityId()));
+
+        City city = cityService.findById(request.getCityId());
+        user.setCity(city);
+        user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
+
         user.setType(UserType.valueOf(request.getType()));
 
         userRepository.save(user);
@@ -61,11 +67,14 @@ public class AuthService {
                 .map(user -> {
                     String token = jwtUtil.generateToken(user.getId());
 
-
                     Map<String, Object> data = new HashMap<>();
 
+                    UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getPhone()
+                            , user.getBirthDate(), user.getGovernorate().getName(), user.getCity().getName()
+                            , user.getGender(), user.getType());
+
                     data.put("token", token);
-                    data.put("user", user);
+                    data.put("user", userDto);
 
                     return new GeneralResponse<>("Login Successful", data);
 

@@ -1,4 +1,5 @@
 package com.corefit.dto;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class RegisterRequest {
@@ -7,8 +8,7 @@ public class RegisterRequest {
     private String phone;
     private String password;
     private String gender;
-    private Date birthDate;
-    private Long governorateId;
+    private LocalDate birthDate;
     private Long cityId;
     private String type;
 
@@ -52,20 +52,12 @@ public class RegisterRequest {
         this.gender = gender;
     }
 
-    public Date getBirthDate() {
+    public LocalDate  getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(LocalDate  birthDate) {
         this.birthDate = birthDate;
-    }
-
-    public Long getGovernorateId() {
-        return governorateId;
-    }
-
-    public void setGovernorateId(Long governorateId) {
-        this.governorateId = governorateId;
     }
 
     public Long getCityId() {
