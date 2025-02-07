@@ -2,9 +2,8 @@ package com.corefit.dto;
 
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
-
 import java.time.LocalDate;
-import java.util.Date;
+
 
 public class UserDto {
     private Long id;
