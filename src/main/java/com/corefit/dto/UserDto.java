@@ -1,9 +1,8 @@
 package com.corefit.dto;
 
 import com.corefit.enums.Gender;
-import com.corefit.enums.UserType;
-import java.time.LocalDate;
 
+import java.time.LocalDate;
 
 public class UserDto {
     private Long id;
@@ -14,9 +13,8 @@ public class UserDto {
     private String governorate;
     private String city;
     private Gender gender;
-    private UserType type;
 
-    public UserDto(Long id, String username, String email, String phone, LocalDate  birthDate, String governorate, String city, Gender gender, UserType type) {
+    public UserDto(Long id, String username, String email, String phone, LocalDate birthDate, String governorate, String city, Gender gender) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -25,7 +23,6 @@ public class UserDto {
         this.governorate = governorate;
         this.city = city;
         this.gender = gender;
-        this.type = type;
     }
 
     public Long getId() {
@@ -60,11 +57,11 @@ public class UserDto {
         this.phone = phone;
     }
 
-    public LocalDate  getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDate  birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 
@@ -90,13 +87,5 @@ public class UserDto {
 
     public void setGender(Gender gender) {
         this.gender = gender;
-    }
-
-    public UserType getType() {
-        return type;
-    }
-
-    public void setType(UserType type) {
-        this.type = type;
     }
 }

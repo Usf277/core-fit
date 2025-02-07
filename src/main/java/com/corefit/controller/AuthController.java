@@ -1,5 +1,6 @@
 package com.corefit.controller;
 
+import com.corefit.dto.ForgetRequest;
 import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.LoginRequest;
 import com.corefit.dto.RegisterRequest;
@@ -36,6 +37,17 @@ public class AuthController {
     public ResponseEntity<GeneralResponse<?>> login(@RequestBody LoginRequest request) {
         try {
             GeneralResponse<?> response = authService.login(request);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/forgetPassword")
+    public ResponseEntity<GeneralResponse<?>> forgetPassword(@RequestBody ForgetRequest request) {
+        try {
+            GeneralResponse<?> response = authService.forgetPassword(request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
