@@ -1,10 +1,12 @@
 package com.corefit.service;
 
+import com.corefit.dto.GeneralResponse;
 import com.corefit.entity.City;
 import com.corefit.repository.CityRepo;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class CityService {
@@ -14,18 +16,13 @@ public class CityService {
         this.cityRepo = cityRepo;
     }
 
-
-    public String createCity(City city) {
-        cityRepo.save(city);
-        return "City Saved Successfully";
-    }
-
     public City findById(long id) {
         return cityRepo.findById(id);
     }
 
-
-    public List<City> getAllCities() {
-        return cityRepo.findAll();
+    public GeneralResponse<?> getAllCities(long governorate_id) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("cities", cityRepo.findAllByGovernorateId(governorate_id));
+        return new GeneralResponse<>("Success", data);
     }
 }

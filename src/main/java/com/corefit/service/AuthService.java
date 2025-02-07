@@ -9,9 +9,11 @@ import com.corefit.entity.City;
 import com.corefit.entity.User;
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
+import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.UserRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,13 +33,12 @@ public class AuthService {
         this.cityService = cityService;
     }
 
-    public GeneralResponse<String> register(RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return new GeneralResponse<>("Email already exists!");
+    public GeneralResponse<Object> register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new GeneralException("Email already exists.");
         }
-
-        if (userRepository.findByPhone(request.getPhone()).isPresent()) {
-            return new GeneralResponse<>("Phone already exists!");
+        if (userRepository.existsByPhone(request.getPhone())) {
+            throw new GeneralException("Phone number already exists.");
         }
 
         User user = new User();
@@ -47,15 +48,12 @@ public class AuthService {
         user.setPhone(request.getPhone());
         user.setGender(Gender.valueOf(request.getGender()));
         user.setBirthDate(request.getBirthDate());
-
         City city = cityService.findById(request.getCityId());
         user.setCity(city);
         user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
-
         user.setType(UserType.valueOf(request.getType()));
 
         userRepository.save(user);
-
         return new GeneralResponse<>("User registered successfully!");
     }
 
