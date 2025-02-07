@@ -65,4 +65,26 @@ public class AuthController {
                     .body(new GeneralResponse<>(e.getMessage()));
         }
     }
+
+    @PostMapping("/check_code")
+    public ResponseEntity<GeneralResponse<?>> checkCode(@RequestBody ForgetRequest request) {
+        try {
+            GeneralResponse<?> response = authService.checkCode(request);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset_password")
+    public ResponseEntity<GeneralResponse<?>> resetPassword(@RequestBody ForgetRequest request) {
+        try {
+            GeneralResponse<?> response = authService.resetPassword(request);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
 }
