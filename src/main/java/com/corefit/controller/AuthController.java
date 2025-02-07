@@ -26,7 +26,7 @@ public class AuthController {
     public ResponseEntity<GeneralResponse<?>> register(@RequestBody RegisterRequest request) {
         try {
             GeneralResponse<Object> response = authService.register(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new GeneralResponse<>(e.getMessage()));
@@ -44,11 +44,22 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/forgetPassword")
+    @PostMapping("/forget_password")
     public ResponseEntity<GeneralResponse<?>> forgetPassword(@RequestBody ForgetRequest request) {
         try {
             GeneralResponse<?> response = authService.forgetPassword(request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/confirm_register")
+    public ResponseEntity<GeneralResponse<?>> confirmRegister(@RequestBody RegisterRequest request) {
+        try {
+            GeneralResponse<?> response = authService.confirmRegister(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new GeneralResponse<>(e.getMessage()));

@@ -1,4 +1,5 @@
 package com.corefit.dto;
+
 import java.time.LocalDate;
 
 public class RegisterRequest {
@@ -10,6 +11,7 @@ public class RegisterRequest {
     private LocalDate birthDate;
     private Long cityId;
     private String type;
+    private String otp;
 
     public String getUsername() {
         return username;
@@ -51,11 +53,11 @@ public class RegisterRequest {
         this.gender = gender;
     }
 
-    public LocalDate  getBirthDate() {
+    public LocalDate getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDate  birthDate) {
+    public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
     }
 
@@ -73,5 +75,13 @@ public class RegisterRequest {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 }

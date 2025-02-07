@@ -45,22 +45,6 @@ public class AuthService {
             throw new GeneralException("Phone number already exists.");
         }
 
-        User user = new User();
-
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setPhone(request.getPhone());
-        user.setGender(Gender.valueOf(request.getGender()));
-        user.setBirthDate(request.getBirthDate());
-        City city = cityService.findById(request.getCityId());
-        user.setCity(city);
-        user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
-        user.setType(UserType.valueOf(request.getType()));
-
-//        userRepository.save(user);
-//        return new GeneralResponse<>("User registered successfully!");
-
         String otp = otpService.generateOtp(request.getEmail());
         emailService.sendOtpEmail(request.getEmail(), otp);
         return new GeneralResponse<>("OTP sent successfully, please check your email");
@@ -94,5 +78,33 @@ public class AuthService {
                     return new GeneralResponse<>("OTP sent successfully, please check your email");
                 })
                 .orElseThrow(() -> new GeneralException("There is no account related to this email"));
+    }
+
+    public GeneralResponse<?> confirmRegister(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new GeneralException("Email already exists.");
+        }
+        if (userRepository.existsByPhone(request.getPhone())) {
+            throw new GeneralException("Phone number already exists.");
+        }
+        if (otpService.validateOtp(request.getEmail(), request.getOtp())) {
+            User user = new User();
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setPhone(request.getPhone());
+            user.setGender(Gender.valueOf(request.getGender()));
+            user.setBirthDate(request.getBirthDate());
+            City city = cityService.findById(request.getCityId());
+            user.setCity(city);
+            user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
+            user.setType(UserType.valueOf(request.getType()));
+
+            userRepository.save(user);
+            return new GeneralResponse<>("User registered successfully!");
+
+        } else {
+            throw new GeneralException("Invalid OTP");
+        }
     }
 }
