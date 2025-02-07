@@ -1,16 +1,15 @@
 package com.corefit.service;
 
 import com.corefit.config.JwtUtil;
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.LoginRequest;
-import com.corefit.dto.RegisterRequest;
-import com.corefit.dto.UserDto;
+import com.corefit.dto.*;
 import com.corefit.entity.City;
 import com.corefit.entity.User;
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.UserRepo;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +23,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final GovernorateService governorateService;
     private final CityService cityService;
+    private final EmailService emailService;
+    private final OtpService otpService;
 
-    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, GovernorateService governorateService, CityService cityService) {
+    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, GovernorateService governorateService, CityService cityService, EmailService emailService, OtpService otpService) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.governorateService = governorateService;
         this.cityService = cityService;
+        this.emailService = emailService;
+        this.otpService = otpService;
     }
 
     public GeneralResponse<Object> register(RegisterRequest request) {
@@ -42,6 +46,7 @@ public class AuthService {
         }
 
         User user = new User();
+
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -53,8 +58,12 @@ public class AuthService {
         user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
         user.setType(UserType.valueOf(request.getType()));
 
-        userRepository.save(user);
-        return new GeneralResponse<>("User registered successfully!");
+//        userRepository.save(user);
+//        return new GeneralResponse<>("User registered successfully!");
+
+        String otp = otpService.generateOtp(request.getEmail());
+        emailService.sendOtpEmail(request.getEmail(), otp);
+        return new GeneralResponse<>("OTP sent successfully, please check your email");
     }
 
     public GeneralResponse<?> login(LoginRequest request) {
@@ -67,14 +76,23 @@ public class AuthService {
 
                     UserDto userDto = new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getPhone()
                             , user.getBirthDate(), user.getGovernorate().getName(), user.getCity().getName()
-                            , user.getGender(), user.getType());
+                            , user.getGender());
 
                     data.put("token", token);
                     data.put("user", userDto);
 
                     return new GeneralResponse<>("Login Successful", data);
-
                 })
-                .orElse(new GeneralResponse<>("Invalid Credentials"));
+                .orElseThrow(() -> new GeneralException("Invalid Credentials"));
+    }
+
+    public GeneralResponse<?> forgetPassword(ForgetRequest request) {
+        return userRepository.findByEmail(request.getEmail())
+                .map(_ -> {
+                    String otp = otpService.generateOtp(request.getEmail());
+                    emailService.sendOtpEmail(request.getEmail(), otp);
+                    return new GeneralResponse<>("OTP sent successfully, please check your email");
+                })
+                .orElseThrow(() -> new GeneralException("There is no account related to this email"));
     }
 }
