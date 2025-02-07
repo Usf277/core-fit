@@ -20,7 +20,6 @@ public class GeneralResponse<T> {
         this.data = data;
     }
 
-
     public String getMessage() {
         return message;
     }

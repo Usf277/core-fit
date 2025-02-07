@@ -1,5 +1,6 @@
 package com.corefit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 
@@ -12,8 +13,9 @@ public class City {
 
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "governorate_id", nullable = false)
+    @JsonIgnore
     private Governorate governorate;
 
     public long getId() {
