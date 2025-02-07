@@ -29,9 +29,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/login",
-                                "/auth/register",
-                                "/auth/forgetPassword",
+                                "/auth/**",
                                 "/governorates",
                                 "/cities"
                         )
