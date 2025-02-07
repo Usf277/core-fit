@@ -1,7 +1,10 @@
 package com.corefit.dto;
 
 public class ForgetRequest {
-    public String email;
+    private String email;
+    private String otp;
+    private String password;
+
 
     public String getEmail() {
         return email;
@@ -9,5 +12,21 @@ public class ForgetRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

@@ -8,8 +8,7 @@ import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.UserRepo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,19 +36,6 @@ public class AuthService {
         this.otpService = otpService;
     }
 
-    public GeneralResponse<Object> register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new GeneralException("Email already exists.");
-        }
-        if (userRepository.existsByPhone(request.getPhone())) {
-            throw new GeneralException("Phone number already exists.");
-        }
-
-        String otp = otpService.generateOtp(request.getEmail());
-        emailService.sendOtpEmail(request.getEmail(), otp);
-        return new GeneralResponse<>("OTP sent successfully, please check your email");
-    }
-
     public GeneralResponse<?> login(LoginRequest request) {
         return userRepository.findByEmail(request.getEmail())
                 .filter(user -> passwordEncoder.matches(request.getPassword(), user.getPassword()))
@@ -70,14 +56,17 @@ public class AuthService {
                 .orElseThrow(() -> new GeneralException("Invalid Credentials"));
     }
 
-    public GeneralResponse<?> forgetPassword(ForgetRequest request) {
-        return userRepository.findByEmail(request.getEmail())
-                .map(_ -> {
-                    String otp = otpService.generateOtp(request.getEmail());
-                    emailService.sendOtpEmail(request.getEmail(), otp);
-                    return new GeneralResponse<>("OTP sent successfully, please check your email");
-                })
-                .orElseThrow(() -> new GeneralException("There is no account related to this email"));
+    public GeneralResponse<Object> register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new GeneralException("Email already exists.");
+        }
+        if (userRepository.existsByPhone(request.getPhone())) {
+            throw new GeneralException("Phone number already exists.");
+        }
+
+        String otp = otpService.generateOtp(request.getEmail());
+        emailService.sendOtpEmail(request.getEmail(), otp);
+        return new GeneralResponse<>("OTP sent successfully, please check your email");
     }
 
     public GeneralResponse<?> confirmRegister(RegisterRequest request) {
@@ -106,5 +95,39 @@ public class AuthService {
         } else {
             throw new GeneralException("Invalid OTP");
         }
+    }
+
+    public GeneralResponse<?> forgetPassword(ForgetRequest request) {
+        return userRepository.findByEmail(request.getEmail())
+                .map(_ -> {
+                    String otp = otpService.generateOtp(request.getEmail());
+                    emailService.sendOtpEmail(request.getEmail(), otp);
+                    return new GeneralResponse<>("OTP sent successfully, please check your email");
+                })
+                .orElseThrow(() -> new GeneralException("There is no account related to this email"));
+    }
+
+    public GeneralResponse<?> checkCode(ForgetRequest request) {
+        if (otpService.validateOtp(request.getEmail(), request.getOtp())) {
+            return new GeneralResponse<>("OTP Confirmed");
+        } else {
+            throw new GeneralException("Invalid Or Expired Otp");
+        }
+    }
+
+    @Transactional
+    public GeneralResponse<?> resetPassword(ForgetRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new GeneralException("No account found with this email"));
+
+        if (!otpService.validateOtp(request.getEmail(), request.getOtp())) {
+            throw new GeneralException("Invalid or expired OTP");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        userRepository.save(user);
+
+        return new GeneralResponse<>("Password reset successfully");
     }
 }
