@@ -6,6 +6,7 @@ import com.corefit.dto.LoginRequest;
 import com.corefit.dto.RegisterRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -84,6 +85,17 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/edit_profile")
+    public ResponseEntity<GeneralResponse<?>> editProfile(@RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        try {
+            GeneralResponse<?> response = authService.editProfile(request, httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new GeneralResponse<>(e.getMessage()));
         }
     }
