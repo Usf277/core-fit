@@ -1,10 +1,8 @@
 package com.corefit.controller;
 
 import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.RegisterRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

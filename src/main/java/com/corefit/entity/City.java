@@ -2,10 +2,16 @@ package com.corefit.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.*;
 
 
 @Entity
 @Table(name = "cities")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,28 +23,4 @@ public class City {
     @JoinColumn(name = "governorate_id", nullable = false)
     @JsonIgnore
     private Governorate governorate;
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Governorate getGovernorate() {
-        return governorate;
-    }
-
-    public void setGovernorate(Governorate governorate) {
-        this.governorate = governorate;
-    }
 }
