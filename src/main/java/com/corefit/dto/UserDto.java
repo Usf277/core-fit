@@ -13,8 +13,9 @@ public class UserDto {
     private String governorate;
     private String city;
     private Gender gender;
+    private String imageUrl;
 
-    public UserDto(Long id, String username, String email, String phone, LocalDate birthDate, String governorate, String city, Gender gender) {
+    public UserDto(Long id, String username, String email, String phone, LocalDate birthDate, String governorate, String city, Gender gender, String imageUrl) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -23,6 +24,7 @@ public class UserDto {
         this.governorate = governorate;
         this.city = city;
         this.gender = gender;
+        this.imageUrl = imageUrl;
     }
 
     public Long getId() {
@@ -87,5 +89,13 @@ public class UserDto {
 
     public void setGender(Gender gender) {
         this.gender = gender;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

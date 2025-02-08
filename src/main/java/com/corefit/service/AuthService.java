@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Map;
 
 @Service
@@ -25,14 +26,9 @@ public class AuthService {
     private final CityService cityService;
     private final EmailService emailService;
     private final OtpService otpService;
+    private final FilesService filesService;
 
-    public AuthService(UserRepo userRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil,
-                       GovernorateService governorateService,
-                       CityService cityService,
-                       EmailService emailService,
-                       OtpService otpService) {
+    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, GovernorateService governorateService, CityService cityService, EmailService emailService, OtpService otpService, FilesService filesService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
@@ -40,6 +36,7 @@ public class AuthService {
         this.cityService = cityService;
         this.emailService = emailService;
         this.otpService = otpService;
+        this.filesService = filesService;
     }
 
     public GeneralResponse<?> login(LoginRequest request) {
@@ -53,7 +50,8 @@ public class AuthService {
         return new GeneralResponse<>("Login Successful", data);
     }
 
-    public GeneralResponse<Object> register(RegisterRequest request) {
+    // start register methods
+    public GeneralResponse<Object> canRegister(RegisterRequest request) {
         validateEmailAndPhone(request.getEmail(), request.getPhone());
 
         String otp = otpService.generateOtp(request.getEmail());
@@ -61,7 +59,7 @@ public class AuthService {
         return new GeneralResponse<>("OTP sent successfully, please check your email");
     }
 
-    public GeneralResponse<?> confirmRegister(RegisterRequest request) {
+    public GeneralResponse<?> register(RegisterRequest request) {
         validateEmailAndPhone(request.getEmail(), request.getPhone());
 
         if (!otpService.validateOtp(request.getEmail(), request.getOtp())) {
@@ -73,6 +71,7 @@ public class AuthService {
         return new GeneralResponse<>("User registered successfully!");
     }
 
+    // start reset password methods
     public GeneralResponse<?> forgetPassword(ForgetRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new GeneralException("There is no account related to this email"));
@@ -102,6 +101,7 @@ public class AuthService {
         userRepository.save(user);
         return new GeneralResponse<>("Password reset successfully");
     }
+
 
     public GeneralResponse<?> getProfile(long id) {
         User user = userRepository.findById(id)
@@ -138,6 +138,16 @@ public class AuthService {
     private User createUser(RegisterRequest request) {
         City city = cityService.findById(request.getCityId());
 
+        String imagePath = null;
+
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            try {
+                imagePath = filesService.saveImage(request.getImage());
+            } catch (IOException e) {
+                throw new GeneralException("Failed to upload image: " + e.getMessage());
+            }
+        }
+
         return User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -148,6 +158,7 @@ public class AuthService {
                 .city(city)
                 .governorate(governorateService.findById(city.getGovernorate().getId()))
                 .type(UserType.valueOf(request.getType()))
+                .imageUrl(imagePath)
                 .build();
     }
 
@@ -164,6 +175,19 @@ public class AuthService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
+        String imagePath = user.getImageUrl();
+
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            try {
+                if (imagePath != null && !imagePath.isEmpty()) {
+                    filesService.deleteImage(imagePath);
+                }
+                imagePath = filesService.saveImage(request.getImage());
+            } catch (IOException e) {
+                throw new GeneralException("Failed to upload image: " + e.getMessage());
+            }
+        }
+
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
@@ -171,6 +195,7 @@ public class AuthService {
         user.setBirthDate(request.getBirthDate());
         City city = cityService.findById(request.getCityId());
         user.setCity(city);
+        user.setImageUrl(imagePath);
         user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
     }
 
@@ -183,7 +208,8 @@ public class AuthService {
                 user.getBirthDate(),
                 user.getGovernorate().getName(),
                 user.getCity().getName(),
-                user.getGender()
+                user.getGender(),
+                user.getImageUrl()
         );
     }
 
