@@ -36,7 +36,8 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/governorates",
                                 "/cities",
-                                "/categories"
+                                "/categories",
+                                "/uploads/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
