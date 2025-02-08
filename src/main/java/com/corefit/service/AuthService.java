@@ -213,7 +213,7 @@ public class AuthService {
         );
     }
 
-    private String extractUserIdFromRequest(HttpServletRequest request) {
+    public String extractUserIdFromRequest(HttpServletRequest request) {
         final String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             throw new GeneralException("Missing or invalid Authorization header");

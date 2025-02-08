@@ -20,6 +20,10 @@ public class CategoryService {
         this.filesService = filesService;
     }
 
+    public Category findById(long id) {
+        return categoryRepo.findById(id).get();
+    }
+
     public GeneralResponse<?> getAllCategories() {
         Map<String, Object> data = new HashMap<>();
         data.put("categories", categoryRepo.findAll());
