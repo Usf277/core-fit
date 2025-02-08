@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -27,9 +26,13 @@ public class AuthService {
     private final EmailService emailService;
     private final OtpService otpService;
 
-    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
-                       GovernorateService governorateService, CityService cityService,
-                       EmailService emailService, OtpService otpService) {
+    public AuthService(UserRepo userRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtUtil jwtUtil,
+                       GovernorateService governorateService,
+                       CityService cityService,
+                       EmailService emailService,
+                       OtpService otpService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
