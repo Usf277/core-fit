@@ -51,4 +51,13 @@ public class FilesService {
 
         return  "http://localhost:8000/uploads/" + fileName;
     }
+
+    public void deleteImage(String imagePath) throws IOException {
+        if (imagePath.startsWith("http://localhost:8000/uploads/")) {
+            imagePath = imagePath.replace("http://localhost:8000/uploads/", "");
+        }
+
+        Path path = Paths.get("uploads").resolve(imagePath).normalize();
+        Files.deleteIfExists(path);
+    }
 }

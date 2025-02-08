@@ -48,4 +48,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserType type;
+
+    private String imageUrl;
 }

@@ -1,5 +1,7 @@
 package com.corefit.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDate;
 
 public class RegisterRequest {
@@ -13,6 +15,7 @@ public class RegisterRequest {
     private Long cityId;
     private String type;
     private String otp;
+    private MultipartFile image;
 
     public long getId() {
         return id;
@@ -88,6 +91,14 @@ public class RegisterRequest {
 
     public String getOtp() {
         return otp;
+    }
+
+    public MultipartFile getImage() {
+        return image;
+    }
+
+    public void setImage(MultipartFile image) {
+        this.image = image;
     }
 
     public void setOtp(String otp) {

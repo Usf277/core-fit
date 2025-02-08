@@ -9,10 +9,7 @@ import com.corefit.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,11 +20,22 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<GeneralResponse<?>> register(@RequestBody RegisterRequest request) {
+    @PostMapping("/can_register")
+    public ResponseEntity<GeneralResponse<?>> canRegister(@RequestBody RegisterRequest request) {
         try {
-            GeneralResponse<Object> response = authService.register(request);
+            GeneralResponse<Object> response = authService.canRegister(request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @PostMapping(value = "/register", consumes = {"multipart/form-data"})
+    public ResponseEntity<GeneralResponse<?>> register(@ModelAttribute RegisterRequest request) {
+        try {
+            GeneralResponse<?> response = authService.register(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new GeneralResponse<>(e.getMessage()));
@@ -56,17 +64,6 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/confirm_register")
-    public ResponseEntity<GeneralResponse<?>> confirmRegister(@RequestBody RegisterRequest request) {
-        try {
-            GeneralResponse<?> response = authService.confirmRegister(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
-        }
-    }
-
     @PostMapping("/check_code")
     public ResponseEntity<GeneralResponse<?>> checkCode(@RequestBody ForgetRequest request) {
         try {
@@ -89,8 +86,8 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/edit_profile")
-    public ResponseEntity<GeneralResponse<?>> editProfile(@RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+    @PostMapping(value = "/edit_profile", consumes = {"multipart/form-data"})
+    public ResponseEntity<GeneralResponse<?>> editProfile(@ModelAttribute RegisterRequest request, HttpServletRequest httpRequest) {
         try {
             GeneralResponse<?> response = authService.editProfile(request, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
