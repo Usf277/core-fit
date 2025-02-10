@@ -12,7 +12,12 @@ import com.corefit.repository.MarketRepo;
 import com.corefit.repository.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,14 +40,24 @@ public class MarketService {
     private CategoryService categoryService;
 
 
-    public Optional<Market> findById(long id) {
-        return marketRepo.findById(id);
+    public GeneralResponse<?> findById(long id) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("Market", marketRepo.findById(id));
+        return new GeneralResponse<>("Success", data);
     }
 
-    public GeneralResponse<?> getAll() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("Markets", marketRepo.findAll());
-        return new GeneralResponse<>("Success", data);
+    public Page<Market> getAll(Integer page, Integer size) {
+
+        if (size == null || size <= 0) {
+            size = 5;
+        }
+
+        if (page == null || page < 0) {
+            page = 1;
+        }
+        page--;
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "id");
+        return marketRepo.findAll(pageable);
     }
 
     public GeneralResponse<?> insert(MarketRequest request, HttpServletRequest httpRequest) {
@@ -124,4 +139,43 @@ public class MarketService {
         return new GeneralResponse<>("Market updated successfully", data);
     }
 
+    public GeneralResponse<?> delete(long id, HttpServletRequest httpRequest) {
+        String userId = authService.extractUserIdFromRequest(httpRequest);
+        int userIdInt = Integer.parseInt(userId);
+
+        Market market = marketRepo.findById(id)
+                .orElseThrow(() -> new GeneralException("Market not found"));
+
+        if (market.getUser().getId() != userIdInt) {
+            throw new GeneralException("User is not owner of this market");
+        }
+
+        String imagePath = market.getImageUrl();
+
+        try {
+            if (imagePath != null && !imagePath.isEmpty()) {
+                filesService.deleteImage(imagePath);
+            }
+        } catch (IOException e) {
+            throw new GeneralException("Failed to upload image: " + e.getMessage());
+        }
+
+        marketRepo.deleteById(id);
+        return new GeneralResponse<>("Market deleted successfully");
+    }
+
+    public GeneralResponse<?> changeStatus(long id, HttpServletRequest httpRequest) {
+        String userId = authService.extractUserIdFromRequest(httpRequest);
+        int userIdInt = Integer.parseInt(userId);
+
+        Market market = marketRepo.findById(id)
+                .orElseThrow(() -> new GeneralException("Market not found"));
+
+        if (market.getUser().getId() != userIdInt) {
+            throw new GeneralException("User is not owner of this market");
+        }
+        market.setOpened(!market.isOpened());
+        marketRepo.save(market);
+        return new GeneralResponse<>("Market status changed successfully");
+    }
 }
