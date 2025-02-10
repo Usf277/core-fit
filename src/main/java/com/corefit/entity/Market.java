@@ -40,4 +40,6 @@ public class Market {
 
     private String imageUrl;
 
+    private boolean isOpened = true;
+
 }
