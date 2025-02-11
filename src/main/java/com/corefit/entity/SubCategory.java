@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Getter
 @Setter
@@ -22,5 +25,7 @@ public class SubCategory {
     @JsonIgnore
     private Market market;
 
-
+    @OneToMany(mappedBy = "subCategory", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Product> products = new HashSet<>();
 }
