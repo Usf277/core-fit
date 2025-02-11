@@ -17,7 +17,7 @@ import java.util.Set;
 public class Market {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     @Column(nullable = false)
     private String name;
@@ -41,5 +41,9 @@ public class Market {
     private String imageUrl;
 
     private boolean isOpened = true;
+
+    @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<SubCategory> subCategories = new HashSet<>();
 
 }
