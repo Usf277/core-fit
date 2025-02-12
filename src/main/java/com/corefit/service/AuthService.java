@@ -102,7 +102,6 @@ public class AuthService {
         return new GeneralResponse<>("Password reset successfully");
     }
 
-
     public GeneralResponse<?> getProfile(long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new GeneralException("No account found with this id"));
@@ -123,6 +122,12 @@ public class AuthService {
         userRepository.save(user);
 
         return new GeneralResponse<>("Profile updated successfully", toUserDto(user));
+    }
+
+    public GeneralResponse<?> deleteAccount(HttpServletRequest httpRequest) {
+        String userId = extractUserIdFromRequest(httpRequest);
+        userRepository.deleteById(Long.parseLong(userId));
+        return new GeneralResponse<>("Account deleted successfully");
     }
 
     // Helper Methods
