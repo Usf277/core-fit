@@ -96,4 +96,15 @@ public class AuthController {
                     .body(new GeneralResponse<>(e.getMessage()));
         }
     }
+
+    @DeleteMapping(value = "/delete_account")
+    public ResponseEntity<GeneralResponse<?>> deleteAccount(HttpServletRequest httpRequest){
+        try {
+            GeneralResponse<?> response = authService.deleteAccount( httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
 }

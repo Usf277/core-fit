@@ -33,7 +33,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**",
+                                "/auth/can_register",
+                                "/auth/register",
+                                "/auth/login",
+                                "/auth/forget_password",
+                                "/auth/check_code",
+                                "/auth/reset_password",
                                 "/governorates",
                                 "/cities",
                                 "/categories",
