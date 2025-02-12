@@ -1,8 +1,10 @@
 package com.corefit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -25,14 +27,16 @@ public class Product {
 
     private int offer;
 
-    private boolean isHidden = false;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
-    private Set<ProductImages> images;
+    @ElementCollection
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    private List<String> images;
 
     @ManyToOne
     private Market market;
 
     @ManyToOne
     private SubCategory subCategory;
+
+    private boolean isHidden = false;
 }

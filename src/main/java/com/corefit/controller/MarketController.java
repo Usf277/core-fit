@@ -36,7 +36,7 @@ public class MarketController {
 
     @PostMapping(value = "/add_market", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> addMarket(@ModelAttribute MarketRequest request, HttpServletRequest httpRequest) {
-        return ResponseEntity.ok(marketService.insert(request, httpRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(marketService.insert(request, httpRequest));
     }
 
     @PostMapping(value = "/edit_market", consumes = {"multipart/form-data"})
