@@ -47,16 +47,10 @@ public class MarketService {
     }
 
     public Page<Market> getAll(Integer page, Integer size) {
+        if (size == null || size <= 0) size = 5;
+        if (page == null || page < 1) page = 1;
 
-        if (size == null || size <= 0) {
-            size = 5;
-        }
-
-        if (page == null || page < 0) {
-            page = 1;
-        }
-        page--;
-        Pageable pageable = PageRequest.of(page, size, Sort.Direction.ASC, "id");
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
         return marketRepo.findAll(pageable);
     }
 

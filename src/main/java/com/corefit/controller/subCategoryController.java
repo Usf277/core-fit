@@ -24,7 +24,13 @@ public class subCategoryController {
 
     @PostMapping(value = "/add_sub_category")
     public ResponseEntity<GeneralResponse<?>> addSubCategory(@RequestBody SubCategoryRequest request) {
-        return ResponseEntity.ok(subCategoryService.insert(request));
+        try {
+            GeneralResponse<?> response = subCategoryService.insert(request);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 
     @PostMapping(value = "/edit_sub_category")
