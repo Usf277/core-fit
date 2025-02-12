@@ -37,17 +37,18 @@ public class ProductService {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Product not found"));
 
-        return new GeneralResponse<>("Success", mapToDto(product));
+        return new GeneralResponse<>("Success", product);
     }
 
-    public Page<ProductDto> getAll(Integer page, Integer size) {
+    public Page<Product> getAll(Integer page, Integer size, Long marketId, Long subCategoryId) {
         size = (size == null || size <= 0) ? 5 : size;
         page = (page == null || page < 1) ? 1 : page;
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
 
-        return productRepo.findAll(pageable).map(this::mapToDto);
+        return productRepo.findAllByFilters(pageable, marketId, subCategoryId);
     }
+
 
     @Transactional
     public GeneralResponse<?> insert(ProductRequest productRequest, List<MultipartFile> images) {
@@ -71,7 +72,7 @@ public class ProductService {
 
         productRepo.save(product);
 
-        return new GeneralResponse<>("Product added successfully", mapToDto(product));
+        return new GeneralResponse<>("Product added successfully", product);
     }
 
     @Transactional
@@ -93,7 +94,7 @@ public class ProductService {
 
         productRepo.save(product);
 
-        return new GeneralResponse<>("Product updated successfully", mapToDto(product));
+        return new GeneralResponse<>("Product updated successfully", product);
     }
 
     @Transactional

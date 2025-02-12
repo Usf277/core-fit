@@ -21,7 +21,7 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @GetMapping("/product")
+    @GetMapping("/find_by_id")
     public ResponseEntity<GeneralResponse<?>> getProduct(@RequestParam long id) {
         try {
             GeneralResponse<?> response = productService.findById(id);
@@ -32,9 +32,10 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<?> getAllProduct(@RequestParam int page, @RequestParam int size) {
-        return ResponseEntity.ok(productService.getAll(page, size));
+    @GetMapping("/")
+    public ResponseEntity<?> getAllProduct(@RequestParam int page, @RequestParam int size
+            , @RequestParam(required = false) Long marketId, @RequestParam(required = false) Long subCategoryId) {
+        return ResponseEntity.ok(productService.getAll(page, size, marketId, subCategoryId));
     }
 
     @PostMapping(value = "/add_product", consumes = {"multipart/form-data"})

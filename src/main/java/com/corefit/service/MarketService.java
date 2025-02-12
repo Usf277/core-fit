@@ -29,8 +29,6 @@ public class MarketService {
     @Autowired
     private MarketRepo marketRepo;
     @Autowired
-    private JwtUtil jwtUtil;
-    @Autowired
     private AuthService authService;
     @Autowired
     private UserRepo userRepo;
