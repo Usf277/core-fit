@@ -143,15 +143,15 @@ public class AuthService {
     private User createUser(RegisterRequest request) {
         City city = cityService.findById(request.getCityId());
 
-        String imagePath = null;
-
-        if (request.getImage() != null && !request.getImage().isEmpty()) {
-            try {
-                imagePath = filesService.saveImage(request.getImage());
-            } catch (IOException e) {
-                throw new GeneralException("Failed to upload image: " + e.getMessage());
-            }
-        }
+//        String imagePath = null;
+//
+//        if (request.getImage() != null && !request.getImage().isEmpty()) {
+//            try {
+//                imagePath = filesService.saveImage(request.getImage());
+//            } catch (IOException e) {
+//                throw new GeneralException("Failed to upload image: " + e.getMessage());
+//            }
+//        }
 
         return User.builder()
                 .username(request.getUsername())
@@ -163,7 +163,7 @@ public class AuthService {
                 .city(city)
                 .governorate(governorateService.findById(city.getGovernorate().getId()))
                 .type(UserType.valueOf(request.getType()))
-                .imageUrl(imagePath)
+//                .imageUrl(imagePath)
                 .build();
     }
 
