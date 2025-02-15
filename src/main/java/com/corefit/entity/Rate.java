@@ -24,7 +24,7 @@ public class Rate {
     private String comment;
 
     @Column(nullable = false)
-    private int rate; // 0 : 5
+    private int rate;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
