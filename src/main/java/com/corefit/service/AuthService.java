@@ -180,18 +180,18 @@ public class AuthService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        String imagePath = user.getImageUrl();
-
-        if (request.getImage() != null && !request.getImage().isEmpty()) {
-            try {
-                if (imagePath != null && !imagePath.isEmpty()) {
-                    filesService.deleteImage(imagePath);
-                }
-                imagePath = filesService.saveImage(request.getImage());
-            } catch (IOException e) {
-                throw new GeneralException("Failed to upload image: " + e.getMessage());
-            }
-        }
+//        String imagePath = user.getImageUrl();
+//
+//        if (request.getImage() != null && !request.getImage().isEmpty()) {
+//            try {
+//                if (imagePath != null && !imagePath.isEmpty()) {
+//                    filesService.deleteImage(imagePath);
+//                }
+//                imagePath = filesService.saveImage(request.getImage());
+//            } catch (IOException e) {
+//                throw new GeneralException("Failed to upload image: " + e.getMessage());
+//            }
+//        }
 
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
@@ -200,7 +200,7 @@ public class AuthService {
         user.setBirthDate(request.getBirthDate());
         City city = cityService.findById(request.getCityId());
         user.setCity(city);
-        user.setImageUrl(imagePath);
+//        user.setImageUrl(imagePath);
         user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
     }
 
