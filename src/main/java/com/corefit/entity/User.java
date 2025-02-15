@@ -58,4 +58,8 @@ public class User {
     @JsonIgnore
     private Set<Market> market = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Rate> rates = new HashSet<>();
+
 }

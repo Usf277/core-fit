@@ -50,4 +50,8 @@ public class Market {
     @JsonIgnore
     private Set<Product> products = new HashSet<>();
 
+    @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Rate> rates = new HashSet<>();
+
 }

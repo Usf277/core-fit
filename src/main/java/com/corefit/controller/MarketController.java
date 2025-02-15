@@ -21,7 +21,7 @@ public class MarketController {
     @GetMapping("/find_market")
     public ResponseEntity<GeneralResponse<?>> getMarket(@RequestParam long id) {
         try {
-            GeneralResponse<?> response = marketService.findById(id);
+            GeneralResponse<?> response = marketService.getMarketById(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -30,8 +30,9 @@ public class MarketController {
     }
 
     @GetMapping("/markets")
-    public ResponseEntity<?> findAll(@RequestParam int page, @RequestParam int size) {
-        return ResponseEntity.ok(marketService.getAll(page, size));
+    public ResponseEntity<?> findAll(@RequestParam int page, @RequestParam(required = false) Integer size
+            , @RequestParam(required = false) String name, @RequestParam(required = false) Long categoryId) {
+        return ResponseEntity.ok(marketService.getAll(page, size, name, categoryId));
     }
 
     @PostMapping(value = "/add_market", consumes = {"multipart/form-data"})
@@ -71,4 +72,6 @@ public class MarketController {
                     .body(new GeneralResponse<>(e.getMessage()));
         }
     }
+
+
 }
