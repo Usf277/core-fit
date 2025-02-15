@@ -16,8 +16,9 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
     Optional<Product> findById(Long id);
 
     @Query("SELECT p FROM Product p WHERE " +
+            "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:marketId IS NULL OR p.market.id = :marketId) AND " +
             "(:subCategoryId IS NULL OR p.subCategory.id = :subCategoryId)")
-    Page<Product> findAllByFilters(Pageable pageable, Long marketId, Long subCategoryId);
+    Page<Product> findAllByFilters(Long marketId, Long subCategoryId, String name, Pageable pageable);
 
 }

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,18 +39,28 @@ public class MarketService {
     private CategoryService categoryService;
 
 
-    public GeneralResponse<?> findById(long id) {
+    public GeneralResponse<?> getMarketById(long id) {
+        Market market = marketRepo.findById(id)
+                .orElseThrow(() -> new GeneralException("Market not found"));
+
+        Long rateCount = marketRepo.getMarketRateCount(id);
+        Double averageRate = marketRepo.getMarketAverageRate(id);
+
+
         Map<String, Object> data = new HashMap<>();
-        data.put("Market", marketRepo.findById(id));
+        data.put("Market", market);
+        data.put("rateCount", rateCount != null ? rateCount : 0);
+        data.put("averageRate",  averageRate != null ? averageRate : 0.0);
+
         return new GeneralResponse<>("Success", data);
     }
 
-    public Page<Market> getAll(Integer page, Integer size) {
+    public Page<Market> getAll(Integer page, Integer size, String name, Long categoryId) {
         if (size == null || size <= 0) size = 5;
         if (page == null || page < 1) page = 1;
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
-        return marketRepo.findAll(pageable);
+        return marketRepo.findAllByFilters(name, categoryId, pageable);
     }
 
     public GeneralResponse<?> insert(MarketRequest request, HttpServletRequest httpRequest) {

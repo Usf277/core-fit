@@ -34,8 +34,10 @@ public class ProductController {
 
     @GetMapping("/")
     public ResponseEntity<?> getAllProduct(@RequestParam int page, @RequestParam int size
-            , @RequestParam(required = false) Long marketId, @RequestParam(required = false) Long subCategoryId) {
-        return ResponseEntity.ok(productService.getAll(page, size, marketId, subCategoryId));
+            , @RequestParam(required = false) Long marketId
+            , @RequestParam(required = false) Long subCategoryId
+            , @RequestParam(required = false) String name) {
+        return ResponseEntity.ok(productService.getAll(page, size, marketId, subCategoryId, name));
     }
 
     @PostMapping(value = "/add_product", consumes = {"multipart/form-data"})

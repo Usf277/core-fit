@@ -40,13 +40,12 @@ public class ProductService {
         return new GeneralResponse<>("Success", product);
     }
 
-    public Page<Product> getAll(Integer page, Integer size, Long marketId, Long subCategoryId) {
+    public Page<Product> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name) {
         size = (size == null || size <= 0) ? 5 : size;
         page = (page == null || page < 1) ? 1 : page;
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
-
-        return productRepo.findAllByFilters(pageable, marketId, subCategoryId);
+        return productRepo.findAllByFilters(marketId, subCategoryId, name, pageable);
     }
 
 
