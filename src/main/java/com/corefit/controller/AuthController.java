@@ -39,8 +39,12 @@ public class AuthController {
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new GeneralResponse<>(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new GeneralResponse<>("An unexpected error occurred"));
         }
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<GeneralResponse<?>> login(@RequestBody LoginRequest request) {
