@@ -22,7 +22,7 @@ public class EmailService {
             helper.setFrom("info@t-malty.rynprogramming.com");
             helper.setTo(toEmail);
             helper.setSubject("Your OTP Code");
-            helper.setText("Your OTP code is: " + otp + ". It is valid for 5 minutes.", false);
+            helper.setText("Your OTP code is: " + otp + ". It is valid for" + OtpService.EXPIRATION_TIME + "minutes.", false);
 
             mailSender.send(message);
         } catch (MessagingException e) {
