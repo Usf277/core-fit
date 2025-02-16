@@ -15,7 +15,7 @@ public class RegisterRequest {
     private Long cityId;
     private String type;
     private String otp;
-//    private MultipartFile image;
+    private MultipartFile image;
 
     public long getId() {
         return id;
@@ -93,13 +93,13 @@ public class RegisterRequest {
         return otp;
     }
 
-//    public MultipartFile getImage() {
-//        return image;
-//    }
-//
-//    public void setImage(MultipartFile image) {
-//        this.image = image;
-//    }
+    public MultipartFile getImage() {
+        return image;
+    }
+
+    public void setImage(MultipartFile image) {
+        this.image = image;
+    }
 
     public void setOtp(String otp) {
         this.otp = otp;

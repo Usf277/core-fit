@@ -31,8 +31,8 @@ public class AuthController {
         }
     }
 
-    @PostMapping(value = "/register")
-    public ResponseEntity<GeneralResponse<?>> register(@RequestBody RegisterRequest request) {
+    @PostMapping(value = "/register", consumes = {"multipart/form-data"})
+    public ResponseEntity<GeneralResponse<?>> register(@ModelAttribute RegisterRequest request) {
         try {
             GeneralResponse<?> response = authService.register(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);

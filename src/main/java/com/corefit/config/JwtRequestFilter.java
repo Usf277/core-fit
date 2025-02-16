@@ -31,17 +31,17 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String userId = null;
         String jwtToken = null;
 
-        // Extract JWT token from the Authorization header
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwtToken = authorizationHeader.substring(7); // Remove "Bearer "
+            jwtToken = authorizationHeader.substring(7);
             try {
                 userId = jwtUtil.extractUserId(jwtToken);
             } catch (Exception e) {
                 logger.error("Invalid JWT Token", e);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+                return;
             }
         }
 
-        // Validate the token and set authentication
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtUtil.validateToken(jwtToken)) {
                 UsernamePasswordAuthenticationToken authToken =
@@ -51,6 +51,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            logger.error("An error occurred during request processing", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
+        }
     }
+
 }
