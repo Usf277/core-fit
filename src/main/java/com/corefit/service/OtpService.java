@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class OtpService {
     private final StringRedisTemplate redisTemplate;
-    private static final int EXPIRATION_TIME = 3;
+    private static final int EXPIRATION_TIME = 5;
 
     public OtpService(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
