@@ -20,14 +20,13 @@ public class CartController {
 
     @GetMapping("/cart")
     public ResponseEntity<GeneralResponse<?>> getCart(HttpServletRequest httpRequest) {
-      try {
-        GeneralResponse<?> response = cartService.getCart(httpRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    } catch (
-    GeneralException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new GeneralResponse<>(e.getMessage()));
-    }
+        try {
+            GeneralResponse<?> response = cartService.getCart(httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 
 }

@@ -1,7 +1,9 @@
 package com.corefit.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,14 +19,12 @@ public class Cart {
     private long id;
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(nullable = false, unique = true)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "market_id", nullable = false)
     private Market market;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<CartItem> cartItems;
-
+    private List<CartItem> cartItems = new ArrayList<>();
 }

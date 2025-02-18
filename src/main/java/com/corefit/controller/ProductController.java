@@ -4,7 +4,6 @@ import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.ProductRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.ProductService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +31,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<?> getAllProduct(@RequestParam int page, @RequestParam int size
             , @RequestParam(required = false) Long marketId
             , @RequestParam(required = false) Long subCategoryId
