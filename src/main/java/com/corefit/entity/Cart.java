@@ -1,7 +1,9 @@
 package com.corefit.entity;
 
 import jakarta.persistence.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.*;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,4 +29,8 @@ public class Cart {
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<CartItem> cartItems = new ArrayList<>();
+
+    public void addItemToCart(CartItem cartItem) {
+        cartItems.add(cartItem);
+    }
 }
