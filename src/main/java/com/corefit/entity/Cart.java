@@ -1,6 +1,4 @@
 package com.corefit.entity;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,21 +26,5 @@ public class Cart {
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<CartItem> cartItems;
-
-    @Override
-    public String toString() {
-        return "{" +
-                "\"id\":" + id + "," +
-                "\"user\":{" +
-                "\"id\":" + user.getId() + "," +
-                "\"username\":\"" + user.getUsername() + "\"" +
-                "}," +
-                "\"market\":{" +
-                "\"id\":" + market.getId() + "," +
-                "\"name\":\"" + market.getName() + "\"" +
-                "}," +
-                "\"cartItems\":" + cartItems +
-                "}";
-    }
 
 }
