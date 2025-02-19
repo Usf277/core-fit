@@ -8,6 +8,7 @@ import com.corefit.entity.CartItem;
 import com.corefit.entity.Product;
 import com.corefit.entity.User;
 import com.corefit.exceptions.GeneralException;
+import com.corefit.repository.CartItemRepo;
 import com.corefit.repository.CartRepo;
 import com.corefit.repository.ProductRepo;
 import com.corefit.repository.UserRepo;
@@ -30,6 +31,8 @@ public class CartService {
     private UserRepo userRepo;
     @Autowired
     private ProductRepo productRepo;
+    @Autowired
+    private CartItemRepo cartItemRepo;
 
     @Transactional
     public GeneralResponse<?> getCart(HttpServletRequest httpRequest) {
@@ -41,7 +44,7 @@ public class CartService {
     }
 
     @Transactional
-    public GeneralResponse<?> addItemToCart(HttpServletRequest httpRequest, long productId, long quantity) {
+    public GeneralResponse<?> addItemToCart(HttpServletRequest httpRequest, long productId, int quantity) {
         User user = getUserFromRequest(httpRequest);
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new GeneralException("Product not found"));
@@ -64,17 +67,42 @@ public class CartService {
             if (quantity == 0) {
                 cart.getCartItems().remove(existingItem);
             } else {
-                existingItem.setQuantity((int) quantity);
+                existingItem.setQuantity(quantity);
             }
         } else if (quantity > 0) {
             CartItem newItem = new CartItem();
             newItem.setProduct(product);
-            newItem.setQuantity((int) quantity);
+            newItem.setQuantity(quantity);
             newItem.setCart(cart);
-            cart.getCartItems().add(newItem);
+
+            cart.addItemToCart(newItem);
         }
 
         cartRepo.save(cart);
+        CartDto cartDto = mapToCartDto(cart);
+        return new GeneralResponse<>("Success", cartDto);
+    }
+
+    @Transactional
+    public GeneralResponse<?> deleteCart(HttpServletRequest httpRequest) {
+        User user = getUserFromRequest(httpRequest);
+        Cart cart = cartRepo.findByUserId(user.getId());
+
+        if (cart == null) {
+            throw new GeneralException("Cart not found");
+        }
+
+        List<CartItem> cartItems = cart.getCartItems();
+
+        if (!cartItems.isEmpty()) {
+            cartItems.forEach(cartItem -> cartItem.setCart(null));
+            cartItemRepo.deleteAll(cartItems);
+            cart.getCartItems().clear();
+        }
+
+        cart.setMarket(null);
+        cartRepo.save(cart);
+
         CartDto cartDto = mapToCartDto(cart);
         return new GeneralResponse<>("Success", cartDto);
     }
@@ -112,10 +140,6 @@ public class CartService {
 
         double totalPrice = cartItems.stream().mapToDouble(CartItemDto::getTotal).sum();
 
-        return new CartDto(
-                cart.getId(),
-                cart.getMarket() != null ? cart.getMarket().getId() : null,
-                cartItems,
-                totalPrice);
+        return new CartDto(cart.getId(), cart.getMarket() != null ? cart.getMarket().getId() : null, cartItems, totalPrice);
     }
 }
