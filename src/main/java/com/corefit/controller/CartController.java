@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class CartController {
-
-
     private final CartService cartService;
 
     public CartController(CartService cartService) {
@@ -22,6 +20,17 @@ public class CartController {
     public ResponseEntity<GeneralResponse<?>> getCart(HttpServletRequest httpRequest) {
         try {
             GeneralResponse<?> response = cartService.getCart(httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/add_cart_item")
+    public ResponseEntity<GeneralResponse<?>> addCart(HttpServletRequest httpRequest, @RequestBody long productId,  @RequestParam long quantity)  {
+        try {
+            GeneralResponse<?> response = cartService.addItemToCart(httpRequest, productId, quantity);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
