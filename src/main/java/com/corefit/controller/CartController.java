@@ -1,5 +1,6 @@
 package com.corefit.controller;
 
+import com.corefit.dto.AddCartItemRequest;
 import com.corefit.dto.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.CartService;
@@ -28,9 +29,20 @@ public class CartController {
     }
 
     @PostMapping("/add_cart_item")
-    public ResponseEntity<GeneralResponse<?>> addCart(HttpServletRequest httpRequest, @RequestBody long productId,  @RequestParam long quantity)  {
+    public ResponseEntity<GeneralResponse<?>> addCart(@RequestBody AddCartItemRequest addCartItemRequest, HttpServletRequest httpRequest) {
         try {
-            GeneralResponse<?> response = cartService.addItemToCart(httpRequest, productId, quantity);
+            GeneralResponse<?> response = cartService.addItemToCart(httpRequest, addCartItemRequest.getProductId(), addCartItemRequest.getQuantity());
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/delete_cart")
+    public ResponseEntity<GeneralResponse<?>> deleteCart(HttpServletRequest httpRequest) {
+        try {
+            GeneralResponse<?> response = cartService.deleteCart(httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

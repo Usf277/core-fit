@@ -27,7 +27,7 @@ public class Cart {
     @ManyToOne
     private Market market;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItems = new ArrayList<>();
 
     public void addItemToCart(CartItem cartItem) {
