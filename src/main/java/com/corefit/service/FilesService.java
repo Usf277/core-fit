@@ -45,6 +45,7 @@ public class FilesService {
     }
 
     public void deleteImage(String imagePath) throws IOException {
+
         if (imagePath.startsWith("uploads/")) {
             imagePath = imagePath.replace("uploads/", "");
         }
