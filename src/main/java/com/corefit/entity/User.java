@@ -66,5 +66,5 @@ public class User {
     private Cart cart;
 
     @JsonIgnore
-    private Double wallet;
+    private double wallet;
 }
