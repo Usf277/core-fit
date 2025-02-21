@@ -26,4 +26,14 @@ public class CartItem {
     private Product product;
 
     private int quantity;
+
+    private double total;
+
+    public void updateTotal() {
+        if (product.getOffer() == 0)
+            this.total = quantity * product.getPrice();
+        else
+            this.total = quantity * (product.getPrice() - (product.getPrice() * product.getOffer() / 100));
+    }
 }
+

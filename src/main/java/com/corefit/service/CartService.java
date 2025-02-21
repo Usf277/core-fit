@@ -68,17 +68,21 @@ public class CartService {
                 cart.getCartItems().remove(existingItem);
             } else {
                 existingItem.setQuantity(quantity);
+                existingItem.updateTotal(); // تحديث `total`
             }
         } else if (quantity > 0) {
             CartItem newItem = new CartItem();
             newItem.setProduct(product);
             newItem.setQuantity(quantity);
             newItem.setCart(cart);
+            newItem.updateTotal(); // حساب `total`
 
             cart.addItemToCart(newItem);
         }
 
+        cart.updateTotalPrice(); // تحديث `totalPrice`
         cartRepo.save(cart);
+
         CartDto cartDto = mapToCartDto(cart);
         return new GeneralResponse<>("Success", cartDto);
     }
@@ -101,12 +105,12 @@ public class CartService {
         }
 
         cart.setMarket(null);
+        cart.setTotalPrice(0.0); // تحديث `totalPrice`
         cartRepo.save(cart);
 
         CartDto cartDto = mapToCartDto(cart);
         return new GeneralResponse<>("Success", cartDto);
     }
-
 
     private User getUserFromRequest(HttpServletRequest httpRequest) {
         String userId = authService.extractUserIdFromRequest(httpRequest);
@@ -135,11 +139,11 @@ public class CartService {
                         item.getProduct().getOffer(),
                         item.getProduct().getSubCategory().getName(),
                         item.getProduct().getImages(),
-                        item.getQuantity()
+                        item.getQuantity(),
+                        item.getTotal() // جلب `total`
                 )).collect(Collectors.toList());
 
-        double totalPrice = cartItems.stream().mapToDouble(CartItemDto::getTotal).sum();
-
-        return new CartDto(cart.getId(), cart.getMarket() != null ? cart.getMarket().getId() : null, cartItems, totalPrice);
+        return new CartDto(cart.getId(), cart.getMarket() != null ? cart.getMarket().getId() : null, cartItems, cart.getTotalPrice()); // جلب `totalPrice`
     }
+
 }
