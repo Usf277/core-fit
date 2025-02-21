@@ -48,6 +48,7 @@ public class FilesService {
         if (imagePath.startsWith("uploads/")) {
             imagePath = imagePath.replace("uploads/", "");
         }
+
         Path path = Paths.get("uploads").resolve(imagePath).normalize();
         Files.deleteIfExists(path);
     }

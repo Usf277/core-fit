@@ -20,7 +20,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private User user;
 
@@ -30,9 +30,9 @@ public class Order {
 
     private String clientPhone;
 
-    private Double latitude;
+    private double latitude;
 
-    private Double longitude;
+    private double longitude;
 
     private String additionalInfo;
 
@@ -42,7 +42,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
-    private Double totalPrice;
+    private double totalPrice;
 
     @ManyToOne
     private Market market;

@@ -27,13 +27,26 @@ public class WalletService {
     }
 
     public void withdraw(HttpServletRequest request, double value) {
-        String userId = authService.extractUserIdFromRequest(request);
-        Long userIdLong = Long.parseLong(userId);
+        long userId = Long.parseLong(authService.extractUserIdFromRequest(request));
 
-        User user = userRepo.findById(userIdLong)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new GeneralException("User not found"));
 
+        if(user.getWallet() < value) {
+            throw new GeneralException("Not enough money");
+        }
         user.setWallet(user.getWallet() - value);
+
+        userRepo.save(user);
+    }
+
+    public void deposit(HttpServletRequest request, double value) {
+        long userId = Long.parseLong(authService.extractUserIdFromRequest(request));
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new GeneralException("User not found"));
+
+        user.setWallet(user.getWallet() + value);
 
         userRepo.save(user);
     }

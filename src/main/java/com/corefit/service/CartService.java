@@ -68,19 +68,19 @@ public class CartService {
                 cart.getCartItems().remove(existingItem);
             } else {
                 existingItem.setQuantity(quantity);
-                existingItem.updateTotal(); // تحديث `total`
+                existingItem.updateTotal();
             }
         } else if (quantity > 0) {
             CartItem newItem = new CartItem();
             newItem.setProduct(product);
             newItem.setQuantity(quantity);
             newItem.setCart(cart);
-            newItem.updateTotal(); // حساب `total`
+            newItem.updateTotal();
 
             cart.addItemToCart(newItem);
         }
 
-        cart.updateTotalPrice(); // تحديث `totalPrice`
+        cart.updateTotalPrice();
         cartRepo.save(cart);
 
         CartDto cartDto = mapToCartDto(cart);
@@ -105,7 +105,7 @@ public class CartService {
         }
 
         cart.setMarket(null);
-        cart.setTotalPrice(0.0); // تحديث `totalPrice`
+        cart.setTotalPrice(0.0);
         cartRepo.save(cart);
 
         CartDto cartDto = mapToCartDto(cart);
@@ -140,7 +140,7 @@ public class CartService {
                         item.getProduct().getSubCategory().getName(),
                         item.getProduct().getImages(),
                         item.getQuantity(),
-                        item.getTotal() // جلب `total`
+                        item.getTotal()
                 )).collect(Collectors.toList());
 
         return new CartDto(cart.getId(), cart.getMarket() != null ? cart.getMarket().getId() : null, cartItems, cart.getTotalPrice()); // جلب `totalPrice`
