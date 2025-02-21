@@ -30,7 +30,14 @@ public class Cart {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> cartItems = new ArrayList<>();
 
+    private double totalPrice;
+
     public void addItemToCart(CartItem cartItem) {
         cartItems.add(cartItem);
+        updateTotalPrice();
+    }
+
+    public void updateTotalPrice() {
+        this.totalPrice = cartItems.stream().mapToDouble(CartItem::getTotal).sum();
     }
 }

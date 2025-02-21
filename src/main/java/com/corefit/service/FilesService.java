@@ -41,12 +41,17 @@ public class FilesService {
         file.transferTo(filePath.toFile());
         logger.info("File saved successfully: {}", filePath.toString());
 
-        return "http://localhost:8000/uploads/" + fileName;
+        // return "http://localhost:8000/uploads/" + fileName;
+        return fileName;
     }
 
     public void deleteImage(String imagePath) throws IOException {
-        if (imagePath.startsWith("http://localhost:8000/uploads/")) {
-            imagePath = imagePath.replace("http://localhost:8000/uploads/", "");
+//        if (imagePath.startsWith("http://localhost:8000/uploads/")) {
+//            imagePath = imagePath.replace("http://localhost:8000/uploads/", "");
+//        }
+
+        if (imagePath.startsWith("uploads/")) {
+            imagePath = imagePath.replace("uploads/", "");
         }
 
         Path path = Paths.get("uploads").resolve(imagePath).normalize();
