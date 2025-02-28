@@ -61,7 +61,7 @@ public class User {
     @JsonIgnore
     private Set<Rate> rates = new HashSet<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private Cart cart;
 

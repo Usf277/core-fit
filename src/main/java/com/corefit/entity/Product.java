@@ -37,4 +37,6 @@ public class Product {
     private SubCategory subCategory;
 
     private boolean isHidden = false;
+
+    private boolean isFavourite = false;
 }
