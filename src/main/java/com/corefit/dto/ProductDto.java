@@ -19,4 +19,5 @@ public class ProductDto {
     private String subCategoryName;
     private List<String> images;
     private boolean isHidden;
+    private boolean isFavourite;
 }

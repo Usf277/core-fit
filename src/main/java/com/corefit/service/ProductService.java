@@ -3,13 +3,12 @@ package com.corefit.service;
 import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.ProductDto;
 import com.corefit.dto.ProductRequest;
-import com.corefit.entity.Market;
-import com.corefit.entity.Product;
-import com.corefit.entity.SubCategory;
+import com.corefit.entity.*;
+import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.repository.MarketRepo;
-import com.corefit.repository.ProductRepo;
-import com.corefit.repository.SubCategoryRepo;
+import com.corefit.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,31 +20,83 @@ import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
-    private final ProductRepo productRepo;
-    private final MarketRepo marketRepo;
-    private final SubCategoryRepo subCategoryRepo;
-    private final FilesService filesService;
+    @Autowired
+    private ProductRepo productRepo;
+    @Autowired
+    private MarketRepo marketRepo;
+    @Autowired
+    private SubCategoryRepo subCategoryRepo;
+    @Autowired
+    private FilesService filesService;
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private UserRepo userRepo;
+    @Autowired
+    private FavouritesRepo favouritesRepo;
 
-    public ProductService(ProductRepo productRepo, MarketRepo marketRepo, SubCategoryRepo subCategoryRepo, FilesService filesService) {
-        this.productRepo = productRepo;
-        this.marketRepo = marketRepo;
-        this.subCategoryRepo = subCategoryRepo;
-        this.filesService = filesService;
-    }
-
-    public GeneralResponse<?> findById(long id) {
+    public GeneralResponse<?> findById(long id, HttpServletRequest httpRequest) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Product not found"));
+
+        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new GeneralException("User not found"));
+
+        boolean isFavourite = false;
+        if (user.getType() == UserType.GENERAL) {
+            Optional<Favourites> favouritesOptional = favouritesRepo.findByUser_Id(userId);
+            if (favouritesOptional.isPresent()) {
+                isFavourite = favouritesOptional.get().getProducts()
+                        .stream()
+                        .anyMatch(favProduct -> favProduct.getId() == id);
+            }
+        }
+
+        product.setFavourite(isFavourite);
 
         return new GeneralResponse<>("Success", product);
     }
 
-    public Page<Product> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name) {
+
+    public Page<ProductDto> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
         size = (size == null || size <= 0) ? 5 : size;
         page = (page == null || page < 1) ? 1 : page;
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
-        return productRepo.findAllByFilters(marketId, subCategoryId, name, pageable);
+        Page<Product> productsPage = productRepo.findAllByFilters(marketId, subCategoryId, name, pageable);
+
+        long userId = -1;
+        Set<Long> favouriteProductIds = new HashSet<>();
+
+        try {
+            userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
+
+            long finalUserId = userId;
+            userRepo.findById(userId).ifPresent(user -> {
+                if (user.getType() == UserType.GENERAL) {
+                    favouritesRepo.findByUser_Id(finalUserId).ifPresent(favourites -> {
+                        favouriteProductIds.addAll(
+                                favourites.getProducts().stream()
+                                        .map(Product::getId)
+                                        .collect(Collectors.toSet())
+                        );
+                    });
+                }
+            });
+
+        } catch (Exception e) {
+            System.out.println("Error retrieving user favorites: " + e.getMessage());
+        }
+
+        Set<Long> finalFavouriteProductIds = favouriteProductIds;
+
+        return productsPage.map(product -> {
+            ProductDto productDto = mapToDto(product);
+            productDto.setFavourite(finalFavouriteProductIds.contains(product.getId()));
+            return productDto;
+        });
     }
 
 
@@ -131,6 +182,7 @@ public class ProductService {
                 .marketName(product.getMarket().getName())
                 .images(product.getImages())
                 .isHidden(product.isHidden())
+                .isFavourite(product.isFavourite())
                 .build();
     }
 

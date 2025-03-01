@@ -4,6 +4,7 @@ import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.ProductRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,9 @@ public class ProductController {
     }
 
     @GetMapping("/find_by_id")
-    public ResponseEntity<GeneralResponse<?>> getProduct(@RequestParam long id) {
+    public ResponseEntity<GeneralResponse<?>> getProduct(@RequestParam long id, HttpServletRequest request) {
         try {
-            GeneralResponse<?> response = productService.findById(id);
+            GeneralResponse<?> response = productService.findById(id, request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -35,8 +36,9 @@ public class ProductController {
     public ResponseEntity<?> getAllProduct(@RequestParam int page, @RequestParam int size
             , @RequestParam(required = false) Long marketId
             , @RequestParam(required = false) Long subCategoryId
-            , @RequestParam(required = false) String name) {
-        return ResponseEntity.ok(productService.getAll(page, size, marketId, subCategoryId, name));
+            , @RequestParam(required = false) String name
+            , HttpServletRequest request) {
+        return ResponseEntity.ok(productService.getAll(page, size, marketId, subCategoryId, name, request));
     }
 
     @PostMapping(value = "/add_product", consumes = {"multipart/form-data"})

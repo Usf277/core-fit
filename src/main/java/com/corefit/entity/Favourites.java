@@ -3,6 +3,7 @@ package com.corefit.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,10 +23,6 @@ public class Favourites {
     private User user;
 
     @ManyToMany
-    @JoinTable(
-            name = "favourites_products",
-            joinColumns = @JoinColumn(name = "favourites_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> products;
+    @JoinTable(name = "favourites_products", joinColumns = @JoinColumn(name = "favourites_id"))
+    private List<Product> products = new ArrayList<>();
 }

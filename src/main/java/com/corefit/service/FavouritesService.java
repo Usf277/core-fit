@@ -2,6 +2,7 @@ package com.corefit.service;
 
 import com.corefit.dto.FavouriteRequest;
 import com.corefit.dto.GeneralResponse;
+import com.corefit.dto.ProductDto;
 import com.corefit.entity.Favourites;
 import com.corefit.entity.Product;
 import com.corefit.entity.User;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FavouritesService {
@@ -29,19 +31,30 @@ public class FavouritesService {
     public GeneralResponse<?> getFavourites(HttpServletRequest httpRequest) {
         try {
             long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
-            Map<String, Object> data = new HashMap<>();
 
             Optional<Favourites> favouritesOptional = favouritesRepo.findByUser_Id(userId);
 
             if (favouritesOptional.isEmpty()) {
-                data.put("products", new ArrayList<>());
-                return new GeneralResponse<>("Your favourites list is empty", data);
+                return new GeneralResponse<>("Your favourites list is empty", new ArrayList<>());
             }
 
-            List<Product> favouriteProducts = favouritesOptional.get().getProducts();
+            List<ProductDto> favouriteProducts = favouritesOptional.get().getProducts()
+                    .stream()
+                    .map(product -> ProductDto.builder()
+                            .id(product.getId())
+                            .name(product.getName())
+                            .description(product.getDescription())
+                            .price(product.getPrice())
+                            .offer(product.getOffer())
+                            .subCategoryName(product.getSubCategory().getName())
+                            .marketName(product.getMarket().getName())
+                            .images(product.getImages())
+                            .isHidden(product.isHidden())
+                            .isFavourite(true)
+                            .build())
+                    .collect(Collectors.toList());
 
-            data.put("products", favouriteProducts);
-            return new GeneralResponse<>("Favourites retrieved successfully", data);
+            return new GeneralResponse<>("Favourites retrieved successfully", favouriteProducts);
 
         } catch (Exception e) {
             throw new GeneralException("An error occurred: " + e.getMessage());
@@ -58,10 +71,12 @@ public class FavouritesService {
             Product product = productRepo.findById(favouriteRequest.getProductId())
                     .orElseThrow(() -> new GeneralException("Product not found"));
 
-
-            Favourites favourites = favouritesRepo.findByUser_Id(userId).orElse(new Favourites());
-
-            favourites.setUser(user);
+            Favourites favourites = favouritesRepo.findByUser_Id(userId).orElseGet(() -> {
+                Favourites newFavourites = new Favourites();
+                newFavourites.setUser(user);
+                newFavourites.setProducts(new ArrayList<>());
+                return newFavourites;
+            });
 
             List<Product> favouriteProducts = favourites.getProducts();
 
@@ -75,13 +90,13 @@ public class FavouritesService {
                 return new GeneralResponse<>("Invalid action type. Use 'add' or 'remove'");
             }
 
-            favourites.setProducts(favouriteProducts);
             favouritesRepo.save(favourites);
 
-            return new GeneralResponse<>("Favourites updated successfully", favouriteProducts);
+            return new GeneralResponse<>("Favourites updated successfully");
 
         } catch (Exception e) {
             throw new GeneralException("An error occurred: " + e.getMessage());
         }
     }
+
 }
