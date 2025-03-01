@@ -1,14 +1,7 @@
 package com.corefit.dto;
 
-import com.corefit.entity.Market;
-import com.corefit.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

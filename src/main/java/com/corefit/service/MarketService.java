@@ -26,7 +26,6 @@ import java.util.Optional;
 
 @Service
 public class MarketService {
-
     @Autowired
     private MarketRepo marketRepo;
     @Autowired

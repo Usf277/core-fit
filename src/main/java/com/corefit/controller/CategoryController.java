@@ -13,11 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CategoryController {
     @Autowired
-    private final CategoryService categoryService;
-
-    public CategoryController(CategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
+    private CategoryService categoryService;
 
     @GetMapping("/categories")
     public ResponseEntity<GeneralResponse<?>> getAllCategories() {

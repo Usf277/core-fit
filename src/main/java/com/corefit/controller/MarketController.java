@@ -5,18 +5,15 @@ import com.corefit.dto.MarketRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.MarketService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class MarketController {
-
-    private final MarketService marketService;
-
-    public MarketController(MarketService marketService) {
-        this.marketService = marketService;
-    }
+    @Autowired
+    private MarketService marketService;
 
     @GetMapping("/find_market")
     public ResponseEntity<GeneralResponse<?>> getMarket(@RequestParam long id) {

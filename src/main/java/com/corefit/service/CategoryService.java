@@ -4,6 +4,7 @@ import com.corefit.dto.CategoryRequest;
 import com.corefit.dto.GeneralResponse;
 import com.corefit.entity.Category;
 import com.corefit.repository.CategoryRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -12,13 +13,10 @@ import java.util.Map;
 
 @Service
 public class CategoryService {
-    private final CategoryRepo categoryRepo;
-    private final FilesService filesService;
-
-    public CategoryService(CategoryRepo categoryRepo, FilesService filesService) {
-        this.categoryRepo = categoryRepo;
-        this.filesService = filesService;
-    }
+    @Autowired
+    private CategoryRepo categoryRepo;
+    @Autowired
+    private FilesService filesService;
 
     public Category findById(long id) {
         return categoryRepo.findById(id).get();

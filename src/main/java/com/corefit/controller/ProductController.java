@@ -5,6 +5,7 @@ import com.corefit.dto.ProductRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +16,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/products")
 public class ProductController {
-    private final ProductService productService;
-
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
+    @Autowired
+    private ProductService productService;
 
     @GetMapping("/find_by_id")
     public ResponseEntity<GeneralResponse<?>> getProduct(@RequestParam long id, HttpServletRequest request) {

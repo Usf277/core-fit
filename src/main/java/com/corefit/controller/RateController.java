@@ -4,6 +4,7 @@ import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.RateRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.RateService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,11 +12,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/rates")
 public class RateController {
-    private final RateService rateService;
-
-    public RateController(RateService rateService) {
-        this.rateService = rateService;
-    }
+    @Autowired
+    private RateService rateService;
 
     @GetMapping("/find_by_market")
     public ResponseEntity<GeneralResponse<?>> getRatesByMarket(

@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class GovernorateController {
-
     @Autowired
     private GovernorateService governorateService;
 

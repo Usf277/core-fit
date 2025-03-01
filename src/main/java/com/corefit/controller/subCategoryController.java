@@ -4,18 +4,15 @@ import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.SubCategoryRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.SubCategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class subCategoryController {
-
-    private final SubCategoryService subCategoryService;
-
-    public subCategoryController(SubCategoryService subCategoryService) {
-        this.subCategoryService = subCategoryService;
-    }
+    @Autowired
+    private  SubCategoryService subCategoryService;
 
     @GetMapping("/sub_categories")
     public ResponseEntity<?> getSubCategoriesByMarketId(@RequestParam long marketId) {
