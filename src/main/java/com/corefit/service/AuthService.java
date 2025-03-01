@@ -10,6 +10,7 @@ import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,31 +19,31 @@ import java.util.Map;
 
 @Service
 public class AuthService {
-
-    private final UserRepo userRepository;
-    private final JwtUtil jwtUtil;
-    private final PasswordEncoder passwordEncoder;
-    private final GovernorateService governorateService;
-    private final CityService cityService;
-    private final EmailService emailService;
-    private final OtpService otpService;
-    private final FilesService filesService;
-
-    public AuthService(UserRepo userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, GovernorateService governorateService, CityService cityService, EmailService emailService, OtpService otpService, FilesService filesService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.governorateService = governorateService;
-        this.cityService = cityService;
-        this.emailService = emailService;
-        this.otpService = otpService;
-        this.filesService = filesService;
-    }
+    @Autowired
+    private UserRepo userRepository;
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private GovernorateService governorateService;
+    @Autowired
+    private CityService cityService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private OtpService otpService;
+    @Autowired
+    private FilesService filesService;
 
     public GeneralResponse<?> login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .filter(u -> passwordEncoder.matches(request.getPassword(), u.getPassword()))
                 .orElseThrow(() -> new GeneralException("Invalid Credentials"));
+
+        if (!user.getType().equals(request.getType())) {
+            throw new GeneralException("Type Not Match For This User");
+        }
 
         String token = jwtUtil.generateToken(user.getId());
         Map<String, Object> data = Map.of("token", token, "user", toUserDto(user));
@@ -75,6 +76,10 @@ public class AuthService {
     public GeneralResponse<?> forgetPassword(ForgetRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new GeneralException("There is no account related to this email"));
+
+        if (!user.getType().equals(request.getType())) {
+            throw new GeneralException("Type Not Match For This User");
+        }
 
         String otp = otpService.generateOtp(user.getEmail());
         emailService.sendOtpEmail(user.getEmail(), otp);
@@ -219,7 +224,7 @@ public class AuthService {
     }
 
     public String extractUserIdFromRequest(HttpServletRequest request) {
-        final String authorizationHeader = request.getHeader("Authorization");
+        String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             throw new GeneralException("Missing or invalid Authorization header");
         }
