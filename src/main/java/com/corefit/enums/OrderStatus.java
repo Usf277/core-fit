@@ -1,10 +1,10 @@
 package com.corefit.enums;
 
 public enum OrderStatus {
-    ORDER_RECEIVED,
-    ORDER_CONFIRMED,
-    ORDER_UNDER_PREPARATION,
-    ORDER_UNDER_DELIVERY,
-    ORDER_DELIVERED,
-    ORDER_CANCELED,
+    ORDER_RECEIVED, // new
+    ORDER_CONFIRMED,  // current
+    ORDER_UNDER_PREPARATION, // current
+    ORDER_UNDER_DELIVERY, // current
+    ORDER_DELIVERED, // completed
+    ORDER_CANCELED,// completed
 }

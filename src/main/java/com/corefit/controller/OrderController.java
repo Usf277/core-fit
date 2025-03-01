@@ -38,9 +38,11 @@ public class OrderController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<GeneralResponse<?>> getOrders(@RequestParam(required = false) String status, HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<?>> getOrders(@RequestParam(required = false) String status
+            , @RequestParam(required = false) Long marketId
+            , HttpServletRequest httpRequest) {
         try {
-            GeneralResponse<?> response = orderService.getOrders(status, httpRequest);
+            GeneralResponse<?> response = orderService.getOrders(status, marketId, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

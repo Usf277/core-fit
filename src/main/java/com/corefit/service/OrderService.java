@@ -4,6 +4,7 @@ import com.corefit.dto.*;
 import com.corefit.entity.*;
 import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;
+import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.CartRepo;
 import com.corefit.repository.OrderRepo;
@@ -97,18 +98,54 @@ public class OrderService {
         return new GeneralResponse<>("Success", mapToOrderResponse(order));
     }
 
-    public GeneralResponse<?> getOrders(String status, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getOrders(String status, Long marketId, HttpServletRequest httpRequest) {
         long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
 
-        if (status == null || status.trim().isEmpty()) {
-            status = "current";
-        }
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new GeneralException("User not found"));
 
         List<Order> orders;
-        if ("previous".equalsIgnoreCase(status)) {
-            orders = orderRepo.findPreviousOrdersByUserId(userId);
+
+        if (user.getType().equals(UserType.GENERAL)) {
+            if (status == null || status.trim().isEmpty()) {
+                status = "current";
+            }
+
+            if ("previous".equalsIgnoreCase(status)) {
+                orders = orderRepo.findPreviousOrdersByUserId(userId);
+            } else {
+                orders = orderRepo.findActiveOrdersByUserId(userId);
+            }
+
         } else {
-            orders = orderRepo.findActiveOrdersByUserId(userId);
+            if (marketId == null) {
+                throw new GeneralException("Market ID is required for providers.");
+            }
+
+            if (status == null || status.trim().isEmpty()) {
+                status = "new";
+            }
+
+            switch (status.toLowerCase()) {
+                case "new":
+                    orders = orderRepo.findMarketOrdersByStatus(marketId, OrderStatus.ORDER_RECEIVED);
+                    break;
+                case "current":
+                    orders = orderRepo.findMarketOrdersByStatuses(marketId, List.of(
+                            OrderStatus.ORDER_CONFIRMED,
+                            OrderStatus.ORDER_UNDER_PREPARATION,
+                            OrderStatus.ORDER_UNDER_DELIVERY
+                    ));
+                    break;
+                case "completed":
+                    orders = orderRepo.findMarketOrdersByStatuses(marketId, List.of(
+                            OrderStatus.ORDER_DELIVERED,
+                            OrderStatus.ORDER_CANCELED
+                    ));
+                    break;
+                default:
+                    return new GeneralResponse<>("Invalid status. Use 'new', 'current', or 'completed'");
+            }
         }
 
         List<OrderResponse> orderResponses = orders.stream().map(this::mapToOrderResponse).collect(Collectors.toList());
@@ -146,7 +183,6 @@ public class OrderService {
         return new GeneralResponse<>("Order canceled successfully");
     }
 
-
     private OrderResponse mapToOrderResponse(Order order) {
         List<OrderItemResponse> orderItems = order.getOrderItems().stream()
                 .map(item -> new OrderItemResponse(
@@ -164,5 +200,4 @@ public class OrderService {
                 , order.getLatitude(), order.getLongitude(), order.getAdditionalInfo(), order.getStatus(), order.getPaymentMethod(),
                 order.getTotalPrice(), order.getMarket(), orderItems);
     }
-
 }
