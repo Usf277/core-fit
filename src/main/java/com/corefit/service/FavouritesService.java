@@ -38,8 +38,7 @@ public class FavouritesService {
                 return new GeneralResponse<>("Your favourites list is empty", new ArrayList<>());
             }
 
-            List<ProductDto> favouriteProducts = favouritesOptional.get().getProducts()
-                    .stream()
+            List<ProductDto> favouriteProducts = favouritesOptional.get().getProducts().stream()
                     .map(product -> ProductDto.builder()
                             .id(product.getId())
                             .name(product.getName())

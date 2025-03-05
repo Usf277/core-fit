@@ -5,6 +5,6 @@ public enum OrderStatus {
     ORDER_CONFIRMED,  // current
     ORDER_UNDER_PREPARATION, // current
     ORDER_UNDER_DELIVERY, // current
-    ORDER_DELIVERED, // completed
-    ORDER_CANCELED,// completed
+    ORDER_DELIVERED, /// completed   // previous
+    ORDER_CANCELED, /// completed     // previous
 }

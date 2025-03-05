@@ -1,4 +1,4 @@
-package com.corefit.config;
+package com.corefit.utils;
 
 import java.security.SecureRandom;
 import java.util.Base64;

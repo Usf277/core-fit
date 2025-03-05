@@ -106,47 +106,34 @@ public class OrderService {
 
         List<Order> orders;
 
-        if (user.getType().equals(UserType.GENERAL)) {
-            if (status == null || status.trim().isEmpty()) {
-                status = "current";
-            }
-
+        if (user.getType() == UserType.GENERAL) {
             if ("previous".equalsIgnoreCase(status)) {
                 orders = orderRepo.findPreviousOrdersByUserId(userId);
             } else {
                 orders = orderRepo.findActiveOrdersByUserId(userId);
             }
-
         } else {
             if (marketId == null) {
                 throw new GeneralException("Market ID is required for providers.");
             }
-
-            if (status == null || status.trim().isEmpty()) {
+            if (status == null || status.isEmpty())
                 status = "new";
-            }
 
             switch (status.toLowerCase()) {
                 case "new":
-                    orders = orderRepo.findMarketOrdersByStatus(marketId, OrderStatus.ORDER_RECEIVED);
+                    orders = orderRepo.findNewMarketOrders(marketId);
                     break;
                 case "current":
-                    orders = orderRepo.findMarketOrdersByStatuses(marketId, List.of(
-                            OrderStatus.ORDER_CONFIRMED,
-                            OrderStatus.ORDER_UNDER_PREPARATION,
-                            OrderStatus.ORDER_UNDER_DELIVERY
-                    ));
+                    orders = orderRepo.findCurrentMarketOrders(marketId);
                     break;
                 case "completed":
-                    orders = orderRepo.findMarketOrdersByStatuses(marketId, List.of(
-                            OrderStatus.ORDER_DELIVERED,
-                            OrderStatus.ORDER_CANCELED
-                    ));
+                    orders = orderRepo.findCompletedMarketOrders(marketId);
                     break;
                 default:
-                    return new GeneralResponse<>("Invalid status. Use 'new', 'current', or 'completed'");
+                    throw new GeneralException("Invalid status. Use 'new', 'current', or 'completed'");
             }
         }
+
 
         List<OrderResponse> orderResponses = orders.stream().map(this::mapToOrderResponse).collect(Collectors.toList());
         return new GeneralResponse<>("Success", orderResponses);
@@ -156,33 +143,99 @@ public class OrderService {
     public GeneralResponse<?> cancelOrder(long orderId, HttpServletRequest httpRequest) {
         long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
 
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new GeneralException("User not found"));
+
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new GeneralException("Order not found"));
 
-        if (!order.getUser().getId().equals(userId)) {
+        if (user.getType() == UserType.GENERAL) {
+            if (!order.getUser().getId().equals(userId)) {
+                throw new GeneralException("User not authorized to cancel this order");
+            }
+
+            if (order.getStatus() == OrderStatus.ORDER_DELIVERED || order.getStatus() == OrderStatus.ORDER_UNDER_DELIVERY) {
+                throw new GeneralException("Order has already been delivered and cannot be canceled");
+            } else if (order.getStatus() == OrderStatus.ORDER_CANCELED) {
+                throw new GeneralException("Order is already canceled");
+            }
+
+            if (order.getPaymentMethod() == PaymentMethod.WALLET) {
+                try {
+                    walletService.deposit(order.getUser().getId(), order.getTotalPrice());
+                } catch (Exception e) {
+                    throw new GeneralException("Refund failed: " + e.getMessage());
+                }
+            }
+            order.setStatus(OrderStatus.ORDER_CANCELED);
+            orderRepo.save(order);
+
+            return new GeneralResponse<>("Order canceled successfully");
+        } else {
             throw new GeneralException("User not authorized to cancel this order");
         }
+    }
 
-        if (order.getStatus() == OrderStatus.ORDER_DELIVERED || order.getStatus() == OrderStatus.ORDER_UNDER_DELIVERY) {
-            throw new GeneralException("Order has already been delivered and cannot be canceled");
-        } else if (order.getStatus() == OrderStatus.ORDER_CANCELED) {
-            throw new GeneralException("Order is already canceled");
+    public GeneralResponse<?> changeStatus(ChangeStatusRequest request, HttpServletRequest httpRequest) {
+        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new GeneralException("User not found"));
+
+        Order order = orderRepo.findById(request.getOrderId())
+                .orElseThrow(() -> new GeneralException("Order not found"));
+
+
+        if (user.getType() != UserType.PROVIDER) {
+            throw new GeneralException("User is not a provider");
         }
 
-        if (order.getPaymentMethod() == PaymentMethod.WALLET) {
-            try {
-                walletService.deposit(httpRequest, order.getTotalPrice());
-            } catch (Exception e) {
-                throw new GeneralException("Refund failed: " + e.getMessage());
+        boolean isProviderMarket = user.getMarket().stream().map(Market::getId).collect(Collectors.toSet()).contains(order.getMarket().getId());
+        if (!isProviderMarket) {
+            throw new GeneralException("Market does not belong to this provider");
+        }
+
+        OrderStatus newStatus = switch (request.getStatus().toLowerCase()) {
+            case "cancelled" -> OrderStatus.ORDER_CANCELED;
+            case "confirmed" -> OrderStatus.ORDER_CONFIRMED;
+            case "under_prep" -> OrderStatus.ORDER_UNDER_PREPARATION;
+            case "under_deliver" -> OrderStatus.ORDER_UNDER_DELIVERY;
+            case "delivered" -> OrderStatus.ORDER_DELIVERED;
+            default -> throw new GeneralException("Invalid status provided: " + request.getStatus());
+        };
+
+
+        if (order.getStatus() == newStatus) {
+            throw new GeneralException("Order is already in status: " + newStatus);
+        }
+
+        if (newStatus.ordinal() <= order.getStatus().ordinal()) {
+            throw new GeneralException("Cannot move from " + order.getStatus() + " to " + newStatus);
+        }
+
+        if (newStatus == OrderStatus.ORDER_CANCELED) {
+            if (order.getStatus() == OrderStatus.ORDER_DELIVERED || order.getStatus() == OrderStatus.ORDER_UNDER_DELIVERY) {
+                throw new GeneralException("Order has already been delivered and cannot be canceled");
+            } else if (order.getStatus() == OrderStatus.ORDER_CANCELED) {
+                throw new GeneralException("Order is already canceled");
+            }
+
+            if (order.getPaymentMethod() == PaymentMethod.WALLET) {
+                try {
+                    walletService.deposit(order.getUser().getId(), order.getTotalPrice());
+                } catch (Exception e) {
+                    throw new GeneralException("Refund failed: " + e.getMessage());
+                }
             }
         }
 
-        order.setStatus(OrderStatus.ORDER_CANCELED);
+        order.setStatus(newStatus);
         orderRepo.save(order);
 
-        return new GeneralResponse<>("Order canceled successfully");
+        return new GeneralResponse<>("Order status updated successfully to: " + order.getStatus(), mapToOrderResponse(order));
     }
 
+    // Helper method
     private OrderResponse mapToOrderResponse(Order order) {
         List<OrderItemResponse> orderItems = order.getOrderItems().stream()
                 .map(item -> new OrderItemResponse(
@@ -201,3 +254,4 @@ public class OrderService {
                 order.getTotalPrice(), order.getMarket(), orderItems);
     }
 }
+

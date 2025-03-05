@@ -1,6 +1,5 @@
 package com.corefit.service;
 
-import com.corefit.config.JwtUtil;
 import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.MarketRequest;
 import com.corefit.entity.Category;
@@ -20,9 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class MarketService {
@@ -49,7 +46,7 @@ public class MarketService {
         Map<String, Object> data = new HashMap<>();
         data.put("Market", market);
         data.put("rateCount", rateCount != null ? rateCount : 0);
-        data.put("averageRate",  averageRate != null ? averageRate : 0.0);
+        data.put("averageRate", averageRate != null ? averageRate : 0.0);
 
         return new GeneralResponse<>("Success", data);
     }
@@ -63,13 +60,12 @@ public class MarketService {
     }
 
     public GeneralResponse<?> insert(MarketRequest request, HttpServletRequest httpRequest) {
-        String userId = authService.extractUserIdFromRequest(httpRequest);
-        int userIdInt = Integer.parseInt(userId);
+        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
 
-        User user = userRepo.findById(userIdInt)
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new GeneralException("User not found"));
 
-        if (!UserType.PROVIDER.equals(user.getType())) {
+        if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("User is not a provider");
         }
 
@@ -103,13 +99,12 @@ public class MarketService {
     }
 
     public GeneralResponse<?> update(MarketRequest request, HttpServletRequest httpRequest) {
-        String userId = authService.extractUserIdFromRequest(httpRequest);
-        int userIdInt = Integer.parseInt(userId);
+        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
 
         Market market = marketRepo.findById(request.getId())
                 .orElseThrow(() -> new GeneralException("Market not found"));
 
-        if (market.getUser().getId() != userIdInt) {
+        if (market.getUser().getId() != userId) {
             throw new GeneralException("User is not owner of this market");
         }
 
@@ -142,13 +137,12 @@ public class MarketService {
     }
 
     public GeneralResponse<?> delete(long id, HttpServletRequest httpRequest) {
-        String userId = authService.extractUserIdFromRequest(httpRequest);
-        int userIdInt = Integer.parseInt(userId);
+        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
 
         Market market = marketRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Market not found"));
 
-        if (market.getUser().getId() != userIdInt) {
+        if (market.getUser().getId() != userId) {
             throw new GeneralException("User is not owner of this market");
         }
 
@@ -167,13 +161,12 @@ public class MarketService {
     }
 
     public GeneralResponse<?> changeStatus(long id, HttpServletRequest httpRequest) {
-        String userId = authService.extractUserIdFromRequest(httpRequest);
-        int userIdInt = Integer.parseInt(userId);
+        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
 
         Market market = marketRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Market not found"));
 
-        if (market.getUser().getId() != userIdInt) {
+        if (market.getUser().getId() != userId) {
             throw new GeneralException("User is not owner of this market");
         }
         market.setOpened(!market.isOpened());

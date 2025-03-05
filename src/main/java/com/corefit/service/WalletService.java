@@ -40,9 +40,7 @@ public class WalletService {
         userRepo.save(user);
     }
 
-    public void deposit(HttpServletRequest request, double value) {
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(request));
-
+    public void deposit(long userId, double value) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new GeneralException("User not found"));
 

@@ -47,7 +47,7 @@ public class ProductController {
             @RequestParam("offer") int offer,
             @RequestParam("marketId") Long marketId,
             @RequestParam("subCategoryId") Long subCategoryId,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+            @RequestPart(value = "images", required = false) List<MultipartFile> images, HttpServletRequest httpRequest) {
 
         try {
             ProductRequest productRequest = new ProductRequest();
@@ -58,7 +58,7 @@ public class ProductController {
             productRequest.setMarketId(marketId);
             productRequest.setSubCategoryId(subCategoryId);
 
-            GeneralResponse<?> response = productService.insert(productRequest, images);
+            GeneralResponse<?> response = productService.insert(productRequest, images, httpRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (GeneralException e) {

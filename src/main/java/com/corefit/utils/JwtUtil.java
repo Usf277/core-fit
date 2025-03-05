@@ -1,4 +1,4 @@
-package com.corefit.config;
+package com.corefit.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

@@ -1,6 +1,7 @@
 package com.corefit.service;
 
-import com.corefit.config.JwtUtil;
+import com.corefit.utils.Helpers;
+import com.corefit.utils.JwtUtil;
 import com.corefit.dto.*;
 import com.corefit.entity.City;
 import com.corefit.entity.User;
@@ -20,7 +21,7 @@ import java.util.Map;
 @Service
 public class AuthService {
     @Autowired
-    private UserRepo userRepository;
+    private UserRepo userRepo;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
@@ -35,9 +36,11 @@ public class AuthService {
     private OtpService otpService;
     @Autowired
     private FilesService filesService;
+    @Autowired
+    private Helpers helper;
 
     public GeneralResponse<?> login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepo.findByEmail(request.getEmail())
                 .filter(u -> passwordEncoder.matches(request.getPassword(), u.getPassword()))
                 .orElseThrow(() -> new GeneralException("Invalid Credentials"));
 
@@ -46,14 +49,14 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getId());
-        Map<String, Object> data = Map.of("token", token, "user", toUserDto(user));
+        Map<String, Object> data = Map.of("token", token, "user", helper.toUserDto(user));
 
         return new GeneralResponse<>("Login Successful", data);
     }
 
     // start register methods
     public GeneralResponse<Object> canRegister(RegisterRequest request) {
-        validateEmailAndPhone(request.getEmail(), request.getPhone());
+        helper.validateEmailAndPhone(request.getEmail(), request.getPhone());
 
         String otp = otpService.generateOtp(request.getEmail());
         emailService.sendOtpEmail(request.getEmail(), otp);
@@ -61,20 +64,20 @@ public class AuthService {
     }
 
     public GeneralResponse<?> register(RegisterRequest request) {
-        validateEmailAndPhone(request.getEmail(), request.getPhone());
+        helper.validateEmailAndPhone(request.getEmail(), request.getPhone());
 
         if (!otpService.validateOtp(request.getEmail(), request.getOtp())) {
             throw new GeneralException("Invalid OTP");
         }
 
         User user = createUser(request);
-        userRepository.save(user);
+        userRepo.save(user);
         return new GeneralResponse<>("User registered successfully!");
     }
 
     // start reset password methods
     public GeneralResponse<?> forgetPassword(ForgetRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new GeneralException("There is no account related to this email"));
 
         if (!user.getType().equals(request.getType())) {
@@ -95,7 +98,7 @@ public class AuthService {
 
     @Transactional
     public GeneralResponse<?> resetPassword(ForgetRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new GeneralException("No account found with this email"));
 
         if (!otpService.validateOtp(request.getEmail(), request.getOtp())) {
@@ -103,49 +106,40 @@ public class AuthService {
         }
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
+        userRepo.save(user);
         return new GeneralResponse<>("Password reset successfully");
     }
 
     public GeneralResponse<?> getProfile(long id) {
-        User user = userRepository.findById(id)
+        User user = userRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("No account found with this id"));
 
-        return new GeneralResponse<>("Successfully retrieved profile", toUserDto(user));
+        return new GeneralResponse<>("Successfully retrieved profile", helper.toUserDto(user));
     }
 
     public GeneralResponse<?> editProfile(RegisterRequest request, HttpServletRequest httpRequest) {
-        String userId = extractUserIdFromRequest(httpRequest);
+        String userId = helper.extractUserIdFromRequest(httpRequest);
         if (!userId.equals(String.valueOf(request.getId()))) {
             throw new GeneralException("Invalid user ID");
         }
 
-        User user = userRepository.findById(request.getId())
+        User user = userRepo.findById(request.getId())
                 .orElseThrow(() -> new GeneralException("No account found with this id"));
 
         updateUser(request, user);
-        userRepository.save(user);
+        userRepo.save(user);
 
-        return new GeneralResponse<>("Profile updated successfully", toUserDto(user));
+        return new GeneralResponse<>("Profile updated successfully", helper.toUserDto(user));
     }
 
     public GeneralResponse<?> deleteAccount(HttpServletRequest httpRequest) {
-        String userId = extractUserIdFromRequest(httpRequest);
-        userRepository.deleteById(Long.parseLong(userId));
+        String userId = helper.extractUserIdFromRequest(httpRequest);
+        userRepo.deleteById(Long.parseLong(userId));
         return new GeneralResponse<>("Account deleted successfully");
     }
 
-    // Helper Methods
-    private void validateEmailAndPhone(String email, String phone) {
-        if (userRepository.existsByEmail(email)) {
-            throw new GeneralException("Email already exists.");
-        }
-        if (userRepository.existsByPhone(phone)) {
-            throw new GeneralException("Phone number already exists.");
-        }
-    }
-
-    private User createUser(RegisterRequest request) {
+    // Helper method
+    public User createUser(RegisterRequest request) {
         City city = cityService.findById(request.getCityId());
 
         String imagePath = null;
@@ -172,12 +166,12 @@ public class AuthService {
                 .build();
     }
 
-    private void updateUser(RegisterRequest request, User user) {
-        if (!user.getEmail().equals(request.getEmail()) && userRepository.findByEmail(request.getEmail()).isPresent()) {
+    public void updateUser(RegisterRequest request, User user) {
+        if (!user.getEmail().equals(request.getEmail()) && userRepo.findByEmail(request.getEmail()).isPresent()) {
             throw new GeneralException("This email is already used in another account");
         }
 
-        if (!user.getPhone().equals(request.getPhone()) && userRepository.findByPhone(request.getPhone()).isPresent()) {
+        if (!user.getPhone().equals(request.getPhone()) && userRepo.findByPhone(request.getPhone()).isPresent()) {
             throw new GeneralException("This phone is already used in another account");
         }
 
@@ -209,26 +203,17 @@ public class AuthService {
         user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
     }
 
-    private UserDto toUserDto(User user) {
-        return new UserDto(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getBirthDate(),
-                user.getGovernorate().getName(),
-                user.getCity().getName(),
-                user.getGender(),
-                user.getImageUrl()
-        );
-    }
-
     public String extractUserIdFromRequest(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
+
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             throw new GeneralException("Missing or invalid Authorization header");
         }
-        return jwtUtil.extractUserId(authorizationHeader.substring(7));
-    }
+        String userId = jwtUtil.extractUserId(authorizationHeader.substring(7));
 
+        if (userId == null || userId.isBlank()) {
+            throw new GeneralException("Invalid or missing user ID in token");
+        }
+        return userId;
+    }
 }

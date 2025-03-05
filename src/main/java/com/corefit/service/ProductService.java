@@ -48,8 +48,7 @@ public class ProductService {
         if (user.getType() == UserType.GENERAL) {
             Optional<Favourites> favouritesOptional = favouritesRepo.findByUser_Id(userId);
             if (favouritesOptional.isPresent()) {
-                isFavourite = favouritesOptional.get().getProducts()
-                        .stream()
+                isFavourite = favouritesOptional.get().getProducts().stream()
                         .anyMatch(favProduct -> favProduct.getId() == id);
             }
         }
@@ -101,12 +100,22 @@ public class ProductService {
 
 
     @Transactional
-    public GeneralResponse<?> insert(ProductRequest productRequest, List<MultipartFile> images) {
+    public GeneralResponse<?> insert(ProductRequest productRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
+        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new GeneralException("User not found"));
+
+        if (user.getType() != UserType.PROVIDER) {
+            throw new GeneralException("User is not a provider");
+        }
+
         Market market = marketRepo.findById(productRequest.getMarketId())
                 .orElseThrow(() -> new GeneralException("Market not found"));
 
         SubCategory subCategory = subCategoryRepo.findById(productRequest.getSubCategoryId())
                 .orElseThrow(() -> new GeneralException("Sub category not found"));
+
 
         List<String> imageUrls = uploadImages(images);
 
@@ -121,7 +130,6 @@ public class ProductService {
                 .build();
 
         productRepo.save(product);
-
         return new GeneralResponse<>("Product added successfully", product);
     }
 

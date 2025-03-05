@@ -1,5 +1,6 @@
 package com.corefit.controller;
 
+import com.corefit.dto.ChangeStatusRequest;
 import com.corefit.dto.GeneralResponse;
 import com.corefit.dto.OrderRequest;
 import com.corefit.exceptions.GeneralException;
@@ -60,4 +61,17 @@ public class OrderController {
                     .body(new GeneralResponse<>(e.getMessage()));
         }
     }
+
+    @PostMapping("/change_status")
+    public ResponseEntity<GeneralResponse<?>> changeStatus(@RequestBody ChangeStatusRequest request, HttpServletRequest httpRequest) {
+        try {
+            GeneralResponse<?> response = orderService.changeStatus(request, httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+
 }
