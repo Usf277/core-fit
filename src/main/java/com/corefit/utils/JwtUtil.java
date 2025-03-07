@@ -16,11 +16,10 @@ import java.util.Date;
 @Component
 public class JwtUtil {
     private static final String SECRET_KEY = "4T2a0VS7DC6FuXfEBKGqM/p/4Xb0tIQjJLFFKdMP6AY=";
-    private static final long EXPIRATION_TIME = 86400000;
+    private static final long EXPIRATION_TIME = 30L * 24 * 60 * 60 * 1000;
     private final Log logger = LogFactory.getLog(this.getClass());
 
     public String generateToken(long id) {
-
         return Jwts.builder()
                 .setSubject(String.valueOf(id))
                 .setIssuedAt(new Date())

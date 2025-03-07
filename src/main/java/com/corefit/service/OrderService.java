@@ -1,6 +1,10 @@
 package com.corefit.service;
 
-import com.corefit.dto.*;
+import com.corefit.dto.request.ChangeStatusRequest;
+import com.corefit.dto.request.OrderRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.response.OrderItemResponse;
+import com.corefit.dto.response.OrderResponse;
 import com.corefit.entity.*;
 import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;
@@ -8,7 +12,6 @@ import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.CartRepo;
 import com.corefit.repository.OrderRepo;
-import com.corefit.repository.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +26,6 @@ public class OrderService {
     @Autowired
     private OrderRepo orderRepo;
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
     private AuthService authService;
     @Autowired
     private CartRepo cartRepo;
@@ -35,10 +36,7 @@ public class OrderService {
 
     @Transactional
     public GeneralResponse<?> createOrder(OrderRequest orderRequest, HttpServletRequest httpRequest) {
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        User user = authService.extractUserFromRequest(httpRequest);
 
         Cart cart = cartRepo.findByUserId(user.getId());
 
@@ -88,7 +86,7 @@ public class OrderService {
     }
 
     public GeneralResponse<?> getOrder(Long orderId, HttpServletRequest httpRequest) {
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
         Order order = orderRepo.findById(orderId).orElseThrow(() -> new GeneralException("Order not found"));
 
         if (order.getUser().getId() != userId) {
@@ -99,10 +97,8 @@ public class OrderService {
     }
 
     public GeneralResponse<?> getOrders(String status, Long marketId, HttpServletRequest httpRequest) {
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
+        User user = authService.findUserById(userId);
 
         List<Order> orders;
 
@@ -141,10 +137,8 @@ public class OrderService {
 
     @Transactional
     public GeneralResponse<?> cancelOrder(long orderId, HttpServletRequest httpRequest) {
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
+        User user = authService.findUserById(userId);
 
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new GeneralException("Order not found"));
@@ -177,10 +171,8 @@ public class OrderService {
     }
 
     public GeneralResponse<?> changeStatus(ChangeStatusRequest request, HttpServletRequest httpRequest) {
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
+        User user = authService.findUserById(userId);
 
         Order order = orderRepo.findById(request.getOrderId())
                 .orElseThrow(() -> new GeneralException("Order not found"));
@@ -235,7 +227,7 @@ public class OrderService {
         return new GeneralResponse<>("Order status updated successfully to: " + order.getStatus(), mapToOrderResponse(order));
     }
 
-    // Helper method
+    /// Helper method
     private OrderResponse mapToOrderResponse(Order order) {
         List<OrderItemResponse> orderItems = order.getOrderItems().stream()
                 .map(item -> new OrderItemResponse(

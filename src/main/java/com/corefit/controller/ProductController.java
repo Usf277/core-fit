@@ -1,7 +1,7 @@
 package com.corefit.controller;
 
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.ProductRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.request.ProductRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.ProductService;
 import jakarta.servlet.http.HttpServletRequest;

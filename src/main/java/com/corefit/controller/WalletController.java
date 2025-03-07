@@ -1,6 +1,6 @@
 package com.corefit.controller;
 
-import com.corefit.dto.GeneralResponse;
+import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.WalletService;
 import jakarta.servlet.http.HttpServletRequest;

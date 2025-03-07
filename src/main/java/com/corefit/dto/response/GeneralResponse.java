@@ -1,4 +1,4 @@
-package com.corefit.dto;
+package com.corefit.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

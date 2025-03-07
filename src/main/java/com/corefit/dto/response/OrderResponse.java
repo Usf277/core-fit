@@ -1,15 +1,11 @@
-package com.corefit.dto;
+package com.corefit.dto.response;
 
 import com.corefit.entity.Market;
-import com.corefit.entity.OrderItem;
 import com.corefit.entity.User;
 import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;
-import com.corefit.repository.OrderItemRepo;
-import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter

@@ -1,23 +1,22 @@
-package com.corefit.dto;
+package com.corefit.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
-@Getter
 @Setter
+@Getter
 @Builder
-public class ProductDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class CartItemResponse {
     private long id;
     private String name;
     private String description;
     private double price;
     private int offer;
-    private String marketName;
     private String subCategoryName;
     private List<String> images;
-    private boolean isHidden;
-    private boolean isFavourite;
+    private int count;
+    private double total;
 }

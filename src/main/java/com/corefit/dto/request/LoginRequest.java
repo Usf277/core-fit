@@ -1,4 +1,4 @@
-package com.corefit.dto;
+package com.corefit.dto.request;
 
 import com.corefit.enums.UserType;
 import lombok.Getter;
@@ -6,9 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ForgetRequest {
+public class LoginRequest {
     private String email;
-    private String otp;
     private String password;
     private UserType type;
 }

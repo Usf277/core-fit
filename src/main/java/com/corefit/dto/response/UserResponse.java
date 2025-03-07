@@ -1,4 +1,4 @@
-package com.corefit.dto;
+package com.corefit.dto.response;
 
 import com.corefit.enums.Gender;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class UserResponse {
     private Long id;
     private String username;
     private String email;

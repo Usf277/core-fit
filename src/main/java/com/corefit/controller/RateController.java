@@ -1,7 +1,7 @@
 package com.corefit.controller;
 
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.RateRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.request.RateRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.RateService;
 import org.springframework.beans.factory.annotation.Autowired;

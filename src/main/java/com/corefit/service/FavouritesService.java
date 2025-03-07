@@ -1,8 +1,8 @@
 package com.corefit.service;
 
-import com.corefit.dto.FavouriteRequest;
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.ProductDto;
+import com.corefit.dto.request.FavouriteRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.response.ProductResponse;
 import com.corefit.entity.Favourites;
 import com.corefit.entity.Product;
 import com.corefit.entity.User;
@@ -30,7 +30,7 @@ public class FavouritesService {
 
     public GeneralResponse<?> getFavourites(HttpServletRequest httpRequest) {
         try {
-            long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
+            long userId = authService.extractUserIdFromRequest(httpRequest);
 
             Optional<Favourites> favouritesOptional = favouritesRepo.findByUser_Id(userId);
 
@@ -38,8 +38,8 @@ public class FavouritesService {
                 return new GeneralResponse<>("Your favourites list is empty", new ArrayList<>());
             }
 
-            List<ProductDto> favouriteProducts = favouritesOptional.get().getProducts().stream()
-                    .map(product -> ProductDto.builder()
+            List<ProductResponse> favouriteProducts = favouritesOptional.get().getProducts().stream()
+                    .map(product -> ProductResponse.builder()
                             .id(product.getId())
                             .name(product.getName())
                             .description(product.getDescription())
@@ -62,7 +62,7 @@ public class FavouritesService {
 
     public GeneralResponse<?> toggleFavourite(FavouriteRequest favouriteRequest, HttpServletRequest httpRequest) {
         try {
-            long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
+            long userId = authService.extractUserIdFromRequest(httpRequest);
 
             User user = userRepo.findById(userId)
                     .orElseThrow(() -> new GeneralException("User not found"));

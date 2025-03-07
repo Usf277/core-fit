@@ -1,8 +1,8 @@
 package com.corefit.controller;
 
-import com.corefit.dto.ChangeStatusRequest;
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.OrderRequest;
+import com.corefit.dto.request.ChangeStatusRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.request.OrderRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;

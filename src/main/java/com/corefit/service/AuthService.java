@@ -1,8 +1,11 @@
 package com.corefit.service;
 
-import com.corefit.utils.Helpers;
+import com.corefit.dto.request.ForgetRequest;
+import com.corefit.dto.request.LoginRequest;
+import com.corefit.dto.request.RegisterRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.response.UserResponse;
 import com.corefit.utils.JwtUtil;
-import com.corefit.dto.*;
 import com.corefit.entity.City;
 import com.corefit.entity.User;
 import com.corefit.enums.Gender;
@@ -36,8 +39,6 @@ public class AuthService {
     private OtpService otpService;
     @Autowired
     private FilesService filesService;
-    @Autowired
-    private Helpers helper;
 
     public GeneralResponse<?> login(LoginRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
@@ -49,14 +50,13 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getId());
-        Map<String, Object> data = Map.of("token", token, "user", helper.toUserDto(user));
+        Map<String, Object> data = Map.of("token", token, "user", toUserDto(user));
 
         return new GeneralResponse<>("Login Successful", data);
     }
 
-    // start register methods
     public GeneralResponse<Object> canRegister(RegisterRequest request) {
-        helper.validateEmailAndPhone(request.getEmail(), request.getPhone());
+        validateEmailAndPhone(request.getEmail(), request.getPhone());
 
         String otp = otpService.generateOtp(request.getEmail());
         emailService.sendOtpEmail(request.getEmail(), otp);
@@ -64,7 +64,7 @@ public class AuthService {
     }
 
     public GeneralResponse<?> register(RegisterRequest request) {
-        helper.validateEmailAndPhone(request.getEmail(), request.getPhone());
+        validateEmailAndPhone(request.getEmail(), request.getPhone());
 
         if (!otpService.validateOtp(request.getEmail(), request.getOtp())) {
             throw new GeneralException("Invalid OTP");
@@ -75,7 +75,6 @@ public class AuthService {
         return new GeneralResponse<>("User registered successfully!");
     }
 
-    // start reset password methods
     public GeneralResponse<?> forgetPassword(ForgetRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new GeneralException("There is no account related to this email"));
@@ -111,34 +110,29 @@ public class AuthService {
     }
 
     public GeneralResponse<?> getProfile(long id) {
-        User user = userRepo.findById(id)
-                .orElseThrow(() -> new GeneralException("No account found with this id"));
-
-        return new GeneralResponse<>("Successfully retrieved profile", helper.toUserDto(user));
+        User user = findUserById(id);
+        return new GeneralResponse<>("Successfully retrieved profile", toUserDto(user));
     }
 
     public GeneralResponse<?> editProfile(RegisterRequest request, HttpServletRequest httpRequest) {
-        String userId = helper.extractUserIdFromRequest(httpRequest);
-        if (!userId.equals(String.valueOf(request.getId()))) {
+        long userId = extractUserIdFromRequest(httpRequest);
+        if (userId != request.getId()) {
             throw new GeneralException("Invalid user ID");
         }
 
-        User user = userRepo.findById(request.getId())
-                .orElseThrow(() -> new GeneralException("No account found with this id"));
-
+        User user = findUserById(request.getId());
         updateUser(request, user);
         userRepo.save(user);
-
-        return new GeneralResponse<>("Profile updated successfully", helper.toUserDto(user));
+        return new GeneralResponse<>("Profile updated successfully", toUserDto(user));
     }
 
     public GeneralResponse<?> deleteAccount(HttpServletRequest httpRequest) {
-        String userId = helper.extractUserIdFromRequest(httpRequest);
-        userRepo.deleteById(Long.parseLong(userId));
+        long userId = extractUserIdFromRequest(httpRequest);
+        userRepo.deleteById(userId);
         return new GeneralResponse<>("Account deleted successfully");
     }
 
-    // Helper method
+    /// Helper method
     public User createUser(RegisterRequest request) {
         City city = cityService.findById(request.getCityId());
 
@@ -203,7 +197,30 @@ public class AuthService {
         user.setGovernorate(governorateService.findById(city.getGovernorate().getId()));
     }
 
-    public String extractUserIdFromRequest(HttpServletRequest request) {
+    public UserResponse toUserDto(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getBirthDate(),
+                user.getGovernorate().getName(),
+                user.getCity().getName(),
+                user.getGender(),
+                user.getImageUrl()
+        );
+    }
+
+    public void validateEmailAndPhone(String email, String phone) {
+        if (userRepo.existsByEmail(email)) {
+            throw new GeneralException("Email already exists.");
+        }
+        if (userRepo.existsByPhone(phone)) {
+            throw new GeneralException("Phone number already exists.");
+        }
+    }
+
+    public Long extractUserIdFromRequest(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -214,6 +231,17 @@ public class AuthService {
         if (userId == null || userId.isBlank()) {
             throw new GeneralException("Invalid or missing user ID in token");
         }
-        return userId;
+        return Long.parseLong(userId);
+    }
+
+    public User extractUserFromRequest(HttpServletRequest request) {
+        long userId = extractUserIdFromRequest(request);
+        return userRepo.findById(userId)
+                .orElseThrow(() -> new GeneralException("User not found"));
+
+    }
+
+    public User findUserById(long userId) {
+        return userRepo.findById(userId).orElseThrow(() -> new GeneralException("User not found"));
     }
 }

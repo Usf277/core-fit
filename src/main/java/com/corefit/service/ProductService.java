@@ -1,8 +1,8 @@
 package com.corefit.service;
 
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.ProductDto;
-import com.corefit.dto.ProductRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.response.ProductResponse;
+import com.corefit.dto.request.ProductRequest;
 import com.corefit.entity.*;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
@@ -31,18 +31,14 @@ public class ProductService {
     @Autowired
     private AuthService authService;
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
     private FavouritesRepo favouritesRepo;
 
     public GeneralResponse<?> findById(long id, HttpServletRequest httpRequest) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Product not found"));
 
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
+        User user = authService.findUserById(userId);
 
         boolean isFavourite = false;
         if (user.getType() == UserType.GENERAL) {
@@ -58,8 +54,7 @@ public class ProductService {
         return new GeneralResponse<>("Success", product);
     }
 
-
-    public Page<ProductDto> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
+    public Page<ProductResponse> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
         size = (size == null || size <= 0) ? 5 : size;
         page = (page == null || page < 1) ? 1 : page;
 
@@ -69,42 +64,33 @@ public class ProductService {
         long userId = -1;
         Set<Long> favouriteProductIds = new HashSet<>();
 
+
         try {
-            userId = Long.parseLong(authService.extractUserIdFromRequest(httpRequest));
+            userId = authService.extractUserIdFromRequest(httpRequest);
 
-            long finalUserId = userId;
-            userRepo.findById(userId).ifPresent(user -> {
-                if (user.getType() == UserType.GENERAL) {
-                    favouritesRepo.findByUser_Id(finalUserId).ifPresent(favourites -> {
-                        favouriteProductIds.addAll(
-                                favourites.getProducts().stream()
-                                        .map(Product::getId)
-                                        .collect(Collectors.toSet())
-                        );
-                    });
-                }
-            });
-
+            User user = authService.findUserById(userId);
+            if (user != null && user.getType() == UserType.GENERAL) {
+                favouritesRepo.findByUser_Id(userId).ifPresent(favourites -> favouriteProductIds.addAll(
+                        favourites.getProducts().stream().map(Product::getId).collect(Collectors.toSet())
+                ));
+            }
         } catch (Exception e) {
-            System.out.println("Error retrieving user favorites: " + e.getMessage());
+            throw new GeneralException("Error retrieving user favorites: " + e.getMessage());
         }
+
 
         Set<Long> finalFavouriteProductIds = favouriteProductIds;
 
         return productsPage.map(product -> {
-            ProductDto productDto = mapToDto(product);
+            ProductResponse productDto = mapToDto(product);
             productDto.setFavourite(finalFavouriteProductIds.contains(product.getId()));
             return productDto;
         });
     }
 
-
     @Transactional
     public GeneralResponse<?> insert(ProductRequest productRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
-        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        User user = authService.extractUserFromRequest(httpRequest);
 
         if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("User is not a provider");
@@ -179,8 +165,8 @@ public class ProductService {
 
 
     // Helper methods
-    private ProductDto mapToDto(Product product) {
-        return ProductDto.builder()
+    private ProductResponse mapToDto(Product product) {
+        return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())

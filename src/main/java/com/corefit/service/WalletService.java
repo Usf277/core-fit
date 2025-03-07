@@ -1,6 +1,6 @@
 package com.corefit.service;
 
-import com.corefit.dto.GeneralResponse;
+import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.User;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.UserRepo;
@@ -17,22 +17,14 @@ public class WalletService {
     private UserRepo userRepo;
 
     public GeneralResponse<?> getWallet(HttpServletRequest request) {
-        String userId = authService.extractUserIdFromRequest(request);
-        Long userIdLong = Long.parseLong(userId);
-
-        User user = userRepo.findById(userIdLong)
-                .orElseThrow(() -> new GeneralException("User not found"));
-
+        User user = authService.extractUserFromRequest(request);
         return new GeneralResponse<>("success", user.getWallet());
     }
 
     public void withdraw(HttpServletRequest request, double value) {
-        long userId = Long.parseLong(authService.extractUserIdFromRequest(request));
+        User user = authService.extractUserFromRequest(request);
 
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
-
-        if(user.getWallet() < value) {
+        if (user.getWallet() < value) {
             throw new GeneralException("Not enough money");
         }
         user.setWallet(user.getWallet() - value);
@@ -41,11 +33,8 @@ public class WalletService {
     }
 
     public void deposit(long userId, double value) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
-
+        User user = authService.findUserById(userId);
         user.setWallet(user.getWallet() + value);
-
         userRepo.save(user);
     }
 }

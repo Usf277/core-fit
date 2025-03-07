@@ -1,7 +1,7 @@
 package com.corefit.service;
 
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.SubCategoryRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.request.SubCategoryRequest;
 import com.corefit.entity.Market;
 import com.corefit.entity.SubCategory;
 import com.corefit.exceptions.GeneralException;

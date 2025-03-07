@@ -1,9 +1,9 @@
 package com.corefit.controller;
 
-import com.corefit.dto.ForgetRequest;
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.LoginRequest;
-import com.corefit.dto.RegisterRequest;
+import com.corefit.dto.request.ForgetRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.request.LoginRequest;
+import com.corefit.dto.request.RegisterRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;

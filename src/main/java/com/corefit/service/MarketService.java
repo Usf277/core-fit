@@ -1,14 +1,13 @@
 package com.corefit.service;
 
-import com.corefit.dto.GeneralResponse;
-import com.corefit.dto.MarketRequest;
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.request.MarketRequest;
 import com.corefit.entity.Category;
 import com.corefit.entity.Market;
 import com.corefit.entity.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.MarketRepo;
-import com.corefit.repository.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,8 +26,6 @@ public class MarketService {
     private MarketRepo marketRepo;
     @Autowired
     private AuthService authService;
-    @Autowired
-    private UserRepo userRepo;
     @Autowired
     private FilesService filesService;
     @Autowired
@@ -60,10 +57,7 @@ public class MarketService {
     }
 
     public GeneralResponse<?> insert(MarketRequest request, HttpServletRequest httpRequest) {
-        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
-
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        User user = authService.extractUserFromRequest(httpRequest);
 
         if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("User is not a provider");
@@ -99,7 +93,7 @@ public class MarketService {
     }
 
     public GeneralResponse<?> update(MarketRequest request, HttpServletRequest httpRequest) {
-        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
 
         Market market = marketRepo.findById(request.getId())
                 .orElseThrow(() -> new GeneralException("Market not found"));
@@ -137,7 +131,7 @@ public class MarketService {
     }
 
     public GeneralResponse<?> delete(long id, HttpServletRequest httpRequest) {
-        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
 
         Market market = marketRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Market not found"));
@@ -161,7 +155,7 @@ public class MarketService {
     }
 
     public GeneralResponse<?> changeStatus(long id, HttpServletRequest httpRequest) {
-        int userId = Integer.parseInt(authService.extractUserIdFromRequest(httpRequest));
+        long userId = authService.extractUserIdFromRequest(httpRequest);
 
         Market market = marketRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Market not found"));

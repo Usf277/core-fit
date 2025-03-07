@@ -1,7 +1,7 @@
 package com.corefit.controller;
 
-import com.corefit.dto.CategoryRequest;
-import com.corefit.dto.GeneralResponse;
+import com.corefit.dto.request.CategoryRequest;
+import com.corefit.dto.response.GeneralResponse;
 import com.corefit.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

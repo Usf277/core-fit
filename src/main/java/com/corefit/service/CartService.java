@@ -1,8 +1,8 @@
 package com.corefit.service;
 
-import com.corefit.dto.CartDto;
-import com.corefit.dto.CartItemDto;
-import com.corefit.dto.GeneralResponse;
+import com.corefit.dto.response.CartResponse;
+import com.corefit.dto.response.CartItemResponse;
+import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.Cart;
 import com.corefit.entity.CartItem;
 import com.corefit.entity.Product;
@@ -11,7 +11,6 @@ import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.CartItemRepo;
 import com.corefit.repository.CartRepo;
 import com.corefit.repository.ProductRepo;
-import com.corefit.repository.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,24 +27,20 @@ public class CartService {
     @Autowired
     private AuthService authService;
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
     private ProductRepo productRepo;
     @Autowired
     private CartItemRepo cartItemRepo;
 
     @Transactional
     public GeneralResponse<?> getCart(HttpServletRequest httpRequest) {
-        User user = getUserFromRequest(httpRequest);
+        User user = authService.extractUserFromRequest(httpRequest);
         Cart cart = getOrCreateCartForUser(user);
-
-        CartDto cartDto = mapToCartDto(cart);
-        return new GeneralResponse<>("Success", cartDto);
+        return new GeneralResponse<>("Success", mapToCartDto(cart));
     }
 
     @Transactional
     public GeneralResponse<?> addItemToCart(HttpServletRequest httpRequest, long productId, int quantity) {
-        User user = getUserFromRequest(httpRequest);
+        User user = authService.extractUserFromRequest(httpRequest);
         Product product = productRepo.findById(productId)
                 .orElseThrow(() -> new GeneralException("Product not found"));
 
@@ -60,8 +55,7 @@ public class CartService {
 
         CartItem existingItem = cart.getCartItems().stream()
                 .filter(item -> item.getProduct().getId() == productId)
-                .findFirst()
-                .orElse(null);
+                .findFirst().orElse(null);
 
         if (existingItem != null) {
             if (quantity == 0) {
@@ -83,42 +77,32 @@ public class CartService {
         cart.updateTotalPrice();
         cartRepo.save(cart);
 
-        CartDto cartDto = mapToCartDto(cart);
-        return new GeneralResponse<>("Success", cartDto);
+        return new GeneralResponse<>("Success", mapToCartDto(cart));
     }
 
     @Transactional
     public GeneralResponse<?> deleteCart(HttpServletRequest httpRequest) {
-        User user = getUserFromRequest(httpRequest);
+        User user = authService.extractUserFromRequest(httpRequest);
         Cart cart = cartRepo.findByUserId(user.getId());
 
-        if (cart == null) {
-            throw new GeneralException("Cart not found");
+        if (cart == null || cart.getCartItems().isEmpty()) {
+            throw new GeneralException("Cart is already empty");
         }
 
         List<CartItem> cartItems = cart.getCartItems();
 
-        if (!cartItems.isEmpty()) {
-            cartItems.forEach(cartItem -> cartItem.setCart(null));
-            cartItemRepo.deleteAll(cartItems);
-            cart.getCartItems().clear();
-        }
+        cartItems.forEach(cartItem -> cartItem.setCart(null));
+        cartItemRepo.deleteAll(cartItems);
+        cart.getCartItems().clear();
 
         cart.setMarket(null);
         cart.setTotalPrice(0.0);
         cartRepo.save(cart);
 
-        CartDto cartDto = mapToCartDto(cart);
-        return new GeneralResponse<>("Success", cartDto);
+        return new GeneralResponse<>("Success", mapToCartDto(cart));
     }
 
-    private User getUserFromRequest(HttpServletRequest httpRequest) {
-        String userId = authService.extractUserIdFromRequest(httpRequest);
-        Long userIdLong = Long.parseLong(userId);
-        return userRepo.findById(userIdLong)
-                .orElseThrow(() -> new GeneralException("User not found"));
-    }
-
+    /// Helper method
     private Cart getOrCreateCartForUser(User user) {
         Cart cart = cartRepo.findByUserId(user.getId());
         if (cart == null) {
@@ -129,9 +113,9 @@ public class CartService {
         return cart;
     }
 
-    private CartDto mapToCartDto(Cart cart) {
-        List<CartItemDto> cartItems = cart.getCartItems().stream()
-                .map(item -> new CartItemDto(
+    private CartResponse mapToCartDto(Cart cart) {
+        List<CartItemResponse> cartItems = cart.getCartItems().stream()
+                .map(item -> new CartItemResponse(
                         item.getProduct().getId(),
                         item.getProduct().getName(),
                         item.getProduct().getDescription(),
@@ -143,7 +127,7 @@ public class CartService {
                         item.getTotal()
                 )).collect(Collectors.toList());
 
-        return new CartDto(cart.getId(), cart.getMarket() != null ? cart.getMarket().getId() : null, cartItems, cart.getTotalPrice()); // جلب `totalPrice`
+        return new CartResponse(cart.getId(), cart.getMarket() != null ? cart.getMarket().getId() : null, cartItems, cart.getTotalPrice()); // جلب `totalPrice`
     }
 
 }

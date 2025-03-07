@@ -1,4 +1,4 @@
-package com.corefit.dto;
+package com.corefit.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

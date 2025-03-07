@@ -1,7 +1,7 @@
 package com.corefit.controller;
 
-import com.corefit.dto.FavouriteRequest;
-import com.corefit.dto.GeneralResponse;
+import com.corefit.dto.request.FavouriteRequest;
+import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.FavouritesService;
 import jakarta.servlet.http.HttpServletRequest;

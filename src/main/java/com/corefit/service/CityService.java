@@ -1,6 +1,6 @@
 package com.corefit.service;
 
-import com.corefit.dto.GeneralResponse;
+import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.City;
 import com.corefit.repository.CityRepo;
 import org.springframework.beans.factory.annotation.Autowired;

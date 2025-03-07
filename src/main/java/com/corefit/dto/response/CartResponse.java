@@ -1,4 +1,4 @@
-package com.corefit.dto;
+package com.corefit.dto.response;
 
 import lombok.*;
 
@@ -9,9 +9,9 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartDto {
+public class CartResponse {
     private long id;
     private Long marketId;
-    private List<CartItemDto> products;
+    private List<CartItemResponse> products;
     private double totalPrice;
 }
