@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -86,15 +87,20 @@ public class OrderService {
     }
 
     public GeneralResponse<?> getOrder(Long orderId, HttpServletRequest httpRequest) {
-        long userId = authService.extractUserIdFromRequest(httpRequest);
-        Order order = orderRepo.findById(orderId).orElseThrow(() -> new GeneralException("Order not found"));
+        User user = authService.extractUserFromRequest(httpRequest);
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new GeneralException("Order not found"));
 
-        if (order.getUser().getId() != userId) {
-            throw new GeneralException("User not authorized to order");
+        boolean isOrderOwner = Objects.equals(order.getUser().getId(), user.getId());
+        boolean isProviderMarket = user.getMarket().stream().map(Market::getId).anyMatch(id -> Objects.equals(id, order.getMarket().getId()));
+
+        if (!isOrderOwner && !isProviderMarket) {
+            throw new GeneralException("User not authorized to access this order");
         }
 
         return new GeneralResponse<>("Success", mapToOrderResponse(order));
     }
+
 
     public GeneralResponse<?> getOrders(String status, Long marketId, HttpServletRequest httpRequest) {
         long userId = authService.extractUserIdFromRequest(httpRequest);
