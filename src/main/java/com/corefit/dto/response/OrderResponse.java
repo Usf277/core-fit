@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class OrderResponse {
     private Long id;
-    private User user;
+    private Long userId;
     private String clientName;
     private String clientAddress;
     private String clientPhone;
@@ -25,6 +25,6 @@ public class OrderResponse {
     private PaymentMethod paymentMethod;
     private Double totalPrice;
     private Market market;
-    private List<OrderItemResponse> orderItems ;
+    private List<OrderItemResponse> orderItems;
 
 }

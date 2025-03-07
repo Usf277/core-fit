@@ -241,7 +241,7 @@ public class OrderService {
                         item.getQuantity(),
                         item.getTotal())).collect(Collectors.toList());
 
-        return new OrderResponse(order.getId(), order.getUser(), order.getClientName(), order.getClientAddress(), order.getClientPhone()
+        return new OrderResponse(order.getId(), order.getUser().getId(), order.getClientName(), order.getClientAddress(), order.getClientPhone()
                 , order.getLatitude(), order.getLongitude(), order.getAdditionalInfo(), order.getStatus(), order.getPaymentMethod(),
                 order.getTotalPrice(), order.getMarket(), orderItems);
     }
