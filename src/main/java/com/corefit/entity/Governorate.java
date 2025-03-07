@@ -13,6 +13,6 @@ import lombok.*;
 public class Governorate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     private String name;
 }

@@ -2,6 +2,7 @@ package com.corefit.service;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.request.RateRequest;
+import com.corefit.dto.response.RateResponse;
 import com.corefit.entity.*;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
@@ -31,12 +32,6 @@ public class RateService {
     @Autowired
     private AuthService authService;
 
-    public GeneralResponse<?> findById(long id) {
-        Rate rate = rateRepo.findById(id)
-                .orElseThrow(() -> new GeneralException("Rate not found"));
-        return new GeneralResponse<>("Success", rate);
-    }
-
     public GeneralResponse<?> getRatesByMarket(Long marketId, Integer page, Integer size) {
         if (size == null || size <= 0) size = 5;
         if (page == null || page < 1) page = 1;
@@ -44,10 +39,14 @@ public class RateService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
         Page<Rate> rates = rateRepo.getRatesByMarketId(marketId, pageable);
 
+        Page<RateResponse> rateResponses = rates.map(this::mapToRateResponse);
+
         Map<String, Object> data = new HashMap<>();
-        data.put("rates", rates.getContent());
-        data.put("totalPages", rates.getTotalPages());
-        data.put("totalElements", rates.getTotalElements());
+        data.put("rates", rateResponses.getContent());
+        data.put("totalPages", rateResponses.getTotalPages());
+        data.put("totalElements", rateResponses.getTotalElements());
+        data.put("pageSize", rateResponses.getSize());
+
         return new GeneralResponse<>("Market rates retrieved successfully", data);
     }
 
@@ -68,10 +67,17 @@ public class RateService {
                 .build();
 
         rate = rateRepo.save(rate);
+        return new GeneralResponse<>("Rate added successfully", mapToRateResponse(rate));
+    }
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("rate", rate);
-
-        return new GeneralResponse<>("Rate added successfully", data);
+    /// Helper method
+    private RateResponse mapToRateResponse(Rate rate) {
+        return RateResponse.builder()
+                .id(rate.getId())
+                .comment(rate.getComment())
+                .rate(rate.getRate())
+                .createdAt(rate.getCreatedAt())
+                .username(rate.getUser() != null ? rate.getUser().getUsername() : "Unknown")
+                .build();
     }
 }

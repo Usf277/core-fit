@@ -1,22 +1,20 @@
 package com.corefit.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class RateResponse {
-    private long id;
-    private String name;
-    private String description;
-    private double price;
-    private int offer;
-    private String marketName;
-    private String subCategoryName;
-    private List<String> images;
-    private boolean isHidden;
+    private Long id;
+    private String comment;
+    private int rate;
+    private LocalDateTime createdAt;
+    private String username;
 }
