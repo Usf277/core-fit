@@ -9,6 +9,5 @@ public class RateRequest {
     private long id;
     private String comment;
     private Integer rate; // 0 : 5
-    private long userId;
-    private long marketId;
+    private Long marketId;
 }

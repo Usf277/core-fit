@@ -4,6 +4,7 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.request.RateRequest;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.RateService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,9 @@ public class RateController {
     private RateService rateService;
 
     @PostMapping(value = "/add_rate")
-    public ResponseEntity<GeneralResponse<?>> addRate(@RequestBody RateRequest request) {
+    public ResponseEntity<GeneralResponse<?>> addRate(@RequestBody RateRequest request, HttpServletRequest httpRequest) {
         try {
-            GeneralResponse<?> response = rateService.insert(request);
+            GeneralResponse<?> response = rateService.insert(request, httpRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));

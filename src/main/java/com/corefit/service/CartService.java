@@ -7,6 +7,7 @@ import com.corefit.entity.Cart;
 import com.corefit.entity.CartItem;
 import com.corefit.entity.Product;
 import com.corefit.entity.User;
+import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.CartItemRepo;
 import com.corefit.repository.CartRepo;
@@ -104,6 +105,9 @@ public class CartService {
 
     /// Helper method
     private Cart getOrCreateCartForUser(User user) {
+        if (user.getType() == UserType.PROVIDER) {
+            throw new GeneralException("User not authorized");
+        }
         Cart cart = cartRepo.findByUserId(user.getId());
         if (cart == null) {
             cart = new Cart();

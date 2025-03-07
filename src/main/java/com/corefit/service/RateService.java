@@ -3,10 +3,12 @@ package com.corefit.service;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.request.RateRequest;
 import com.corefit.entity.*;
+import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.MarketRepo;
 import com.corefit.repository.RateRepo;
 import com.corefit.repository.UserRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +28,8 @@ public class RateService {
     private MarketRepo marketRepo;
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private AuthService authService;
 
     public GeneralResponse<?> findById(long id) {
         Rate rate = rateRepo.findById(id)
@@ -47,12 +51,14 @@ public class RateService {
         return new GeneralResponse<>("Market rates retrieved successfully", data);
     }
 
-    public GeneralResponse<?> insert(RateRequest request) {
+    public GeneralResponse<?> insert(RateRequest request, HttpServletRequest httpRequest) {
         Market market = marketRepo.findById(request.getMarketId())
                 .orElseThrow(() -> new GeneralException("Market not found"));
 
-        User user = userRepo.findById(request.getUserId())
-                .orElseThrow(() -> new GeneralException("User not found"));
+        User user = authService.extractUserFromRequest(httpRequest);
+        if (user.getType() == UserType.PROVIDER) {
+            throw new GeneralException("User not authorized");
+        }
 
         Rate rate = Rate.builder()
                 .comment(request.getComment())
