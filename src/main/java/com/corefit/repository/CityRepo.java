@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface CityRepo extends JpaRepository<City, Long> {
-    public City findById(long id);
+    City findById(long id);
 
-    public List<City> findAllByGovernorateId(long governorateId);
+    List<City> findAllByGovernorateId(long governorateId);
+
+    boolean existsByNameAndGovernorateId(String name, Long governorateId);
 }
