@@ -27,9 +27,9 @@ public class MarketController {
 
     @GetMapping("/markets")
     public ResponseEntity<GeneralResponse<?>> findAll(@RequestParam int page, @RequestParam(required = false) Integer size
-            , @RequestParam(required = false) String name, @RequestParam(required = false) Long categoryId) {
+            , @RequestParam(required = false) String search, @RequestParam(required = false) Long categoryId) {
         try {
-            GeneralResponse<?> response = marketService.getAll(page, size, name, categoryId);
+            GeneralResponse<?> response = marketService.getAll(page, size, search, categoryId);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));

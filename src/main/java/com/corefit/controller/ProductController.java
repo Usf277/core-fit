@@ -33,10 +33,10 @@ public class ProductController {
     public ResponseEntity<?> getAllProduct(@RequestParam int page, @RequestParam int size
             , @RequestParam(required = false) Long marketId
             , @RequestParam(required = false) Long subCategoryId
-            , @RequestParam(required = false) String name
+            , @RequestParam(required = false) String search
             , HttpServletRequest request) {
         try {
-            GeneralResponse<?> response = productService.getAll(page, size, marketId, subCategoryId, name, request);
+            GeneralResponse<?> response = productService.getAll(page, size, marketId, subCategoryId, search, request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
