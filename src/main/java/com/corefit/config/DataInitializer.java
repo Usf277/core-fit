@@ -13,10 +13,8 @@ import java.util.Map;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
-
     @Autowired
     private GovernorateRepo governorateRepository;
-
     @Autowired
     private CityRepo cityRepository;
 
