@@ -21,20 +21,29 @@ public class MarketController {
             GeneralResponse<?> response = marketService.getMarketById(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
     @GetMapping("/markets")
-    public ResponseEntity<?> findAll(@RequestParam int page, @RequestParam(required = false) Integer size
+    public ResponseEntity<GeneralResponse<?>> findAll(@RequestParam int page, @RequestParam(required = false) Integer size
             , @RequestParam(required = false) String name, @RequestParam(required = false) Long categoryId) {
-        return ResponseEntity.ok(marketService.getAll(page, size, name, categoryId));
+        try {
+            GeneralResponse<?> response = marketService.getAll(page, size, name, categoryId);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 
     @PostMapping(value = "/add_market", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> addMarket(@ModelAttribute MarketRequest request, HttpServletRequest httpRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(marketService.insert(request, httpRequest));
+        try {
+            GeneralResponse<?> response = marketService.insert(request, httpRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 
     @PostMapping(value = "/edit_market", consumes = {"multipart/form-data"})
@@ -43,8 +52,7 @@ public class MarketController {
             GeneralResponse<?> response = marketService.update(request, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -54,8 +62,7 @@ public class MarketController {
             GeneralResponse<?> response = marketService.delete(id, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -65,8 +72,7 @@ public class MarketController {
             GeneralResponse<?> response = marketService.changeStatus(id, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 

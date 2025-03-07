@@ -25,8 +25,7 @@ public class FavouritesController {
             GeneralResponse<?> response = favouritesService.getFavourites(httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -36,8 +35,7 @@ public class FavouritesController {
             GeneralResponse<?> response = favouritesService.toggleFavourite(favouriteRequest, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 }

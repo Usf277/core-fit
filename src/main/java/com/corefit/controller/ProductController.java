@@ -25,8 +25,7 @@ public class ProductController {
             GeneralResponse<?> response = productService.findById(id, request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -36,7 +35,12 @@ public class ProductController {
             , @RequestParam(required = false) Long subCategoryId
             , @RequestParam(required = false) String name
             , HttpServletRequest request) {
-        return ResponseEntity.ok(productService.getAll(page, size, marketId, subCategoryId, name, request));
+        try {
+            GeneralResponse<?> response = productService.getAll(page, size, marketId, subCategoryId, name, request);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 
     @PostMapping(value = "/add_product", consumes = {"multipart/form-data"})
@@ -62,8 +66,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -90,8 +93,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.OK).body(response);
 
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -101,8 +103,7 @@ public class ProductController {
             GeneralResponse<?> response = productService.delete(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -112,8 +113,7 @@ public class ProductController {
             GeneralResponse<?> response = productService.changeStatus(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 

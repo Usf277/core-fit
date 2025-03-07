@@ -54,7 +54,7 @@ public class ProductService {
         return new GeneralResponse<>("Success", product);
     }
 
-    public Page<ProductResponse> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
         size = (size == null || size <= 0) ? 5 : size;
         page = (page == null || page < 1) ? 1 : page;
 
@@ -64,28 +64,41 @@ public class ProductService {
         long userId = -1;
         Set<Long> favouriteProductIds = new HashSet<>();
 
-
         try {
             userId = authService.extractUserIdFromRequest(httpRequest);
 
-            User user = authService.findUserById(userId);
-            if (user != null && user.getType() == UserType.GENERAL) {
-                favouritesRepo.findByUser_Id(userId).ifPresent(favourites -> favouriteProductIds.addAll(
-                        favourites.getProducts().stream().map(Product::getId).collect(Collectors.toSet())
-                ));
+            if (userId > 0) {
+                User user = authService.findUserById(userId);
+
+                if (user != null && user.getType() == UserType.GENERAL) {
+                    favouritesRepo.findByUser_Id(userId).ifPresent(favourites ->
+                            favouriteProductIds.addAll(
+                                    favourites.getProducts().stream()
+                                            .map(Product::getId)
+                                            .collect(Collectors.toSet())
+                            )
+                    );
+                }
             }
         } catch (Exception e) {
-            throw new GeneralException("Error retrieving user favorites: " + e.getMessage());
+            throw new GeneralException("Error retrieving user favorites");
         }
-
 
         Set<Long> finalFavouriteProductIds = favouriteProductIds;
 
-        return productsPage.map(product -> {
-            ProductResponse productDto = mapToDto(product);
-            productDto.setFavourite(finalFavouriteProductIds.contains(product.getId()));
-            return productDto;
+        Page<ProductResponse> productResponses = productsPage.map(product -> {
+            ProductResponse productResponse = mapToDto(product);
+            productResponse.setFavourite(finalFavouriteProductIds.contains(product.getId()));
+            return productResponse;
         });
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("markets", productResponses.getContent());
+        data.put("totalPages", productResponses.getTotalPages());
+        data.put("totalElements", productResponses.getTotalElements());
+        data.put("pageSize", productResponses.getSize());
+
+        return new GeneralResponse<>("Products retrieved successfully", data);
     }
 
     @Transactional

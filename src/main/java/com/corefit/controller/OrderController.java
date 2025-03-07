@@ -22,8 +22,7 @@ public class OrderController {
             GeneralResponse<?> response = orderService.createOrder(orderRequest, httpRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -33,8 +32,7 @@ public class OrderController {
             GeneralResponse<?> response = orderService.getOrder(orderId, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -46,8 +44,7 @@ public class OrderController {
             GeneralResponse<?> response = orderService.getOrders(status, marketId, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -57,8 +54,7 @@ public class OrderController {
             GeneralResponse<?> response = orderService.cancelOrder(orderId, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -68,8 +64,7 @@ public class OrderController {
             GeneralResponse<?> response = orderService.changeStatus(request, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 

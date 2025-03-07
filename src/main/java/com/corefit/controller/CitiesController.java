@@ -1,8 +1,11 @@
 package com.corefit.controller;
 
+import com.corefit.dto.response.GeneralResponse;
+import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.CityRepo;
 import com.corefit.service.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +18,11 @@ public class CitiesController {
 
     @GetMapping("/cities")
     public ResponseEntity<?> getCitiesByGovernorateId(@RequestParam long governorate_id) {
-        return ResponseEntity.ok(cityService.getAllCities(governorate_id));
-    }
-
-    @GetMapping("/get_all")
-    public ResponseEntity<?> gitAll() {
-        return ResponseEntity.ok(cityRepo.findAll());
+        try {
+            GeneralResponse<?> response = cityService.getAllCities(governorate_id);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 }

@@ -19,8 +19,7 @@ public class UserController {
             GeneralResponse<?> response = authService.getProfile(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 }

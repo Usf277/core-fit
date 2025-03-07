@@ -12,21 +12,25 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class subCategoryController {
     @Autowired
-    private  SubCategoryService subCategoryService;
+    private SubCategoryService subCategoryService;
 
     @GetMapping("/sub_categories")
     public ResponseEntity<?> getSubCategoriesByMarketId(@RequestParam long marketId) {
-        return ResponseEntity.ok(subCategoryService.getSubCategoriesByMarketId(marketId));
+        try {
+            GeneralResponse<?> response = subCategoryService.getSubCategoriesByMarketId(marketId);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 
     @PostMapping(value = "/add_sub_category")
     public ResponseEntity<GeneralResponse<?>> addSubCategory(@RequestBody SubCategoryRequest request) {
         try {
             GeneralResponse<?> response = subCategoryService.insert(request);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -36,8 +40,7 @@ public class subCategoryController {
             GeneralResponse<?> response = subCategoryService.update(request);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 
@@ -47,9 +50,7 @@ public class subCategoryController {
             GeneralResponse<?> response = subCategoryService.delete(id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
-
 }

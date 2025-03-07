@@ -15,24 +15,26 @@ public class RateController {
     @Autowired
     private RateService rateService;
 
+    @PostMapping(value = "/add_rate")
+    public ResponseEntity<GeneralResponse<?>> addRate(@RequestBody RateRequest request) {
+        try {
+            GeneralResponse<?> response = rateService.insert(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
     @GetMapping("/find_by_market")
     public ResponseEntity<GeneralResponse<?>> getRatesByMarket(
             @RequestParam Long marketId,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size) {
-        return ResponseEntity.ok(rateService.getRatesByMarket(marketId, page, size));
-    }
-
-    @PostMapping(value = "/add_rate")
-    public ResponseEntity<GeneralResponse<?>> addRate(@RequestBody RateRequest request) {
-
         try {
-            GeneralResponse<?> response = rateService.insert(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            GeneralResponse<?> response = rateService.getRatesByMarket(marketId, page, size);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
-
 }

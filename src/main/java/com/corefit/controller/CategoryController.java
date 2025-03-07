@@ -2,8 +2,10 @@ package com.corefit.controller;
 
 import com.corefit.dto.request.CategoryRequest;
 import com.corefit.dto.response.GeneralResponse;
+import com.corefit.exceptions.GeneralException;
 import com.corefit.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -15,13 +17,24 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @GetMapping("/categories")
-    public ResponseEntity<GeneralResponse<?>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
+    @PostMapping(value = "/categories", consumes = {"multipart/form-data"})
+    public ResponseEntity<GeneralResponse<?>> addCategory(@ModelAttribute CategoryRequest request) {
+        try {
+            GeneralResponse<?> response = categoryService.saveCategory(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 
-    @PostMapping(value = "/categories", consumes = {"multipart/form-data"})
-    public ResponseEntity<GeneralResponse<?>> saveCategory(@ModelAttribute CategoryRequest request) {
-        return ResponseEntity.ok(categoryService.saveCategory(request));
+    @GetMapping("/categories")
+    public ResponseEntity<GeneralResponse<?>> getAllCategories() {
+        try {
+            GeneralResponse<?> response = categoryService.getAllCategories();
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
     }
 }
