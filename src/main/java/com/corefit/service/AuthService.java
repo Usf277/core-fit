@@ -169,10 +169,6 @@ public class AuthService {
             throw new GeneralException("This phone is already used in another account");
         }
 
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-
         String imagePath = user.getImageUrl();
 
         if (request.getImage() != null && !request.getImage().isEmpty()) {
