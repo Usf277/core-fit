@@ -63,7 +63,6 @@ public class FilesService {
     /**
      * Deletes an image from Cloudinary by its public ID.
      *
-     * @param publicId The public ID of the image to delete
      * @throws IOException If deletion fails
      */
     public void deleteImage(String imageUrl) throws IOException {
