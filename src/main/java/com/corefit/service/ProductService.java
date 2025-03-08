@@ -93,7 +93,7 @@ public class ProductService {
         });
 
         Map<String, Object> data = new HashMap<>();
-        data.put("markets", productResponses.getContent());
+        data.put("products", productResponses.getContent());
         data.put("totalPages", productResponses.getTotalPages());
         data.put("totalElements", productResponses.getTotalElements());
         data.put("pageSize", productResponses.getSize());
