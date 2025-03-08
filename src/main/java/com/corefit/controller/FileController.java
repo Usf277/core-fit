@@ -1,43 +1,39 @@
 package com.corefit.controller;
 
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import com.corefit.service.FilesService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("/uploads")
+@RequestMapping("/api/files")
 public class FileController {
 
-    @GetMapping("/{filename:.+}")
-    public ResponseEntity<org.springframework.core.io.Resource> getFile(@PathVariable String filename) throws IOException {
+    private final FilesService filesService;
 
-        Path filePath = Paths.get("uploads").resolve(filename).normalize();
+    public FileController(FilesService filesService) {
+        this.filesService = filesService;
+    }
 
-        org.springframework.core.io.Resource resource = new UrlResource(filePath.toUri());
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String imageUrl = filesService.saveImage(file);
+            return ResponseEntity.ok(imageUrl);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("File upload failed: " + e.getMessage());
+        }
+    }
 
-        if (resource.exists() && resource.isReadable()) {
-            String contentType = Files.probeContentType(filePath);
-
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                    .body(resource);
-        } else {
-            return ResponseEntity.notFound().build();
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteImage(@RequestParam("publicId") String publicId) {
+        try {
+            filesService.deleteImage(publicId);
+            return ResponseEntity.ok("File deleted successfully.");
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("File deletion failed: " + e.getMessage());
         }
     }
 }

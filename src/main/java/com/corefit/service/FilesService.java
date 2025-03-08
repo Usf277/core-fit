@@ -1,21 +1,33 @@
 package com.corefit.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
+import java.util.Map;
 
 @Service
 public class FilesService {
+
     private static final Logger logger = LoggerFactory.getLogger(FilesService.class);
-    private static final String UPLOAD_DIR = System.getProperty("user.dir") + File.separator + "uploads";
+
+    private final Cloudinary cloudinary;
+
+    public FilesService(
+            @Value("${cloudinary.cloud-name}") String cloudName,
+            @Value("${cloudinary.api-key}") String apiKey,
+            @Value("${cloudinary.api-secret}") String apiSecret) {
+        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", cloudName,
+                "api_key", apiKey,
+                "api_secret", apiSecret
+        ));
+    }
 
     public String saveImage(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -23,33 +35,27 @@ public class FilesService {
             throw new IOException("File is empty or null.");
         }
 
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || originalFilename.trim().isEmpty()) {
-            logger.error("Uploaded file has no valid name");
-            throw new IOException("File name is invalid.");
-        }
+        logger.info("Uploading file: {}", file.getOriginalFilename());
 
-        Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-            logger.info("Upload directory created: {}", UPLOAD_DIR);
-        }
+        // Upload file to Cloudinary
+        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                "folder", "corefit/uploads", // Organize images in a folder
+                "resource_type", "image"     // Ensure only image uploads
+        ));
 
-        String fileName = UUID.randomUUID().toString() + "_" + originalFilename;
-        Path filePath = uploadPath.resolve(fileName);
+        String imageUrl = uploadResult.get("secure_url").toString();
+        logger.info("File uploaded to Cloudinary: {}", imageUrl);
 
-        file.transferTo(filePath.toFile());
-        logger.info("File saved successfully: {}", filePath.toString());
-
-        return "uploads/" + fileName;
+        return imageUrl; // Return the Cloudinary URL
     }
 
-    public void deleteImage(String imagePath) throws IOException {
-        if (imagePath.startsWith("uploads/")) {
-            imagePath = imagePath.replace("uploads/", "");
-        }
+    public void deleteImage(String publicId) throws IOException {
+        logger.info("Deleting image with publicId: {}", publicId);
 
-        Path path = Paths.get("uploads").resolve(imagePath).normalize();
-        Files.deleteIfExists(path);
+        Map<?, ?> result = cloudinary.uploader().destroy(publicId, ObjectUtils.asMap(
+                "resource_type", "image"
+        ));
+
+        logger.info("Deletion result: {}", result);
     }
 }
