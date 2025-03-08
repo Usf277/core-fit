@@ -5,6 +5,7 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.service.PlaygroundService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,8 @@ import java.util.List;
 @RequestMapping("/playground")
 public class PlaygroundController {
 
-    private final PlaygroundService playgroundService;
+    @Autowired
+    private PlaygroundService playgroundService;
 
     public PlaygroundController(PlaygroundService playgroundService) {
         this.playgroundService = playgroundService;
@@ -26,8 +28,7 @@ public class PlaygroundController {
     public ResponseEntity<GeneralResponse<?>> createPlayground(
             @ModelAttribute PlaygroundRequest playgroundRequest,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
-            HttpServletRequest httpRequest
-    ) {
+            HttpServletRequest httpRequest) {
         try {
             GeneralResponse<?> response = playgroundService.createPlayground(playgroundRequest, images, httpRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
