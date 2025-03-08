@@ -101,7 +101,6 @@ public class OrderService {
         return new GeneralResponse<>("Success", mapToOrderResponse(order));
     }
 
-
     public GeneralResponse<?> getOrders(String status, Long marketId, HttpServletRequest httpRequest) {
         long userId = authService.extractUserIdFromRequest(httpRequest);
         User user = authService.findUserById(userId);

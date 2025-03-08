@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-
 @Setter
 @Getter
 public class RegisterRequest {
@@ -15,7 +13,7 @@ public class RegisterRequest {
     private String phone;
     private String password;
     private String gender;
-    private LocalDate birthDate;
+    private String birthDate;
     private Long cityId;
     private String type;
     private String otp;

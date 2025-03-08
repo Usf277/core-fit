@@ -45,23 +45,10 @@ public class ProductController {
 
     @PostMapping(value = "/add_product", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> addProduct(
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("price") double price,
-            @RequestParam("offer") int offer,
-            @RequestParam("marketId") Long marketId,
-            @RequestParam("subCategoryId") Long subCategoryId,
+            @ModelAttribute ProductRequest productRequest,
             @RequestPart(value = "images", required = false) List<MultipartFile> images, HttpServletRequest httpRequest) {
 
         try {
-            ProductRequest productRequest = new ProductRequest();
-            productRequest.setName(name);
-            productRequest.setDescription(description);
-            productRequest.setPrice(price);
-            productRequest.setOffer(offer);
-            productRequest.setMarketId(marketId);
-            productRequest.setSubCategoryId(subCategoryId);
-
             GeneralResponse<?> response = productService.insert(productRequest, images, httpRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
