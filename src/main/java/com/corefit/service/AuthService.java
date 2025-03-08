@@ -5,7 +5,7 @@ import com.corefit.dto.request.LoginRequest;
 import com.corefit.dto.request.RegisterRequest;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.UserResponse;
-import com.corefit.utils.DateParserUtil;
+import com.corefit.utils.DateParser;
 import com.corefit.utils.JwtUtil;
 import com.corefit.entity.City;
 import com.corefit.entity.User;
@@ -153,7 +153,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .gender(Gender.valueOf(request.getGender()))
-                .birthDate(DateParserUtil.parseDate(request.getBirthDate()))
+                .birthDate(DateParser.parseDate(request.getBirthDate()))
                 .city(city)
                 .governorate(governorateService.findById(city.getGovernorate().getId()))
                 .type(UserType.valueOf(request.getType()))
@@ -187,7 +187,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
         user.setGender(Gender.valueOf(request.getGender()));
-        user.setBirthDate(DateParserUtil.parseDate(request.getBirthDate()));
+        user.setBirthDate(DateParser.parseDate(request.getBirthDate()));
         City city = cityService.findById(request.getCityId());
         user.setCity(city);
         user.setImageUrl(imagePath);
