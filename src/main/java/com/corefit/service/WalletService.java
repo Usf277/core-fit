@@ -4,6 +4,7 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.User;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.UserRepo;
+import com.corefit.service.market.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

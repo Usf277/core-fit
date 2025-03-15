@@ -1,11 +1,11 @@
 package com.corefit.controller;
 
-import com.corefit.dto.request.ForgetRequest;
+import com.corefit.dto.request.market.ForgetRequest;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.request.LoginRequest;
 import com.corefit.dto.request.RegisterRequest;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.service.AuthService;
+import com.corefit.service.market.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

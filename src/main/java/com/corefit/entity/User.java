@@ -1,5 +1,8 @@
 package com.corefit.entity;
 
+import com.corefit.entity.market.Cart;
+import com.corefit.entity.market.Market;
+import com.corefit.entity.market.Rate;
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
