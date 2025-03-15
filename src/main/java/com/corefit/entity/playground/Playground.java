@@ -24,8 +24,10 @@ public class Playground {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false)
     private String lat;
 
+    @Column(nullable = false)
     private String lng;
 
     private String address;
@@ -53,7 +55,8 @@ public class Playground {
     @Column(name = "image_url")
     private List<String> images;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false)
     @JsonIgnore
     private User user;
 }

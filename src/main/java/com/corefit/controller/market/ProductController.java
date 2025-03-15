@@ -59,23 +59,9 @@ public class ProductController {
 
     @PostMapping(value = "/edit_product", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> editProduct(
-            @RequestParam("id") long id,
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("price") double price,
-            @RequestParam("offer") int offer,
-            @RequestParam("subCategoryId") Long subCategoryId,
+            @ModelAttribute ProductRequest productRequest,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-
         try {
-            ProductRequest productRequest = new ProductRequest();
-            productRequest.setId(id);
-            productRequest.setName(name);
-            productRequest.setDescription(description);
-            productRequest.setPrice(price);
-            productRequest.setOffer(offer);
-            productRequest.setSubCategoryId(subCategoryId);
-
             GeneralResponse<?> response = productService.update(productRequest, images);
             return ResponseEntity.status(HttpStatus.OK).body(response);
 
