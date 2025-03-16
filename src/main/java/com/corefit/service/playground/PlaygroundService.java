@@ -9,7 +9,7 @@ import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
 import com.corefit.service.FilesService;
 import com.corefit.service.market.AuthService;
-import com.corefit.utils.DateParserUtil;
+import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,10 +48,10 @@ public class PlaygroundService {
                 .lng(playgroundRequest.getLng())
                 .address(playgroundRequest.getAddress())
                 .teamMembers(playgroundRequest.getTeamMembers())
-                .morningShiftStart(DateParserUtil.parseTime(playgroundRequest.getMorningShiftStart()))
-                .morningShiftEnd(DateParserUtil.parseTime(playgroundRequest.getMorningShiftEnd()))
-                .nightShiftStart(DateParserUtil.parseTime(playgroundRequest.getNightShiftStart()))
-                .nightShiftEnd(DateParserUtil.parseTime(playgroundRequest.getNightShiftEnd()))
+                .morningShiftStart(DateParser.parseTime(playgroundRequest.getMorningShiftStart()))
+                .morningShiftEnd(DateParser.parseTime(playgroundRequest.getMorningShiftEnd()))
+                .nightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()))
+                .nightShiftEnd(DateParser.parseTime(playgroundRequest.getNightShiftEnd()))
                 .bookingPrice(playgroundRequest.getBookingPrice())
                 .extraNightPrice(playgroundRequest.getExtraNightPrice())
                 .hasExtraPrice(playgroundRequest.isHasExtraPrice())
