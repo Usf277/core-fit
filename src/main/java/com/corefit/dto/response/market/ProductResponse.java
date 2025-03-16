@@ -16,6 +16,7 @@ public class ProductResponse {
     private double price;
     private int offer;
     private String marketName;
+    private Long marketId;
     private String subCategoryName;
     private List<String> images;
     private boolean isHidden;

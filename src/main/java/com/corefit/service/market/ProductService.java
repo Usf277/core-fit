@@ -195,6 +195,7 @@ public class ProductService {
                 .offer(product.getOffer())
                 .subCategoryName(product.getSubCategory().getName())
                 .marketName(product.getMarket().getName())
+                .marketId(product.getMarket().getId())
                 .images(product.getImages())
                 .isHidden(product.isHidden())
                 .isFavourite(product.isFavourite())
