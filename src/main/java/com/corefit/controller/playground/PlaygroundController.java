@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/playground")
+@RequestMapping("/playgrounds")
 public class PlaygroundController {
 
     @Autowired
@@ -30,10 +30,35 @@ public class PlaygroundController {
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             HttpServletRequest httpRequest) {
         try {
-            GeneralResponse<?> response = playgroundService.createPlayground(playgroundRequest, images, httpRequest);
+            GeneralResponse<?> response = playgroundService.create(playgroundRequest, images, httpRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
+
+    @PostMapping(path = "/update", consumes = {"multipart/form-data"})
+    public ResponseEntity<GeneralResponse<?>> updatePlayground(
+            @ModelAttribute PlaygroundRequest playgroundRequest,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            HttpServletRequest httpRequest) {
+        try {
+            GeneralResponse<?> response = playgroundService.update(playgroundRequest, images, httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+    @GetMapping("")
+    public ResponseEntity<GeneralResponse<?>> getPlaygrounds(HttpServletRequest httpRequest) {
+        try {
+            GeneralResponse<?> response = playgroundService.getAll(httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
+
+
 }
