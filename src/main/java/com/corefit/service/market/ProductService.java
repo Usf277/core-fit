@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -124,7 +123,7 @@ public class ProductService {
                 .orElseThrow(() -> new GeneralException("Sub category not found"));
 
 
-        List<String> imageUrls = uploadImages(images);
+        List<String> imageUrls = filesService.uploadImages(images);
 
         Product product = Product.builder()
                 .name(productRequest.getName())
@@ -153,8 +152,8 @@ public class ProductService {
                 .orElseThrow(() -> new GeneralException("Sub category not found")));
 
         if (images != null && !images.isEmpty()) {
-            deleteImages(product.getImages());
-            product.setImages(uploadImages(images));
+            filesService.deleteImages(product.getImages());
+            product.setImages(filesService.uploadImages(images));
         }
 
         productRepo.save(product);
@@ -167,7 +166,7 @@ public class ProductService {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Product not found"));
 
-        deleteImages(product.getImages());
+        filesService.deleteImages(product.getImages());
         productRepo.deleteById(id);
 
         return new GeneralResponse<>("Product deleted successfully");
@@ -185,7 +184,7 @@ public class ProductService {
     }
 
 
-    // Helper methods
+    /// Helper methods
     private ProductResponse mapToDto(Product product) {
         return ProductResponse.builder()
                 .id(product.getId())
@@ -200,30 +199,5 @@ public class ProductService {
                 .isHidden(product.isHidden())
                 .isFavourite(product.isFavourite())
                 .build();
-    }
-
-    private List<String> uploadImages(List<MultipartFile> images) {
-        if (images == null || images.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return images.stream().map(image -> {
-            try {
-                return filesService.saveImage(image);
-            } catch (IOException e) {
-                throw new GeneralException("Failed to upload image: " + e.getMessage());
-            }
-        }).collect(Collectors.toList());
-    }
-
-    private void deleteImages(List<String> images) {
-        if (images != null && !images.isEmpty()) {
-            images.forEach(image -> {
-                try {
-                    filesService.deleteImage(image);
-                } catch (IOException e) {
-                    throw new GeneralException("Failed to delete image: " + e.getMessage());
-                }
-            });
-        }
     }
 }

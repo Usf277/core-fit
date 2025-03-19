@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PlaygroundRequest {
+    private long id;
     private String name;
     private String description;
     private String lat;
