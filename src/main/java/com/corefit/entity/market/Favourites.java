@@ -25,5 +25,6 @@ public class Favourites {
 
     @ManyToMany
     @JoinTable(name = "favourites_products", joinColumns = @JoinColumn(name = "favourites_id"))
+    @Builder.Default
     private List<Product> products = new ArrayList<>();
 }

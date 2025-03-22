@@ -38,6 +38,7 @@ public class Order {
     private String additionalInfo;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private OrderStatus status = OrderStatus.ORDER_RECEIVED;
 
     @Enumerated(EnumType.STRING)
@@ -49,6 +50,7 @@ public class Order {
     private Market market;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
 
 }

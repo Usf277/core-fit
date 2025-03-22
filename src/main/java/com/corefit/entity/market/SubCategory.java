@@ -27,5 +27,6 @@ public class SubCategory {
 
     @OneToMany(mappedBy = "subCategory", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private Set<Product> products = new HashSet<>();
 }

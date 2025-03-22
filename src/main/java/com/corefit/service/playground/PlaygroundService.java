@@ -107,7 +107,6 @@ public class PlaygroundService {
         return new GeneralResponse<>("playgrounds retrieved successfully", playgrounds);
     }
 
-
     /// Helper method
     private Playground findById(Long id) {
         return playgroundRepo.findById(id).orElseThrow(() -> new GeneralException("Playground not found"));
