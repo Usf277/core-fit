@@ -23,5 +23,6 @@ public class Category {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private Set<Market> markets = new HashSet<>();
 }

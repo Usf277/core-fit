@@ -27,6 +27,7 @@ public class Cart {
     private Market market;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<CartItem> cartItems = new ArrayList<>();
 
     private double totalPrice;

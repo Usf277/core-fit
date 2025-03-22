@@ -37,7 +37,9 @@ public class Product {
     @ManyToOne
     private SubCategory subCategory;
 
+    @Builder.Default
     private boolean isHidden = false;
 
+    @Builder.Default
     private boolean isFavourite = false;
 }

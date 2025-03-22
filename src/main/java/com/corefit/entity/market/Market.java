@@ -42,18 +42,22 @@ public class Market {
 
     private String imageUrl;
 
+    @Builder.Default
     private boolean isOpened = true;
 
     @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private Set<SubCategory> subCategories = new HashSet<>();
 
     @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private Set<Product> products = new HashSet<>();
 
     @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private Set<Rate> rates = new HashSet<>();
 
 }
