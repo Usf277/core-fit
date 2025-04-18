@@ -4,7 +4,7 @@ import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,7 +15,7 @@ public class OrderResponse {
     private Long id;
     private Long userId;
     private Long marketId;
-    private Date createdAt;
+    private LocalDateTime createdAt;
     private String marketName;
 
     private String clientName;
