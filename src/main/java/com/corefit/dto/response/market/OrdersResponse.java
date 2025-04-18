@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ public class OrdersResponse {
     private Long id;
     private Long userId;
     private Long marketId;
-    private Date createdAt;
+    private LocalDateTime createdAt;
     private String marketName;
     private String clientAddress;
     private OrderStatus status;
