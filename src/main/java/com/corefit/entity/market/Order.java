@@ -5,8 +5,10 @@ import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -36,6 +38,9 @@ public class Order {
     private double longitude;
 
     private String additionalInfo;
+
+    @CreatedDate
+    private Date createdAt;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

@@ -1,4 +1,4 @@
-package com.corefit.controller;
+package com.corefit.controller.auth;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;

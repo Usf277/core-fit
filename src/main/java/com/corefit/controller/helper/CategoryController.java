@@ -1,4 +1,4 @@
-package com.corefit.controller.market;
+package com.corefit.controller.helper;
 
 import com.corefit.dto.request.market.CategoryRequest;
 import com.corefit.dto.response.GeneralResponse;
