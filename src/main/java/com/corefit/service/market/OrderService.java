@@ -5,6 +5,7 @@ import com.corefit.dto.request.market.OrderRequest;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.market.OrderItemResponse;
 import com.corefit.dto.response.market.OrderResponse;
+import com.corefit.dto.response.market.OrdersResponse;
 import com.corefit.entity.*;
 import com.corefit.entity.market.*;
 import com.corefit.enums.OrderStatus;
@@ -82,10 +83,10 @@ public class OrderService {
             }
         }
 
-        order = orderRepo.save(order);
+        orderRepo.save(order);
         cartService.deleteCart(httpRequest);
 
-        return new GeneralResponse<>("Order created successfully", mapToOrderResponse(order));
+        return new GeneralResponse<>("Order created successfully");
     }
 
     public GeneralResponse<?> getOrder(Long orderId, HttpServletRequest httpRequest) {
@@ -122,23 +123,16 @@ public class OrderService {
             if (status == null || status.isEmpty())
                 status = "new";
 
-            switch (status.toLowerCase()) {
-                case "new":
-                    orders = orderRepo.findNewMarketOrders(marketId);
-                    break;
-                case "current":
-                    orders = orderRepo.findCurrentMarketOrders(marketId);
-                    break;
-                case "completed":
-                    orders = orderRepo.findCompletedMarketOrders(marketId);
-                    break;
-                default:
-                    throw new GeneralException("Invalid status. Use 'new', 'current', or 'completed'");
-            }
+            orders = switch (status.toLowerCase()) {
+                case "new" -> orderRepo.findNewMarketOrders(marketId);
+                case "current" -> orderRepo.findCurrentMarketOrders(marketId);
+                case "completed" -> orderRepo.findCompletedMarketOrders(marketId);
+                default -> throw new GeneralException("Invalid status. Use 'new', 'current', or 'completed'");
+            };
         }
 
 
-        List<OrderResponse> orderResponses = orders.stream().map(this::mapToOrderResponse).collect(Collectors.toList());
+        List<OrdersResponse> orderResponses = orders.stream().map(this::mapToOrdersResponse).collect(Collectors.toList());
         return new GeneralResponse<>("Success", orderResponses);
     }
 
@@ -184,7 +178,6 @@ public class OrderService {
         Order order = orderRepo.findById(request.getOrderId())
                 .orElseThrow(() -> new GeneralException("Order not found"));
 
-
         if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("User is not a provider");
         }
@@ -202,7 +195,6 @@ public class OrderService {
             case "delivered" -> OrderStatus.ORDER_DELIVERED;
             default -> throw new GeneralException("Invalid status provided: " + request.getStatus());
         };
-
 
         if (order.getStatus() == newStatus) {
             throw new GeneralException("Order is already in status: " + newStatus);
@@ -248,9 +240,39 @@ public class OrderService {
                         item.getQuantity(),
                         item.getTotal())).collect(Collectors.toList());
 
-        return new OrderResponse(order.getId(), order.getUser().getId(), order.getClientName(), order.getClientAddress(), order.getClientPhone()
-                , order.getLatitude(), order.getLongitude(), order.getAdditionalInfo(), order.getStatus(), order.getPaymentMethod(),
-                order.getTotalPrice(), order.getMarket(), orderItems);
+        return new OrderResponse(
+                order.getId(),
+                order.getUser().getId(),
+                order.getMarket().getId(),
+                order.getCreatedAt(),
+                order.getMarket().getName(),
+
+                order.getClientName(),
+                order.getClientAddress(),
+                order.getClientPhone(),
+                order.getLatitude(),
+                order.getLongitude(),
+                order.getAdditionalInfo(),
+                order.getPaymentMethod(),
+
+                order.getStatus(),
+                order.getTotalPrice(),
+                orderItems
+        );
     }
+
+    private OrdersResponse mapToOrdersResponse(Order order) {
+        return new OrdersResponse(
+                order.getId(),
+                order.getUser().getId(),
+                order.getMarket().getId(),
+                order.getCreatedAt(),
+                order.getMarket().getName(),
+                order.getClientAddress(),
+                order.getStatus(),
+                order.getTotalPrice()
+        );
+    }
+
 }
 

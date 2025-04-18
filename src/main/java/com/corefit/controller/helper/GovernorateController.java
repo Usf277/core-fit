@@ -1,25 +1,25 @@
-package com.corefit.controller.market;
+package com.corefit.controller.helper;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.service.market.AuthService;
+import com.corefit.service.GovernorateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class UserController {
+public class GovernorateController {
     @Autowired
-    private AuthService authService;
+    private GovernorateService governorateService;
 
-    @GetMapping("/profile")
-    public ResponseEntity<GeneralResponse<?>> getProfile(@RequestParam long id) {
+    @GetMapping("/governorates")
+    public ResponseEntity<?> getAll() {
         try {
-            GeneralResponse<?> response = authService.getProfile(id);
+            GeneralResponse<?> response = governorateService.getAll();
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GeneralResponse<>(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
 }

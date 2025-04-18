@@ -1,4 +1,4 @@
-package com.corefit.controller;
+package com.corefit.controller.auth;
 
 import com.corefit.dto.request.market.ForgetRequest;
 import com.corefit.dto.response.GeneralResponse;
@@ -39,7 +39,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralResponse<>("An unexpected error occurred"));
         }
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<GeneralResponse<?>> login(@RequestBody LoginRequest request) {
@@ -92,9 +91,9 @@ public class AuthController {
     }
 
     @DeleteMapping(value = "/delete_account")
-    public ResponseEntity<GeneralResponse<?>> deleteAccount(HttpServletRequest httpRequest){
+    public ResponseEntity<GeneralResponse<?>> deleteAccount(HttpServletRequest httpRequest) {
         try {
-            GeneralResponse<?> response = authService.deleteAccount( httpRequest);
+            GeneralResponse<?> response = authService.deleteAccount(httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GeneralResponse<>(e.getMessage()));
