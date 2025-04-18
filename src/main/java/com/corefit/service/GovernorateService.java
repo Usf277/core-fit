@@ -8,14 +8,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class GovernorateService {
     @Autowired
     private GovernorateRepo governorateRepo;
 
-    public Optional<Governorate> findById(long id) {
+    public Governorate findById(long id) {
         return governorateRepo.findById(id);
     }
 
