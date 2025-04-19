@@ -60,7 +60,12 @@ public class OrderService {
 
         orderRepo.save(order);
         cartService.deleteCart(httpRequest);
-        pushOrderNotifications(user, market, order);
+
+        notificationService.pushNotification(user, "Order Created",
+                "Your order #" + order.getId() + " has been placed. Please wait for the market's response.");
+
+        notificationService.pushNotification(market.getUser(), "New Order Received",
+                "You have received a new order in your market: " + market.getName());
 
         return new GeneralResponse<>("Order created successfully");
     }
@@ -105,6 +110,7 @@ public class OrderService {
     public GeneralResponse<?> cancelOrder(long orderId, HttpServletRequest httpRequest) {
         User user = authService.findUserById(authService.extractUserIdFromRequest(httpRequest));
         Order order = fetchOrderOrThrow(orderId);
+        Market market = order.getMarket();
 
         if (user.getType() != UserType.GENERAL || !order.getUser().getId().equals(user.getId())) {
             throw new GeneralException("You are not authorized to cancel this order.");
@@ -115,12 +121,18 @@ public class OrderService {
         }
 
         if (order.getStatus() == OrderStatus.ORDER_CANCELED) {
-            throw new GeneralException("This order is already canceled.");
+            throw new GeneralException("This order is already cancelled.");
         }
 
         refundWalletIfNeeded(order);
         order.setStatus(OrderStatus.ORDER_CANCELED);
         orderRepo.save(order);
+
+        notificationService.pushNotification(user, "Order cancelled successfully",
+                "Your order #" + order.getId() + " has been cancelled.");
+
+        notificationService.pushNotification(market.getUser(), "Order #" + order.getId() + "cancelled",
+                "Client has cancelled order #" + order.getId() + "from your market: " + market.getName());
 
         return new GeneralResponse<>("Order canceled successfully");
     }
@@ -129,20 +141,35 @@ public class OrderService {
     public GeneralResponse<?> changeStatus(ChangeStatusRequest request, HttpServletRequest httpRequest) {
         User user = authService.findUserById(authService.extractUserIdFromRequest(httpRequest));
         Order order = fetchOrderOrThrow(request.getOrderId());
+        User orderUser = order.getUser();
 
+        validateStatusChange(user, order, request.getStatus());
+
+        OrderStatus newStatus = parseOrderStatus(request.getStatus());
+        handleStatusSpecificActions(order, newStatus);
+
+        order.setStatus(newStatus);
+        orderRepo.save(order);
+
+        sendStatusChangeNotifications(order, user, orderUser, newStatus);
+
+        return new GeneralResponse<>("Order status updated to: " + newStatus, mapToOrderResponse(order));
+    }
+
+    private void validateStatusChange(User user, Order order, String newStatusStr) {
         if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("Only providers can update order status.");
         }
 
-        boolean isProviderMarket = user.getMarket().stream().map(Market::getId)
+        boolean isProviderMarket = user.getMarket().stream()
+                .map(Market::getId)
                 .anyMatch(id -> Objects.equals(id, order.getMarket().getId()));
 
         if (!isProviderMarket) {
             throw new GeneralException("This market does not belong to the provider.");
         }
 
-        OrderStatus newStatus = parseOrderStatus(request.getStatus());
-
+        OrderStatus newStatus = parseOrderStatus(newStatusStr);
         if (order.getStatus() == newStatus) {
             throw new GeneralException("Order is already in the status: " + newStatus);
         }
@@ -150,21 +177,67 @@ public class OrderService {
         if (newStatus.ordinal() <= order.getStatus().ordinal()) {
             throw new GeneralException("Cannot downgrade order status.");
         }
+    }
 
+    private void handleStatusSpecificActions(Order order, OrderStatus newStatus) {
         if (newStatus == OrderStatus.ORDER_CANCELED) {
-            if (order.getStatus() == OrderStatus.ORDER_DELIVERED || order.getStatus() == OrderStatus.ORDER_UNDER_DELIVERY) {
+            if (order.getStatus() == OrderStatus.ORDER_DELIVERED ||
+                    order.getStatus() == OrderStatus.ORDER_UNDER_DELIVERY) {
                 throw new GeneralException("Delivered orders cannot be canceled.");
             }
             refundWalletIfNeeded(order);
         }
-
-        order.setStatus(newStatus);
-        orderRepo.save(order);
-
-        return new GeneralResponse<>("Order status updated to: " + newStatus, mapToOrderResponse(order));
     }
 
-    // ------------------------------ Private Helpers ------------------------------
+    private void sendStatusChangeNotifications(Order order, User provider, User customer, OrderStatus status) {
+        NotificationContent content = getNotificationContent(order, status);
+        notificationService.pushNotification(customer, content.customerTitle, content.customerMessage);
+        notificationService.pushNotification(provider, content.providerTitle, content.providerMessage);
+    }
+
+    // Notification constructor record
+    private record NotificationContent(String customerTitle, String customerMessage,
+                                       String providerTitle, String providerMessage) {
+    }
+
+    private NotificationContent getNotificationContent(Order order, OrderStatus status) {
+        String orderId = String.valueOf(order.getId());
+        String marketName = order.getMarket().getName();
+
+        return switch (status) {
+            case ORDER_CONFIRMED -> new NotificationContent(
+                    "Order #" + orderId + " Confirmed",
+                    "Great news! Your order has been confirmed by " + marketName,
+                    "Order Confirmation Sent",
+                    "You've confirmed order #" + orderId
+            );
+            case ORDER_UNDER_PREPARATION -> new NotificationContent(
+                    "Order #" + orderId + " Being Prepared",
+                    "Your order is now being prepared at " + marketName,
+                    "Order Status Updated",
+                    "Started preparing order #" + orderId
+            );
+            case ORDER_UNDER_DELIVERY -> new NotificationContent(
+                    "Order #" + orderId + " Out for Delivery",
+                    "Your order is on its way from " + marketName,
+                    "Order Out for Delivery",
+                    "Order #" + orderId + " is now being delivered"
+            );
+            case ORDER_DELIVERED -> new NotificationContent(
+                    "Order #" + orderId + " Delivered",
+                    "Your order from " + marketName + " has been delivered. Enjoy!",
+                    "Order Delivered Successfully",
+                    "Order #" + orderId + " has been marked as delivered"
+            );
+            case ORDER_CANCELED -> new NotificationContent(
+                    "Order #" + orderId + " Cancelled",
+                    "Your order from " + marketName + " has been cancelled by the market",
+                    "Order Cancellation Confirmed",
+                    "You've cancelled order #" + orderId
+            );
+            default -> throw new GeneralException("Unexpected order status: " + status);
+        };
+    }
 
     private Order buildOrderFromCart(Cart cart, OrderRequest request, User user) {
         List<OrderItem> orderItems = cart.getCartItems().stream().map(cartItem -> {
@@ -277,20 +350,5 @@ public class OrderService {
                 order.getStatus(),
                 order.getTotalPrice()
         );
-    }
-
-    private void pushOrderNotifications(User user, Market market, Order order) {
-        Notification userNotification = new Notification();
-        userNotification.setTitle("Order Created");
-        userNotification.setUser(user);
-        userNotification.setMessage("Your order #" + order.getId() + " has been placed. Please wait for the market's response.");
-
-        Notification marketNotification = new Notification();
-        marketNotification.setTitle("New Order Received");
-        marketNotification.setUser(market.getUser());
-        marketNotification.setMessage("You have received a new order in your market: " + market.getName());
-
-        notificationService.pushNotification(userNotification);
-        notificationService.pushNotification(marketNotification);
     }
 }
