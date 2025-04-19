@@ -2,12 +2,15 @@ package com.corefit.service;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.NotificationResponse;
+import com.corefit.entity.FcmToken;
 import com.corefit.entity.Notification;
 import com.corefit.entity.User;
 import com.corefit.exceptions.GeneralException;
+import com.corefit.repository.FcmTokenRepo;
 import com.corefit.repository.NotificationRepo;
 import com.corefit.service.market.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +27,11 @@ public class NotificationService {
     @Autowired
     private NotificationRepo notificationRepo;
     @Autowired
+    private FcmTokenRepo fcmTokenRepo;
+    @Autowired
     private AuthService authService;
+    @Autowired
+    private FCMService fcmService;
 
     public GeneralResponse<?> getNotifications(Integer page, Integer size, HttpServletRequest request) {
         if (size == null || size <= 0) size = 5;
@@ -71,13 +78,17 @@ public class NotificationService {
         }
     }
 
+    @Transactional
     public void pushNotification(User user, String title, String message) {
         Notification notification = new Notification();
         notification.setTitle(title);
         notification.setUser(user);
         notification.setMessage(message);
 
+        FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
+
         notificationRepo.save(notification);
+        fcmService.sendNotification(title, message, fcmToken.getToken());
     }
 
     private NotificationResponse mapToNotificationResponse(Notification notification) {

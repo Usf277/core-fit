@@ -60,8 +60,10 @@ public class ProductController {
     @PostMapping(value = "/edit_product", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> editProduct(
             @ModelAttribute ProductRequest productRequest,
+            @RequestParam(value = "imagesToKeep", required = false) List<String> imagesToKeep,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         try {
+            productRequest.setImagesToKeep(imagesToKeep);
             GeneralResponse<?> response = productService.update(productRequest, images);
             return ResponseEntity.status(HttpStatus.OK).body(response);
 

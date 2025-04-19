@@ -3,6 +3,8 @@ package com.corefit.dto.request.market;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class ProductRequest {
@@ -14,4 +16,5 @@ public class ProductRequest {
     private Long marketId;
     private Long subCategoryId;
     private boolean isHidden;
+    private List<String> imagesToKeep;
 }

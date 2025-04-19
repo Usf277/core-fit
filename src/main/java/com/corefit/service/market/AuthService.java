@@ -5,6 +5,8 @@ import com.corefit.dto.request.LoginRequest;
 import com.corefit.dto.request.RegisterRequest;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.UserResponse;
+import com.corefit.entity.FcmToken;
+import com.corefit.repository.FcmTokenRepo;
 import com.corefit.service.*;
 import com.corefit.utils.DateParser;
 import com.corefit.utils.JwtUtil;
@@ -27,6 +29,8 @@ import java.util.Map;
 public class AuthService {
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private FcmTokenRepo fcmTokenRepo;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
@@ -132,6 +136,25 @@ public class AuthService {
         long userId = extractUserIdFromRequest(httpRequest);
         userRepo.deleteById(userId);
         return new GeneralResponse<>("Account deleted successfully");
+    }
+
+    public GeneralResponse<?> saveFcmToken(String token, HttpServletRequest httpRequest) {
+        User user = extractUserFromRequest(httpRequest);
+        FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
+
+        if (fcmToken == null) {
+            FcmToken fcmTokenNew = new FcmToken();
+
+            fcmTokenNew.setUser(user);
+            fcmTokenNew.setToken(token);
+
+            fcmTokenRepo.save(fcmTokenNew);
+        } else {
+            fcmToken.setToken(token);
+            fcmTokenRepo.save(fcmToken);
+        }
+
+        return new GeneralResponse<>("Token successfully saved");
     }
 
     /// Helper method

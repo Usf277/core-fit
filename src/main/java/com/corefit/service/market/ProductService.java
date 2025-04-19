@@ -140,7 +140,7 @@ public class ProductService {
     }
 
     @Transactional
-    public GeneralResponse<?> update(ProductRequest productRequest, List<MultipartFile> images) {
+    public GeneralResponse<?> update(ProductRequest productRequest, List<MultipartFile> newImages) {
         Product product = productRepo.findById(productRequest.getId())
                 .orElseThrow(() -> new GeneralException("Product not found"));
 
@@ -151,11 +151,28 @@ public class ProductService {
         product.setSubCategory(subCategoryRepo.findById(productRequest.getSubCategoryId())
                 .orElseThrow(() -> new GeneralException("Sub category not found")));
 
-        if (images != null && !images.isEmpty()) {
-            filesService.deleteImages(product.getImages());
-            product.setImages(filesService.uploadImages(images));
+        List<String> oldImages = product.getImages() != null ? product.getImages() : new ArrayList<>();
+        List<String> updatedImages = new ArrayList<>();
+
+        List<String> imagesToKeep = productRequest.getImagesToKeep();
+
+        if (imagesToKeep == null || imagesToKeep.isEmpty()) {
+            filesService.deleteImages(oldImages);
+        } else {
+            List<String> imagesToDelete = oldImages.stream()
+                    .filter(img -> !imagesToKeep.contains(img))
+                    .collect(Collectors.toList());
+
+            filesService.deleteImages(imagesToDelete);
+            updatedImages.addAll(imagesToKeep);
         }
 
+        if (newImages != null && !newImages.isEmpty()) {
+            List<String> uploaded = filesService.uploadImages(newImages);
+            updatedImages.addAll(uploaded);
+        }
+
+        product.setImages(updatedImages);
         productRepo.save(product);
 
         return new GeneralResponse<>("Product updated successfully", product);
