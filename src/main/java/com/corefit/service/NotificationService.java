@@ -71,7 +71,12 @@ public class NotificationService {
         }
     }
 
-    public void  pushNotification(Notification notification) {
+    public void pushNotification(User user, String title, String message) {
+        Notification notification = new Notification();
+        notification.setTitle(title);
+        notification.setUser(user);
+        notification.setMessage(message);
+
         notificationRepo.save(notification);
     }
 
