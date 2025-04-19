@@ -99,4 +99,14 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GeneralResponse<>(e.getMessage()));
         }
     }
+
+    @PostMapping("firebase-token")
+    public ResponseEntity<GeneralResponse<?>> saveFcmToken(String fcmToken, HttpServletRequest httpRequest) {
+        try {
+            GeneralResponse<?> response = authService.saveFcmToken(fcmToken, httpRequest);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (GeneralException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GeneralResponse<>(e.getMessage()));
+        }
+    }
 }
