@@ -2,7 +2,7 @@ package com.corefit.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -22,11 +22,12 @@ public class Notification {
 
     private String message;
 
-    @CreatedDate
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @ManyToOne
     private User user;
 
-    private Boolean isRead =  false;
+    private Boolean isRead = false;
 }

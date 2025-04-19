@@ -5,7 +5,7 @@ import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,7 +39,8 @@ public class Order {
 
     private String additionalInfo;
 
-    @CreatedDate
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
