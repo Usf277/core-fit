@@ -7,10 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController("/notifications")
 public class NotificationController {
@@ -50,8 +47,8 @@ public class NotificationController {
         }
     }
 
-    @DeleteMapping("")
-    public ResponseEntity<GeneralResponse<?>> deleteAllNotificationById(HttpServletRequest request, @RequestParam Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<GeneralResponse<?>> deleteAllNotificationById(HttpServletRequest request, @PathVariable Long id) {
         try {
             GeneralResponse<?> response = notificationService.deleteById(request, id);
             return ResponseEntity.status(HttpStatus.OK).body(response);
