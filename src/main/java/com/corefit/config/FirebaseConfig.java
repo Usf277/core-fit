@@ -20,13 +20,11 @@ public class FirebaseConfig {
     @PostConstruct
     public void initFirebase() {
         try {
-            InputStream serviceAccount = null;
-
             if (firebaseConfig != null && !firebaseConfig.isBlank()) {
-                serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
-            }
+                String processedConfig = firebaseConfig.replace("\\n", "\n");
 
-            if (serviceAccount != null) {
+                InputStream serviceAccount = new ByteArrayInputStream(processedConfig.getBytes(StandardCharsets.UTF_8));
+
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                         .build();
