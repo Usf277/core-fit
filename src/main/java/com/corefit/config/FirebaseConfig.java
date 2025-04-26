@@ -14,22 +14,31 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class FirebaseConfig {
 
-    @Value("${FIREBASE_CONFIG}")
+    @Value("${firebase.config:}")
     private String firebaseConfig;
 
     @PostConstruct
     public void initFirebase() {
         try {
-            InputStream serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
+            InputStream serviceAccount = null;
 
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .build();
-
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-                System.out.println("✅ Firebase initialized successfully.");
+            if (firebaseConfig != null && !firebaseConfig.isBlank()) {
+                serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8));
             }
+
+            if (serviceAccount != null) {
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .build();
+
+                if (FirebaseApp.getApps().isEmpty()) {
+                    FirebaseApp.initializeApp(options);
+                    System.out.println("✅ Firebase initialized successfully.");
+                }
+            } else {
+                System.err.println("❌ Firebase configuration is missing.");
+            }
+
         } catch (Exception e) {
             System.err.println("❌ Failed to initialize Firebase: " + e.getMessage());
             e.printStackTrace();
