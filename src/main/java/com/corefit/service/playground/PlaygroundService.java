@@ -99,7 +99,7 @@ public class PlaygroundService {
         return new GeneralResponse<>("Playground updated successfully", playground);
     }
 
-    public GeneralResponse<?> getAll(Integer page, Integer size, String name, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getAll(Integer page, Integer size, String search, HttpServletRequest httpRequest) {
         if (size == null || size <= 0) size = 5;
         if (page == null || page < 1) page = 1;
 
@@ -115,7 +115,7 @@ public class PlaygroundService {
             data.put("totalPages", playgrounds.getTotalPages());
             data.put("pageSize", playgrounds.getSize());
         } else {
-            Page<Playground> playgrounds = playgroundRepo.findAllByFilters(name, pageable);
+            Page<Playground> playgrounds = playgroundRepo.findAllByFilters(search, pageable);
             data.put("playgrounds", playgrounds.getContent());
             data.put("totalElements", playgrounds.getTotalElements());
             data.put("totalPages", playgrounds.getTotalPages());
