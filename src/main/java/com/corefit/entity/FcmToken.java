@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Entity
 public class FcmToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,3 +21,5 @@ public class FcmToken {
     @OneToOne(cascade = CascadeType.ALL)
     private User user;
 }
+
+
