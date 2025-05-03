@@ -18,8 +18,7 @@ public class FcmToken {
     @Column(unique = true, nullable = false, columnDefinition = "TEXT")
     private String token;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }
-
-
