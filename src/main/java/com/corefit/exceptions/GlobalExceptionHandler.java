@@ -17,14 +17,14 @@ public class GlobalExceptionHandler {
         ex.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new GeneralResponse<>("Internal server error: " + ex.getMessage()));
+                .body(new GeneralResponse<>("Error: " + ex.getMessage()));
     }
 
     @ExceptionHandler(GeneralException.class)
     public ResponseEntity<GeneralResponse<?>> handleGeneralException(GeneralException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new GeneralResponse<>(ex.getMessage()));
+                .body(new GeneralResponse<>("Error: " + ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
