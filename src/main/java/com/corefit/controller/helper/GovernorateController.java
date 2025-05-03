@@ -2,7 +2,7 @@ package com.corefit.controller.helper;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.service.GovernorateService;
+import com.corefit.service.helper.GovernorateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -7,15 +7,22 @@ import com.corefit.entity.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
-import com.corefit.service.FilesService;
-import com.corefit.service.AuthService;
+import com.corefit.service.helper.FilesService;
+import com.corefit.service.auth.AuthService;
 import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -93,16 +100,32 @@ public class PlaygroundService {
     }
 
 
-    public GeneralResponse<?> getAll(HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getAll(Integer page, Integer size, String name, HttpServletRequest httpRequest) {
+        if (size == null || size <= 0) size = 5;
+        if (page == null || page < 1) page = 1;
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
         User user = authService.extractUserFromRequest(httpRequest);
-        if (user == null || user.getType() != UserType.PROVIDER) {
-            throw new GeneralException("User is not a provider");
+
+        Map<String, Object> data = new HashMap<>();
+
+        if (user.getType() == UserType.PROVIDER) {
+            Page<Playground> playgrounds = playgroundRepo.findAllByUserId(user.getId());
+            data.put("playgrounds", playgrounds.getContent());
+            data.put("totalElements", playgrounds.getTotalElements());
+            data.put("totalPages", playgrounds.getTotalPages());
+            data.put("pageSize", playgrounds.getSize());
+        } else {
+            Page<Playground> playgrounds = playgroundRepo.findAllByFilters(name, pageable);
+            data.put("playgrounds", playgrounds.getContent());
+            data.put("totalElements", playgrounds.getTotalElements());
+            data.put("totalPages", playgrounds.getTotalPages());
+            data.put("pageSize", playgrounds.getSize());
         }
 
-        List<Playground> playgrounds = playgroundRepo.findAllByUser_Id(user.getId());
-
-        return new GeneralResponse<>("playgrounds retrieved successfully", playgrounds);
+        return new GeneralResponse<>("Playgrounds retrieved successfully", data);
     }
+
 
     /// Helper method
     private Playground findById(Long id) {

@@ -1,4 +1,4 @@
-package com.corefit.service;
+package com.corefit.service.helper;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.Governorate;

@@ -51,9 +51,13 @@ public class PlaygroundController {
     }
 
     @GetMapping("")
-    public ResponseEntity<GeneralResponse<?>> getPlaygrounds(HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<?>> getPlaygrounds(
+            @RequestParam int page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String search,
+            HttpServletRequest httpRequest) {
         try {
-            GeneralResponse<?> response = playgroundService.getAll(httpRequest);
+            GeneralResponse<?> response = playgroundService.getAll(page, size, search, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (GeneralException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
