@@ -123,7 +123,15 @@ public class ProductService {
                 .orElseThrow(() -> new GeneralException("Sub category not found"));
 
 
-        List<String> imageUrls = filesService.uploadImages(images);
+        List<String> imageUrls = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile image : images) {
+                if (image == null || image.isEmpty()) {
+                    throw new GeneralException("One or more uploaded images are empty");
+                }
+            }
+            imageUrls = filesService.uploadImages(images);
+        }
 
         Product product = Product.builder()
                 .name(productRequest.getName())
@@ -136,6 +144,7 @@ public class ProductService {
                 .build();
 
         productRepo.save(product);
+
         return new GeneralResponse<>("Product added successfully", product);
     }
 

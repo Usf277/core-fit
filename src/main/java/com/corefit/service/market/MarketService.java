@@ -123,19 +123,20 @@ public class MarketService {
             }
         }
 
-        Map<String, Object> data = new HashMap<>();
         market.setName(request.getName());
         market.setDescription(request.getDescription());
-
-        Category category = categoryService.findById(request.getCategoryId());
-        market.setCategory(category);
-
         market.setLat(request.getLat());
         market.setLng(request.getLng());
         market.setAddress(request.getAddress());
+        market.setImageUrl(imagePath);
+        Category category = categoryService.findById(request.getCategoryId());
+        market.setCategory(category);
 
         marketRepo.save(market);
+
+        Map<String, Object> data = new HashMap<>();
         data.put("Market", market);
+
         return new GeneralResponse<>("Market updated successfully", data);
     }
 
