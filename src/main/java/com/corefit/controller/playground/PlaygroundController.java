@@ -2,7 +2,6 @@ package com.corefit.controller.playground;
 
 import com.corefit.dto.request.playground.PlaygroundRequest;
 import com.corefit.dto.response.GeneralResponse;
-import com.corefit.exceptions.GeneralException;
 import com.corefit.service.playground.PlaygroundService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +28,9 @@ public class PlaygroundController {
             @ModelAttribute PlaygroundRequest playgroundRequest,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             HttpServletRequest httpRequest) {
-        try {
-            GeneralResponse<?> response = playgroundService.create(playgroundRequest, images, httpRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
-        }
+
+        GeneralResponse<?> response = playgroundService.create(playgroundRequest, images, httpRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping(path = "/update", consumes = {"multipart/form-data"})
@@ -42,12 +38,9 @@ public class PlaygroundController {
             @ModelAttribute PlaygroundRequest playgroundRequest,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
             HttpServletRequest httpRequest) {
-        try {
-            GeneralResponse<?> response = playgroundService.update(playgroundRequest, images, httpRequest);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
-        }
+
+        GeneralResponse<?> response = playgroundService.update(playgroundRequest, images, httpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("")
@@ -60,6 +53,5 @@ public class PlaygroundController {
         GeneralResponse<?> response = playgroundService.getAll(page, size, search, httpRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
 
 }
