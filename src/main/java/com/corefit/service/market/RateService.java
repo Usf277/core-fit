@@ -11,6 +11,7 @@ import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.MarketRepo;
 import com.corefit.repository.market.RateRepo;
 import com.corefit.repository.UserRepo;
+import com.corefit.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

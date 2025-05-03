@@ -5,7 +5,7 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.request.LoginRequest;
 import com.corefit.dto.request.RegisterRequest;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.service.market.AuthService;
+import com.corefit.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -101,7 +101,7 @@ public class AuthController {
     }
 
     @PostMapping("firebase-token")
-    public ResponseEntity<GeneralResponse<?>> saveFcmToken(String fcmToken, HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<?>> saveFcmToken(@RequestBody String fcmToken, HttpServletRequest httpRequest) {
         try {
             GeneralResponse<?> response = authService.saveFcmToken(fcmToken, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);

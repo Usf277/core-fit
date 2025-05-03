@@ -14,6 +14,7 @@ import com.corefit.repository.market.FavouritesRepo;
 import com.corefit.repository.market.MarketRepo;
 import com.corefit.repository.market.ProductRepo;
 import com.corefit.repository.market.SubCategoryRepo;
+import com.corefit.service.AuthService;
 import com.corefit.service.FilesService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
