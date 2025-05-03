@@ -59,6 +59,7 @@ public class PlaygroundService {
                 .hasExtraPrice(playgroundRequest.isHasExtraPrice())
                 .images(imageUrls)
                 .user(user)
+                .isOpened(true)
                 .build();
 
         playgroundRepo.save(playground);

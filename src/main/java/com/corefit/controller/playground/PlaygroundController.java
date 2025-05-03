@@ -45,7 +45,7 @@ public class PlaygroundController {
 
     @GetMapping("")
     public ResponseEntity<GeneralResponse<?>> getPlaygrounds(
-            @RequestParam int page,
+            @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String search,
             HttpServletRequest httpRequest) {
