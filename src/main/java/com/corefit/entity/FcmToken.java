@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Entity
 public class FcmToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
