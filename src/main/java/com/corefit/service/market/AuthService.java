@@ -138,6 +138,7 @@ public class AuthService {
         return new GeneralResponse<>("Account deleted successfully");
     }
 
+    @Transactional
     public GeneralResponse<?> saveFcmToken(String token, HttpServletRequest httpRequest) {
         User user = extractUserFromRequest(httpRequest);
         FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());

@@ -20,12 +20,13 @@ public interface MarketRepo extends JpaRepository<Market, Long> {
             "(:categoryId IS NULL OR m.category.id = :categoryId)")
     Page<Market> findAllByFilters(String name, Long categoryId, Pageable pageable);
 
-
     @Query("SELECT COUNT(r) FROM Rate r WHERE r.market.id = :marketId")
     Long getMarketRateCount(Long marketId);
 
     @Query("SELECT COALESCE(AVG(r.rate), 0) FROM Rate r WHERE r.market.id = :marketId")
     Double getMarketAverageRate(Long marketId);
+
+    Page<Market> findByUserId(Long userId, Pageable pageable);
 
 }
 

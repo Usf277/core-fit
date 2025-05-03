@@ -49,20 +49,29 @@ public class MarketService {
         return new GeneralResponse<>("Success", data);
     }
 
-    public GeneralResponse<?> getAll(Integer page, Integer size, String name, Long categoryId) {
+    public GeneralResponse<?> getAll(Integer page, Integer size, String name, Long categoryId, HttpServletRequest httpRequest) {
         if (size == null || size <= 0) size = 5;
         if (page == null || page < 1) page = 1;
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
-        Page<Market> markets = marketRepo.findAllByFilters(name, categoryId, pageable);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
+
+        User user = authService.extractUserFromRequest(httpRequest);
+
+        Page<Market> markets;
+
+        if (user.getType() == UserType.PROVIDER) {
+            markets = marketRepo.findByUserId(user.getId(), pageable);
+        } else {
+            markets = marketRepo.findAllByFilters(name, categoryId, pageable);
+        }
 
         Map<String, Object> data = new HashMap<>();
         data.put("markets", markets.getContent());
         data.put("totalPages", markets.getTotalPages());
         data.put("totalElements", markets.getTotalElements());
         data.put("pageSize", markets.getSize());
-        return new GeneralResponse<>("Market retrieved successfully", data);
 
+        return new GeneralResponse<>("Markets retrieved successfully", data);
     }
 
     public GeneralResponse<?> insert(MarketRequest request, HttpServletRequest httpRequest) {
