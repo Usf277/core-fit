@@ -12,6 +12,7 @@ import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.CartItemRepo;
 import com.corefit.repository.market.CartRepo;
 import com.corefit.repository.market.ProductRepo;
+import com.corefit.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;

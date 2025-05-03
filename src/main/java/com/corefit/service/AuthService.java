@@ -1,4 +1,4 @@
-package com.corefit.service.market;
+package com.corefit.service;
 
 import com.corefit.dto.request.market.ForgetRequest;
 import com.corefit.dto.request.LoginRequest;
@@ -7,7 +7,6 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.UserResponse;
 import com.corefit.entity.FcmToken;
 import com.corefit.repository.FcmTokenRepo;
-import com.corefit.service.*;
 import com.corefit.utils.DateParser;
 import com.corefit.utils.JwtUtil;
 import com.corefit.entity.City;

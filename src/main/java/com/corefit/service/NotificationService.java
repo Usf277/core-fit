@@ -8,7 +8,6 @@ import com.corefit.entity.User;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.FcmTokenRepo;
 import com.corefit.repository.NotificationRepo;
-import com.corefit.service.market.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;

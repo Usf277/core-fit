@@ -10,6 +10,7 @@ import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.FavouritesRepo;
 import com.corefit.repository.market.ProductRepo;
 import com.corefit.repository.UserRepo;
+import com.corefit.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

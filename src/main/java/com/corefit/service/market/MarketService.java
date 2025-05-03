@@ -8,6 +8,7 @@ import com.corefit.entity.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.MarketRepo;
+import com.corefit.service.AuthService;
 import com.corefit.service.FilesService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;

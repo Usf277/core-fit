@@ -14,6 +14,7 @@ import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.CartRepo;
 import com.corefit.repository.market.OrderRepo;
+import com.corefit.service.AuthService;
 import com.corefit.service.NotificationService;
 import com.corefit.service.WalletService;
 import jakarta.servlet.http.HttpServletRequest;
