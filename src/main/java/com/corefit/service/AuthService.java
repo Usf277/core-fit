@@ -1,5 +1,6 @@
 package com.corefit.service;
 
+import com.corefit.dto.request.FcmRequest;
 import com.corefit.dto.request.market.ForgetRequest;
 import com.corefit.dto.request.LoginRequest;
 import com.corefit.dto.request.RegisterRequest;
@@ -138,7 +139,7 @@ public class AuthService {
     }
 
     @Transactional
-    public GeneralResponse<?> saveFcmToken(String token, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> saveFcmToken(FcmRequest request, HttpServletRequest httpRequest) {
         User user = extractUserFromRequest(httpRequest);
         FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
 
@@ -146,11 +147,11 @@ public class AuthService {
             FcmToken fcmTokenNew = new FcmToken();
 
             fcmTokenNew.setUser(user);
-            fcmTokenNew.setToken(token);
+            fcmTokenNew.setToken(request.getToken());
 
             fcmTokenRepo.save(fcmTokenNew);
         } else {
-            fcmToken.setToken(token);
+            fcmToken.setToken(request.getToken());
             fcmTokenRepo.save(fcmToken);
         }
 

@@ -1,5 +1,6 @@
 package com.corefit.controller.auth;
 
+import com.corefit.dto.request.FcmRequest;
 import com.corefit.dto.request.market.ForgetRequest;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.request.LoginRequest;
@@ -101,7 +102,7 @@ public class AuthController {
     }
 
     @PostMapping("firebase-token")
-    public ResponseEntity<GeneralResponse<?>> saveFcmToken(@RequestBody String fcmToken, HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<?>> saveFcmToken(@RequestBody FcmRequest fcmToken, HttpServletRequest httpRequest) {
         try {
             GeneralResponse<?> response = authService.saveFcmToken(fcmToken, httpRequest);
             return ResponseEntity.status(HttpStatus.OK).body(response);
