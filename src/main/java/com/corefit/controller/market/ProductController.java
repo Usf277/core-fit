@@ -45,16 +45,12 @@ public class ProductController {
 
     @PostMapping(value = "/add_product", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> addProduct(
-            @ModelAttribute ProductRequest productRequest,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images, HttpServletRequest httpRequest) {
+            @ModelAttribute ProductRequest productRequest
+            , @RequestPart(value = "images", required = false) List<MultipartFile> images
+            , HttpServletRequest httpRequest) {
 
-        try {
-            GeneralResponse<?> response = productService.insert(productRequest, images, httpRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
-        } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
-        }
+        GeneralResponse<?> response = productService.insert(productRequest, images, httpRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping(value = "/edit_product", consumes = {"multipart/form-data"})
@@ -74,12 +70,8 @@ public class ProductController {
 
     @DeleteMapping("/delete_product")
     public ResponseEntity<GeneralResponse<?>> deleteProduct(@RequestParam long id) {
-        try {
-            GeneralResponse<?> response = productService.delete(id);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
-        }
+        GeneralResponse<?> response = productService.delete(id);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PutMapping("/change_status")
@@ -91,5 +83,4 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
         }
     }
-
 }

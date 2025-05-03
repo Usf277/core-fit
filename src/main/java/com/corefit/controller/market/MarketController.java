@@ -48,13 +48,10 @@ public class MarketController {
 
     @PostMapping(value = "/edit_market", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> editMarket(@ModelAttribute MarketRequest request, HttpServletRequest httpRequest) {
-        try {
-            GeneralResponse<?> response = marketService.update(request, httpRequest);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
-        }
+        GeneralResponse<?> response = marketService.update(request, httpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 
     @DeleteMapping("/delete_market")
     public ResponseEntity<GeneralResponse<?>> deleteMarket(@RequestParam long id, HttpServletRequest httpRequest) {
