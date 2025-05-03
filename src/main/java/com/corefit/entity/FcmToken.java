@@ -21,3 +21,5 @@ public class FcmToken {
     @OneToOne(cascade = CascadeType.ALL)
     private User user;
 }
+
+
