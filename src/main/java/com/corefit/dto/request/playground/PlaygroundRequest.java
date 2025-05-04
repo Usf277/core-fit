@@ -11,8 +11,7 @@ public class PlaygroundRequest {
     private long id;
     private String name;
     private String description;
-    private String lat;
-    private String lng;
+    private long cityId;
     private String address;
     private String morningShiftStart;
     private String morningShiftEnd;
