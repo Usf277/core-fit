@@ -1,5 +1,6 @@
 package com.corefit.entity.playground;
 
+import com.corefit.entity.City;
 import com.corefit.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -25,15 +26,10 @@ public class Playground {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String lat;
-
-    @Column(nullable = false)
-    private String lng;
+    @ManyToOne
+    private City city;
 
     private String address;
-
-    private int teamMembers;
 
     private LocalTime morningShiftStart;
 
