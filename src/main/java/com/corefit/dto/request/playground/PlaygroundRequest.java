@@ -1,9 +1,11 @@
 package com.corefit.dto.request.playground;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PlaygroundRequest {
     private long id;
@@ -12,7 +14,6 @@ public class PlaygroundRequest {
     private String lat;
     private String lng;
     private String address;
-    private int teamMembers;
     private String morningShiftStart;
     private String morningShiftEnd;
     private String nightShiftStart;

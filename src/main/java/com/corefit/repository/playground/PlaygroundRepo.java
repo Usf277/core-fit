@@ -19,7 +19,6 @@ public interface PlaygroundRepo extends JpaRepository<Playground, Integer> {
     Page<Playground> findAllByUserId(Long userId, Pageable pageable);
 
     @Query("SELECT p FROM Playground p WHERE " +
-            "p.isOpened = true AND " +
             "(:search IS NULL OR " +
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(p.address) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
