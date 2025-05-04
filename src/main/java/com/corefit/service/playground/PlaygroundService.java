@@ -2,11 +2,13 @@ package com.corefit.service.playground;
 
 import com.corefit.dto.request.playground.PlaygroundRequest;
 import com.corefit.dto.response.GeneralResponse;
+import com.corefit.entity.City;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
+import com.corefit.service.helper.CityService;
 import com.corefit.service.helper.FilesService;
 import com.corefit.service.auth.AuthService;
 import com.corefit.utils.DateParser;
@@ -33,6 +35,8 @@ public class PlaygroundService {
     private AuthService authService;
     @Autowired
     private FilesService filesService;
+    @Autowired
+    private CityService cityService;
 
     public GeneralResponse<?> create(PlaygroundRequest playgroundRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
 
@@ -43,13 +47,13 @@ public class PlaygroundService {
 
         List<String> imageUrls = filesService.uploadImages(images);
 
+        City city = cityService.findById(playgroundRequest.getCityId());
+
         Playground playground = Playground.builder()
                 .name(playgroundRequest.getName())
                 .description(playgroundRequest.getDescription())
-                .lat(playgroundRequest.getLat())
-                .lng(playgroundRequest.getLng())
+                .city(city)
                 .address(playgroundRequest.getAddress())
-                .teamMembers(playgroundRequest.getTeamMembers())
                 .morningShiftStart(DateParser.parseTime(playgroundRequest.getMorningShiftStart()))
                 .morningShiftEnd(DateParser.parseTime(playgroundRequest.getMorningShiftEnd()))
                 .nightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()))
@@ -77,15 +81,15 @@ public class PlaygroundService {
             throw new GeneralException("You do not have permission to update this playground");
         }
 
+        City city = cityService.findById(playgroundRequest.getCityId());
+
         filesService.deleteImages(playground.getImages());
         List<String> imageUrls = (images != null && !images.isEmpty()) ? filesService.uploadImages(images) : playground.getImages();
 
         playground.setName(playgroundRequest.getName());
         playground.setDescription(playgroundRequest.getDescription());
-        playground.setLat(playgroundRequest.getLat());
-        playground.setLng(playgroundRequest.getLng());
         playground.setAddress(playgroundRequest.getAddress());
-        playground.setTeamMembers(playgroundRequest.getTeamMembers());
+        playground.setCity(city);
         playground.setMorningShiftStart(DateParser.parseTime(playgroundRequest.getMorningShiftStart()));
         playground.setMorningShiftEnd(DateParser.parseTime(playgroundRequest.getMorningShiftEnd()));
         playground.setNightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()));
