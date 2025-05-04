@@ -13,14 +13,12 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(GeneralException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<GeneralResponse<?>> handleGeneralException(GeneralException ex) {
         ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>("Error: " + ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<GeneralResponse<?>> handleGenericException(Exception ex) {
         ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralResponse<>("Error: " + ex.getMessage()));

@@ -349,7 +349,9 @@ public class OrderService {
                 order.getMarket().getName(),
                 order.getClientAddress(),
                 order.getStatus(),
-                order.getTotalPrice()
+                order.getTotalPrice(),
+                order.getClientName(),
+                order.getClientPhone()
         );
     }
 }
