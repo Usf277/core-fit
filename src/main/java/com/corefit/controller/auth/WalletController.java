@@ -2,7 +2,7 @@ package com.corefit.controller.auth;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.service.WalletService;
+import com.corefit.service.auth.WalletService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

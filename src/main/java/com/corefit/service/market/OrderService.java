@@ -14,9 +14,9 @@ import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.CartRepo;
 import com.corefit.repository.market.OrderRepo;
-import com.corefit.service.AuthService;
-import com.corefit.service.NotificationService;
-import com.corefit.service.WalletService;
+import com.corefit.service.auth.AuthService;
+import com.corefit.service.helper.NotificationService;
+import com.corefit.service.auth.WalletService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -349,7 +349,9 @@ public class OrderService {
                 order.getMarket().getName(),
                 order.getClientAddress(),
                 order.getStatus(),
-                order.getTotalPrice()
+                order.getTotalPrice(),
+                order.getClientName(),
+                order.getClientPhone()
         );
     }
 }

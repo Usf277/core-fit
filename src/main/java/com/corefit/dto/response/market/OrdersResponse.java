@@ -21,4 +21,6 @@ public class OrdersResponse {
     private String clientAddress;
     private OrderStatus status;
     private Double totalPrice;
+    private String clientName;
+    private String clientPhone;
 }

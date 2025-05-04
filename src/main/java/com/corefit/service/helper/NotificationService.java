@@ -1,4 +1,4 @@
-package com.corefit.service;
+package com.corefit.service.helper;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.NotificationResponse;
@@ -8,6 +8,8 @@ import com.corefit.entity.User;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.FcmTokenRepo;
 import com.corefit.repository.NotificationRepo;
+import com.corefit.service.auth.AuthService;
+import com.corefit.service.auth.FCMService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;

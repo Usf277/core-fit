@@ -4,6 +4,7 @@ import com.corefit.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalTime;
 import java.util.List;
 
@@ -44,11 +45,13 @@ public class Playground {
 
     private double bookingPrice;
 
-    private boolean hasExtraPrice;
+    @Builder.Default
+    private boolean hasExtraPrice = false;
 
-    private double extraNightPrice;
+    private double extraNightPrice ;
 
-    private boolean isOpened;
+    @Builder.Default
+    private boolean isOpened = true;
 
     @ElementCollection
     @CollectionTable(name = "playgroud_images", joinColumns = @JoinColumn(name = "playground_id"))
