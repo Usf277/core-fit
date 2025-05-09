@@ -8,8 +8,8 @@ import com.corefit.entity.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.MarketRepo;
-import com.corefit.service.AuthService;
-import com.corefit.service.FilesService;
+import com.corefit.service.auth.AuthService;
+import com.corefit.service.helper.FilesService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -54,7 +54,7 @@ public class MarketService {
         if (size == null || size <= 0) size = 5;
         if (page == null || page < 1) page = 1;
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
 
         User user = authService.extractUserFromRequest(httpRequest);
 

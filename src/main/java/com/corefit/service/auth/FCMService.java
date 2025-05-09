@@ -1,4 +1,4 @@
-package com.corefit.service;
+package com.corefit.service.auth;
 
 import com.google.firebase.messaging.*;
 import org.springframework.stereotype.Service;

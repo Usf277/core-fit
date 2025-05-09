@@ -1,4 +1,4 @@
-package com.corefit.service;
+package com.corefit.service.helper;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

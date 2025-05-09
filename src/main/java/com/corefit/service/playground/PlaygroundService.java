@@ -2,20 +2,29 @@ package com.corefit.service.playground;
 
 import com.corefit.dto.request.playground.PlaygroundRequest;
 import com.corefit.dto.response.GeneralResponse;
+import com.corefit.entity.City;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
-import com.corefit.service.FilesService;
-import com.corefit.service.AuthService;
+import com.corefit.service.helper.CityService;
+import com.corefit.service.helper.FilesService;
+import com.corefit.service.auth.AuthService;
 import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -26,6 +35,8 @@ public class PlaygroundService {
     private AuthService authService;
     @Autowired
     private FilesService filesService;
+    @Autowired
+    private CityService cityService;
 
     public GeneralResponse<?> create(PlaygroundRequest playgroundRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
 
@@ -36,13 +47,13 @@ public class PlaygroundService {
 
         List<String> imageUrls = filesService.uploadImages(images);
 
+        City city = cityService.findById(playgroundRequest.getCityId());
+
         Playground playground = Playground.builder()
                 .name(playgroundRequest.getName())
                 .description(playgroundRequest.getDescription())
-                .lat(playgroundRequest.getLat())
-                .lng(playgroundRequest.getLng())
+                .city(city)
                 .address(playgroundRequest.getAddress())
-                .teamMembers(playgroundRequest.getTeamMembers())
                 .morningShiftStart(DateParser.parseTime(playgroundRequest.getMorningShiftStart()))
                 .morningShiftEnd(DateParser.parseTime(playgroundRequest.getMorningShiftEnd()))
                 .nightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()))
@@ -52,6 +63,7 @@ public class PlaygroundService {
                 .hasExtraPrice(playgroundRequest.isHasExtraPrice())
                 .images(imageUrls)
                 .user(user)
+                .isOpened(true)
                 .build();
 
         playgroundRepo.save(playground);
@@ -69,15 +81,15 @@ public class PlaygroundService {
             throw new GeneralException("You do not have permission to update this playground");
         }
 
+        City city = cityService.findById(playgroundRequest.getCityId());
+
         filesService.deleteImages(playground.getImages());
         List<String> imageUrls = (images != null && !images.isEmpty()) ? filesService.uploadImages(images) : playground.getImages();
 
         playground.setName(playgroundRequest.getName());
         playground.setDescription(playgroundRequest.getDescription());
-        playground.setLat(playgroundRequest.getLat());
-        playground.setLng(playgroundRequest.getLng());
         playground.setAddress(playgroundRequest.getAddress());
-        playground.setTeamMembers(playgroundRequest.getTeamMembers());
+        playground.setCity(city);
         playground.setMorningShiftStart(DateParser.parseTime(playgroundRequest.getMorningShiftStart()));
         playground.setMorningShiftEnd(DateParser.parseTime(playgroundRequest.getMorningShiftEnd()));
         playground.setNightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()));
@@ -92,17 +104,32 @@ public class PlaygroundService {
         return new GeneralResponse<>("Playground updated successfully", playground);
     }
 
+    public GeneralResponse<?> getAll(Integer page, Integer size, String search, HttpServletRequest httpRequest) {
+        if (size == null || size <= 0) size = 5;
+        if (page == null || page < 1) page = 1;
 
-    public GeneralResponse<?> getAll(HttpServletRequest httpRequest) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
         User user = authService.extractUserFromRequest(httpRequest);
-        if (user == null || user.getType() != UserType.PROVIDER) {
-            throw new GeneralException("User is not a provider");
+
+        Map<String, Object> data = new HashMap<>();
+
+        if (user.getType() == UserType.PROVIDER) {
+            Page<Playground> playgrounds = playgroundRepo.findAllByUserId(user.getId(), pageable);
+            data.put("playgrounds", playgrounds.getContent());
+            data.put("totalElements", playgrounds.getTotalElements());
+            data.put("totalPages", playgrounds.getTotalPages());
+            data.put("pageSize", playgrounds.getSize());
+        } else {
+            Page<Playground> playgrounds = playgroundRepo.findAllByFilters(search, pageable);
+            data.put("playgrounds", playgrounds.getContent());
+            data.put("totalElements", playgrounds.getTotalElements());
+            data.put("totalPages", playgrounds.getTotalPages());
+            data.put("pageSize", playgrounds.getSize());
         }
 
-        List<Playground> playgrounds = playgroundRepo.findAllByUser_Id(user.getId());
-
-        return new GeneralResponse<>("playgrounds retrieved successfully", playgrounds);
+        return new GeneralResponse<>("Playgrounds retrieved successfully", data);
     }
+
 
     /// Helper method
     private Playground findById(Long id) {

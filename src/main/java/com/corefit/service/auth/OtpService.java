@@ -1,4 +1,4 @@
-package com.corefit.service;
+package com.corefit.service.auth;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;

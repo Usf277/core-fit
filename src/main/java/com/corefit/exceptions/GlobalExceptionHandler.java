@@ -12,19 +12,16 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(GeneralException.class)
+    public ResponseEntity<GeneralResponse<?>> handleGeneralException(GeneralException ex) {
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>("Error: " + ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GeneralResponse<?>> handleGenericException(Exception ex) {
         ex.printStackTrace();
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new GeneralResponse<>("Error: " + ex.getMessage()));
-    }
-
-    @ExceptionHandler(GeneralException.class)
-    public ResponseEntity<GeneralResponse<?>> handleGeneralException(GeneralException ex) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new GeneralResponse<>("Error: " + ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new GeneralResponse<>("Error: " + ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -33,8 +30,7 @@ public class GlobalExceptionHandler {
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 errors.put(error.getField(), error.getDefaultMessage())
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new GeneralResponse<>("Validation failed", errors));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>("Validation failed", errors));
     }
 
 }

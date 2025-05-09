@@ -1,4 +1,4 @@
-package com.corefit.service;
+package com.corefit.service.auth;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.User;

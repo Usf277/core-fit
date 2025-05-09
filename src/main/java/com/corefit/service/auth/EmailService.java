@@ -1,4 +1,4 @@
-package com.corefit.service;
+package com.corefit.service.auth;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
