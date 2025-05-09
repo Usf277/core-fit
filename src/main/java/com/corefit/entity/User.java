@@ -3,6 +3,7 @@ package com.corefit.entity;
 import com.corefit.entity.market.Cart;
 import com.corefit.entity.market.Market;
 import com.corefit.entity.market.Rate;
+import com.corefit.entity.playground.PlaygroundRate;
 import com.corefit.enums.Gender;
 import com.corefit.enums.UserType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -65,6 +66,11 @@ public class User {
     @JsonIgnore
     @Builder.Default
     private Set<Rate> rates = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @Builder.Default
+    private Set<PlaygroundRate> playgroundRates = new HashSet<>();
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE)
     @JsonIgnore

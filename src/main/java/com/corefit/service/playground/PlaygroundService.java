@@ -14,17 +14,19 @@ import com.corefit.service.auth.AuthService;
 import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 @Service
@@ -37,9 +39,13 @@ public class PlaygroundService {
     private FilesService filesService;
     @Autowired
     private CityService cityService;
+    @Autowired
+    @Lazy
+    private PlaygroundFavouriteService playgroundFavouriteService;
 
+
+    @Transactional
     public GeneralResponse<?> create(PlaygroundRequest playgroundRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
-
         User user = authService.extractUserFromRequest(httpRequest);
         if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("User is not a provider");
@@ -70,6 +76,7 @@ public class PlaygroundService {
         return new GeneralResponse<>("Playground added successfully", playground);
     }
 
+    @Transactional
     public GeneralResponse<?> update(PlaygroundRequest playgroundRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         if (user.getType() != UserType.PROVIDER) {
@@ -83,8 +90,11 @@ public class PlaygroundService {
 
         City city = cityService.findById(playgroundRequest.getCityId());
 
-        filesService.deleteImages(playground.getImages());
-        List<String> imageUrls = (images != null && !images.isEmpty()) ? filesService.uploadImages(images) : playground.getImages();
+        if (images != null && !images.isEmpty()) {
+            filesService.deleteImages(playground.getImages());
+            List<String> imageUrls = filesService.uploadImages(images);
+            playground.setImages(imageUrls);
+        }
 
         playground.setName(playgroundRequest.getName());
         playground.setDescription(playgroundRequest.getDescription());
@@ -97,14 +107,14 @@ public class PlaygroundService {
         playground.setBookingPrice(playgroundRequest.getBookingPrice());
         playground.setExtraNightPrice(playgroundRequest.getExtraNightPrice());
         playground.setHasExtraPrice(playgroundRequest.isHasExtraPrice());
-        playground.setImages(imageUrls);
 
         playgroundRepo.save(playground);
 
         return new GeneralResponse<>("Playground updated successfully", playground);
     }
 
-    public GeneralResponse<?> getAll(Integer page, Integer size, String search, HttpServletRequest httpRequest) {
+    @Transactional(readOnly = true)
+    public GeneralResponse<?> getAll(Integer page, Integer size, String search, Long cityId, Integer avgRate, HttpServletRequest httpRequest) {
         if (size == null || size <= 0) size = 5;
         if (page == null || page < 1) page = 1;
 
@@ -112,27 +122,46 @@ public class PlaygroundService {
         User user = authService.extractUserFromRequest(httpRequest);
 
         Map<String, Object> data = new HashMap<>();
+        Page<Playground> playgrounds;
 
         if (user.getType() == UserType.PROVIDER) {
-            Page<Playground> playgrounds = playgroundRepo.findAllByUserId(user.getId(), pageable);
-            data.put("playgrounds", playgrounds.getContent());
-            data.put("totalElements", playgrounds.getTotalElements());
-            data.put("totalPages", playgrounds.getTotalPages());
-            data.put("pageSize", playgrounds.getSize());
+            playgrounds = playgroundRepo.findAllByUserId(user.getId(), pageable);
         } else {
-            Page<Playground> playgrounds = playgroundRepo.findAllByFilters(search, pageable);
-            data.put("playgrounds", playgrounds.getContent());
-            data.put("totalElements", playgrounds.getTotalElements());
-            data.put("totalPages", playgrounds.getTotalPages());
-            data.put("pageSize", playgrounds.getSize());
+            playgrounds = playgroundRepo.findAllByFilters(search, cityId, avgRate, pageable);
         }
+
+        Set<Long> favIds = playgroundFavouriteService.getFavouritePlaygroundIdsForUser(user.getId());
+
+        playgrounds.forEach(playground -> playground.setFavourite(favIds.contains(playground.getId())));
+
+        data.put("playgrounds", playgrounds.getContent());
+        data.put("totalElements", playgrounds.getTotalElements());
+        data.put("totalPages", playgrounds.getTotalPages());
+        data.put("pageSize", playgrounds.getSize());
+        data.put("currentPage", playgrounds.getNumber() + 1);
 
         return new GeneralResponse<>("Playgrounds retrieved successfully", data);
     }
 
+    @Transactional(readOnly = true)
+    public GeneralResponse<?> getById(Long id, HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
+        Playground playground = findById(id);
+
+        if (user.getType() == UserType.PROVIDER && !playground.getUser().getId().equals(user.getId())) {
+            throw new GeneralException("You do not have permission to view this playground");
+        }
+
+        boolean isFavorite = playgroundFavouriteService.existsByUserIdAndPlaygroundId(user.getId(), playground.getId());
+        playground.setFavourite(isFavorite);
+
+        return new GeneralResponse<>("Playground retrieved successfully", playground);
+    }
 
     /// Helper method
-    private Playground findById(Long id) {
-        return playgroundRepo.findById(id).orElseThrow(() -> new GeneralException("Playground not found"));
+    @Transactional(readOnly = true)
+    public Playground findById(Long id) {
+        return playgroundRepo.findById(id)
+                .orElseThrow(() -> new GeneralException("Playground not found with ID: " + id));
     }
 }

@@ -23,8 +23,6 @@ public class FavouritesService {
     @Autowired
     private FavouritesRepo favouritesRepo;
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
     private ProductRepo productRepo;
     @Autowired
     private AuthService authService;
@@ -63,15 +61,12 @@ public class FavouritesService {
 
     public GeneralResponse<?> toggleFavourite(FavouriteRequest favouriteRequest, HttpServletRequest httpRequest) {
         try {
-            long userId = authService.extractUserIdFromRequest(httpRequest);
-
-            User user = userRepo.findById(userId)
-                    .orElseThrow(() -> new GeneralException("User not found"));
+            User user = authService.extractUserFromRequest(httpRequest);
 
             Product product = productRepo.findById(favouriteRequest.getProductId())
                     .orElseThrow(() -> new GeneralException("Product not found"));
 
-            Favourites favourites = favouritesRepo.findByUser_Id(userId).orElseGet(() -> {
+            Favourites favourites = favouritesRepo.findByUser_Id(user.getId()).orElseGet(() -> {
                 Favourites newFavourites = new Favourites();
                 newFavourites.setUser(user);
                 newFavourites.setProducts(new ArrayList<>());

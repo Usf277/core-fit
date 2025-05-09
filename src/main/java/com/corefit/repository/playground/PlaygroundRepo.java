@@ -19,9 +19,14 @@ public interface PlaygroundRepo extends JpaRepository<Playground, Integer> {
     Page<Playground> findAllByUserId(Long userId, Pageable pageable);
 
     @Query("SELECT p FROM Playground p WHERE " +
-            "(:search IS NULL OR " +
-            "LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(p.address) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(p.description) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Playground> findAllByFilters(@Param("search") String search, Pageable pageable);
+            "(:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(p.address) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:cityId IS NULL OR p.city.id = :cityId) " +
+            "AND (:avgRate IS NULL OR p.avgRate = :avgRate)")
+    Page<Playground> findAllByFilters(
+            @Param("search") String search,
+            @Param("cityId") Long cityId,
+            @Param("avgRate") Integer avgRate,
+            Pageable pageable);
+
 }

@@ -31,8 +31,6 @@ public class RateService {
     @Autowired
     private MarketRepo marketRepo;
     @Autowired
-    private UserRepo userRepo;
-    @Autowired
     private AuthService authService;
 
     public GeneralResponse<?> getRatesByMarket(Long marketId, Integer page, Integer size) {

@@ -63,7 +63,7 @@ public class ProductService {
     }
 
     public GeneralResponse<?> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
-        size = (size == null || size <= 0) ? 5 : size;
+        size = (size == null || size <= 0) ? 10 : size;
         page = (page == null || page < 1) ? 1 : page;
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());

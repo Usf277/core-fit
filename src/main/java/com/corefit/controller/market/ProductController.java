@@ -30,11 +30,13 @@ public class ProductController {
     }
 
     @GetMapping("")
-    public ResponseEntity<?> getAllProduct(@RequestParam int page, @RequestParam int size
-            , @RequestParam(required = false) Long marketId
-            , @RequestParam(required = false) Long subCategoryId
-            , @RequestParam(required = false) String search
-            , HttpServletRequest request) {
+    public ResponseEntity<?> getAllProduct(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) Long marketId,
+            @RequestParam(required = false) Long subCategoryId,
+            @RequestParam(required = false) String search,
+            HttpServletRequest request) {
         try {
             GeneralResponse<?> response = productService.getAll(page, size, marketId, subCategoryId, search, request);
             return ResponseEntity.status(HttpStatus.OK).body(response);

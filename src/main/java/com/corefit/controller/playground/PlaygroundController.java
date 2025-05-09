@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/playgrounds")
 public class PlaygroundController {
 
     @Autowired
@@ -23,7 +22,7 @@ public class PlaygroundController {
         this.playgroundService = playgroundService;
     }
 
-    @PostMapping(path = "/create", consumes = {"multipart/form-data"})
+    @PostMapping(path = "/create_playground", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> createPlayground(
             @ModelAttribute PlaygroundRequest playgroundRequest,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
@@ -33,7 +32,7 @@ public class PlaygroundController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping(path = "/update", consumes = {"multipart/form-data"})
+    @PostMapping(path = "/update_playground", consumes = {"multipart/form-data"})
     public ResponseEntity<GeneralResponse<?>> updatePlayground(
             @ModelAttribute PlaygroundRequest playgroundRequest,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,
@@ -43,15 +42,22 @@ public class PlaygroundController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("")
+    @GetMapping("/playgrounds")
     public ResponseEntity<GeneralResponse<?>> getPlaygrounds(
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long cityId,
+            @RequestParam(required = false) Integer avgRate,
             HttpServletRequest httpRequest) {
 
-        GeneralResponse<?> response = playgroundService.getAll(page, size, search, httpRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        GeneralResponse<?> response = playgroundService.getAll(page, size, search, cityId, avgRate, httpRequest);
+        return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/playground")
+    public ResponseEntity<GeneralResponse<?>> getPlaygrounds(@RequestParam Long id, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = playgroundService.getById(id, httpRequest);
+        return ResponseEntity.ok(response);
+    }
 }

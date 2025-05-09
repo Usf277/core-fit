@@ -58,4 +58,13 @@ public class Playground {
     @JoinColumn(nullable = false)
     @JsonIgnore
     private User user;
+
+    @OneToMany(mappedBy = "playground", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<PlaygroundRate> rates;
+
+    private int avgRate;
+
+    @Transient
+    private boolean isFavourite;
 }

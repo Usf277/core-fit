@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface RateRepo extends JpaRepository<Rate, Long> {
 
     @Override
-    Optional<Rate> findById(Long aLong);
+    Optional<Rate> findById(Long id);
 
     @Query("SELECT rate FROM Rate rate WHERE rate.market.id = :marketId")
     Page<Rate> getRatesByMarketId(Long marketId, Pageable pageable);
