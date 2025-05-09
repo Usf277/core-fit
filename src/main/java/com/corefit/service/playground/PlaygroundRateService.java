@@ -23,13 +23,10 @@ import java.util.Map;
 
 @Service
 public class PlaygroundRateService {
-
     @Autowired
     private PlaygroundRateRepo playgroundRateRepo;
-
     @Autowired
     private PlaygroundRepo playgroundRepo;
-
     @Autowired
     private AuthService authService;
 
