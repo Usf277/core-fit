@@ -45,30 +45,18 @@ public class ProductController {
         }
     }
 
-    @PostMapping(value = "/add_product", consumes = {"multipart/form-data"})
-    public ResponseEntity<GeneralResponse<?>> addProduct(
-            @ModelAttribute ProductRequest productRequest
-            , @RequestPart(value = "images", required = false) List<MultipartFile> images
-            , HttpServletRequest httpRequest) {
-
-        GeneralResponse<?> response = productService.insert(productRequest, images, httpRequest);
+    @PostMapping("/add_product")
+    public ResponseEntity<GeneralResponse<?>> addProduct(@RequestBody ProductRequest productRequest, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = productService.insert(productRequest, httpRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping(value = "/edit_product", consumes = {"multipart/form-data"})
-    public ResponseEntity<GeneralResponse<?>> editProduct(
-            @ModelAttribute ProductRequest productRequest,
-            @RequestParam(value = "imagesToKeep", required = false) List<String> imagesToKeep,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-        try {
-            productRequest.setImagesToKeep(imagesToKeep);
-            GeneralResponse<?> response = productService.update(productRequest, images);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-
-        } catch (GeneralException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new GeneralResponse<>(e.getMessage()));
-        }
+    @PostMapping("/edit_product")
+    public ResponseEntity<GeneralResponse<?>> editProduct(@RequestBody ProductRequest productRequest) {
+        GeneralResponse<?> response = productService.update(productRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 
     @DeleteMapping("/delete_product")
     public ResponseEntity<GeneralResponse<?>> deleteProduct(@RequestParam long id) {

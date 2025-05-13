@@ -35,8 +35,6 @@ public class ProductService {
     @Autowired
     private SubCategoryRepo subCategoryRepo;
     @Autowired
-    private FilesService filesService;
-    @Autowired
     private AuthService authService;
     @Autowired
     private FavouritesRepo favouritesRepo;
@@ -110,7 +108,7 @@ public class ProductService {
     }
 
     @Transactional
-    public GeneralResponse<?> insert(ProductRequest productRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> insert(ProductRequest productRequest, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
 
         if (user.getType() != UserType.PROVIDER) {
@@ -123,15 +121,9 @@ public class ProductService {
         SubCategory subCategory = subCategoryRepo.findById(productRequest.getSubCategoryId())
                 .orElseThrow(() -> new GeneralException("Sub category not found"));
 
-
-        List<String> imageUrls = new ArrayList<>();
-        if (images != null && !images.isEmpty()) {
-            for (MultipartFile image : images) {
-                if (image == null || image.isEmpty()) {
-                    throw new GeneralException("One or more uploaded images are empty");
-                }
-            }
-            imageUrls = filesService.uploadImages(images);
+        List<String> imageUrls = productRequest.getImages();
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            throw new GeneralException("Product images are required");
         }
 
         Product product = Product.builder()
@@ -150,39 +142,24 @@ public class ProductService {
     }
 
     @Transactional
-    public GeneralResponse<?> update(ProductRequest productRequest, List<MultipartFile> newImages) {
+    public GeneralResponse<?> update(ProductRequest productRequest) {
         Product product = productRepo.findById(productRequest.getId())
                 .orElseThrow(() -> new GeneralException("Product not found"));
+
+        SubCategory subCategory = subCategoryRepo.findById(productRequest.getSubCategoryId())
+                .orElseThrow(() -> new GeneralException("Sub category not found"));
 
         product.setName(productRequest.getName());
         product.setDescription(productRequest.getDescription());
         product.setPrice(productRequest.getPrice());
         product.setOffer(productRequest.getOffer());
-        product.setSubCategory(subCategoryRepo.findById(productRequest.getSubCategoryId())
-                .orElseThrow(() -> new GeneralException("Sub category not found")));
+        product.setSubCategory(subCategory);
 
-        List<String> oldImages = product.getImages() != null ? product.getImages() : new ArrayList<>();
-        List<String> updatedImages = new ArrayList<>();
-
-        List<String> imagesToKeep = productRequest.getImagesToKeep();
-
-        if (imagesToKeep == null || imagesToKeep.isEmpty()) {
-            filesService.deleteImages(oldImages);
-        } else {
-            List<String> imagesToDelete = oldImages.stream()
-                    .filter(img -> !imagesToKeep.contains(img))
-                    .collect(Collectors.toList());
-
-            filesService.deleteImages(imagesToDelete);
-            updatedImages.addAll(imagesToKeep);
+        if (productRequest.getImages() == null || productRequest.getImages().isEmpty()) {
+            throw new GeneralException("You must provide at least one image.");
         }
 
-        if (newImages != null && !newImages.isEmpty()) {
-            List<String> uploaded = filesService.uploadImages(newImages);
-            updatedImages.addAll(uploaded);
-        }
-
-        product.setImages(updatedImages);
+        product.setImages(new ArrayList<>(productRequest.getImages()));
         productRepo.save(product);
 
         return new GeneralResponse<>("Product updated successfully", product);
@@ -192,10 +169,7 @@ public class ProductService {
     public GeneralResponse<?> delete(long id) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new GeneralException("Product not found"));
-
-        filesService.deleteImages(product.getImages());
         productRepo.deleteById(id);
-
         return new GeneralResponse<>("Product deleted successfully");
     }
 
@@ -209,7 +183,6 @@ public class ProductService {
 
         return new GeneralResponse<>("Product status changed successfully");
     }
-
 
     /// Helper methods
     private ProductResponse mapToDto(Product product) {
