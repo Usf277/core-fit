@@ -28,7 +28,8 @@ public class Product {
 
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
-    @Column(name = "image_url")
+    @Column(name = "image_url",columnDefinition = "TEXT")
+    @OrderColumn(name = "image_order")
     private List<String> images;
 
     @ManyToOne

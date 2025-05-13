@@ -16,5 +16,6 @@ public class ProductRequest {
     private Long marketId;
     private Long subCategoryId;
     private boolean isHidden;
+    private List<String> images;
     private List<String> imagesToKeep;
 }

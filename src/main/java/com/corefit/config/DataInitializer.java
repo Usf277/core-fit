@@ -25,221 +25,246 @@ public class DataInitializer implements CommandLineRunner {
 
             // Cairo Governorate
             governorateCities.put("Cairo", new String[]{
-                    "Cairo", "New Cairo", "6th of October City", "Sheikh Zayed City",
-                    "Badr City", "New Administrative Capital", "15th of May City",
-                    "El Maadi", "El Nasr City", "El Zamalek", "El Dokki", "El Mohandessin",
-                    "El Agouza", "El Haram", "El Giza", "El Sayeda Zeinab"
+                    "Cairo", "New Cairo", "15th of May City",
+                    "El Maadi", "Nasr City", "Zamalek",
+                    "Sayeda Zeinab", "Heliopolis", "Shubra",
+                    "Matariya", "Ain Shams", "El Salam",
+                    "Helwan", "El Basateen", "El Daher",
+                    "Abbassia", "Mokattam", "Garden City"
             });
 
             // Alexandria Governorate
             governorateCities.put("Alexandria", new String[]{
                     "Alexandria", "Borg El Arab", "New Borg El Arab", "Abu Qir",
                     "El Amreya", "El Montazah", "El Gomrok", "El Agami", "El Mandara",
-                    "El Sidi Gaber", "El Smouha", "El Ibrahimia", "El Chatby", "El Anfoushi",
-                    "El Mansheya", "El Raml", "El Wardian"
+                    "Sidi Gaber", "Smouha", "Ibrahimia", "Chatby", "Anfoushi",
+                    "El Mansheya", "El Raml", "El Wardian",
+                    "Kafr Abdo", "Glim", "Bahary"
             });
 
             // Giza Governorate
             governorateCities.put("Giza", new String[]{
-                    "Giza", "6th of October", "Sheikh Zayed", "El Haram",
+                    "Giza", "6th of October City", "Sheikh Zayed City", "El Haram",
                     "El Dokki", "El Mohandessin", "El Agouza", "El Badrasheen",
-                    "El Hawamdeya", "El Ayyat", "El Saf", "El Wahat El Bahariya",
-                    "El Saff", "El Atfih", "El Kerdasa", "El Warraq"
+                    "El Hawamdeya", "El Ayyat", "El Wahat El Bahariya",
+                    "El Saff", "El Atfih", "El Kerdasa", "El Warraq",
+                    "Imbaba", "Boulaq El Dakrour", "Omrania"
             });
 
             // Sharkia Governorate
             governorateCities.put("Sharkia", new String[]{
                     "Zagazig", "10th of Ramadan City", "Belbeis", "Abu Hammad",
                     "El Husseiniya", "Minya El Qamh", "Faqous", "El Qurein",
-                    "El Ibrahimiya", "El Salhiya", "El Qanayat", "El Kafr El Zayat",
-                    "El Zaqaziq", "El Sanafa", "El Qantara", "El Qantara El Sharqiya"
+                    "El Ibrahimiya", "El Salhiya El Gedida", "El Qanayat", "Kafr Saqr",
+                    "Awlad Saqr", "Hihya", "Mashtoul El Souq", "Diyarb Negm",
+                    "Abu Kebir", "El Asher Men Ramadan"
             });
 
             // Dakahlia Governorate
             governorateCities.put("Dakahlia", new String[]{
                     "Mansoura", "Talkha", "Mit Ghamr", "Aga",
                     "El Senbellawein", "El Matareya", "Sherbin", "El Gamaliya",
-                    "El Manzala", "El Kurdi", "El Mahalla El Kubra", "El Mahalla El Saghira",
-                    "El Dakhla", "El Qantara", "El Qantara El Gharbiya", "El Qantara El Sharqiya"
+                    "El Manzala", "Bilqas", "Mit Salsil", "Dikirnis",
+                    "Bani Ebeid", "El Kurdi", "Miniet El Nasr", "Tami El Amdid",
+                    "Nabaru", "Ras El Bar"
             });
 
             // Beheira Governorate
             governorateCities.put("Beheira", new String[]{
                     "Damanhour", "Kafr El Dawwar", "Rashid", "Edku",
                     "Abu El Matamir", "El Delengat", "El Mahmoudiya", "El Rahmaniya",
-                    "El Nubariya", "El Sadat City", "El Wadi El Jadid", "El Wadi El Gharbi",
-                    "El Wadi El Sharqi", "El Wadi El Qibli", "El Wadi El Bahari", "El Wadi El Qibli"
+                    "Hosh Issa", "Shubrakhit", "Itay El Barud", "El Nubariya",
+                    "Wadi El Natrun", "Kom Hamada", "Badr",
+                    "Abu Hummus", "Idku", "El Haddadi"
             });
 
             // Qalyubia Governorate
             governorateCities.put("Qalyubia", new String[]{
                     "Banha", "Qalyub", "Shubra El Kheima", "El Khanka",
-                    "El Qanater El Khayreya", "El Qalyub", "El Shubra El Kheima",
-                    "El Tukh", "El Obour", "El Sadat City", "El Sheikh Zayed",
-                    "El Sheikh Zayed City", "El Sheikh Zayed District", "El Sheikh Zayed Area",
-                    "El Sheikh Zayed Region", "El Sheikh Zayed Zone"
+                    "El Qanater El Khayreya", "Tukh", "El Obour", "Kafr Shukr",
+                    "Shibin El Qanater", "Al Khosous", "Qaha", "Abu Zaabal",
+                    "Mostorod", "Shoubra Elkhima", "El Qanatir El Khairiya",
+                    "Bahtim", "Orabi", "Kafr El Gazar"
             });
 
             // Monufia Governorate
             governorateCities.put("Monufia", new String[]{
                     "Shibin El Kom", "Menouf", "Sadat City", "El Bagour",
-                    "El Shohada", "El Sadat", "El Sadat City", "El Sadat District",
-                    "El Sadat Area", "El Sadat Region", "El Sadat Zone", "El Sadat Quarter",
-                    "El Sadat Section", "El Sadat Part", "El Sadat Division", "El Sadat Subdivision"
+                    "El Shohada", "Ashmoun", "Quesna", "Berket El Sab",
+                    "Tala", "Sers El Lyan", "Shanawan", "Mit Bara",
+                    "El Kawady", "Abu El Nomros", "Singar",
+                    "El Khatatba", "Mit Masoud", "El Salamlik"
             });
 
             // Gharbia Governorate
             governorateCities.put("Gharbia", new String[]{
                     "Tanta", "El Mahalla El Kubra", "Kafr El Zayat", "Zefta",
-                    "El Santa", "El Basyoun", "El Qutur", "El Mahalla El Kubra",
-                    "El Mahalla El Saghira", "El Mahalla El Kubra City", "El Mahalla El Kubra District",
-                    "El Mahalla El Kubra Area", "El Mahalla El Kubra Region", "El Mahalla El Kubra Zone",
-                    "El Mahalla El Kubra Quarter", "El Mahalla El Kubra Section"
+                    "El Santa", "Basyoun", "Qutur", "Samannoud",
+                    "Kotoor", "El Hayatem", "Nadima", "Mahallet Marhoum",
+                    "Hesset Abar", "Mahallet Marhum", "Ebshaway El Malaq",
+                    "Samatay", "Nashart", "Mahallet Ziyad"
             });
 
             // Kafr El Sheikh Governorate
             governorateCities.put("Kafr El Sheikh", new String[]{
                     "Kafr El Sheikh", "Desouk", "El Hamool", "El Reyad",
-                    "Bila", "El Metoubes", "El Hamool", "El Reyad", "Bila",
-                    "El Metoubes", "El Hamool", "El Reyad", "Bila", "El Metoubes",
-                    "El Hamool", "El Reyad"
+                    "Bila", "Metoubes", "Fuwwah", "Sidi Salem",
+                    "Qaleen", "El Burullus", "Baltim", "Biyala",
+                    "Menyat El Morshed", "El Boghdadi", "El Bordees",
+                    "El Manzala", "Minyat El Ashraf", "El Shahid"
             });
 
             // Faiyum Governorate
             governorateCities.put("Faiyum", new String[]{
                     "Faiyum", "New Faiyum", "Tamiya", "Sinnuris",
-                    "Ibsheway", "Yousef El Seddik", "Faiyum City", "New Faiyum City",
-                    "Tamiya City", "Sinnuris City", "Ibsheway City", "Yousef El Seddik City",
-                    "Faiyum District", "New Faiyum District", "Tamiya District", "Sinnuris District"
+                    "Ibsheway", "Yousef El Seddik", "Etsa", "El Agamiyin",
+                    "El Nazla", "Qasr El Bassel", "El Gharak", "Tersa",
+                    "Sennoris", "El Rawda", "Manshaat Abdallah",
+                    "Ezbet El Khayyat", "El Hadka", "El Mansheya"
             });
 
             // Minya Governorate
             governorateCities.put("Minya", new String[]{
                     "Minya", "New Minya", "El Idwa", "Maghagha",
-                    "Bani Mazar", "Matai", "Minya City", "New Minya City",
-                    "El Idwa City", "Maghagha City", "Bani Mazar City", "Matai City",
-                    "Minya District", "New Minya District", "El Idwa District", "Maghagha District"
+                    "Bani Mazar", "Matay", "Samalut", "Abu Qurqas",
+                    "Mallawi", "Deir Mawas", "El Edwa", "El Minya El Gadida",
+                    "Nazlet Hussein Ali", "Bardanoha", "Damaris",
+                    "Taha Hussein", "Bani Ahmed", "Tehna El Gabal"
             });
 
             // Asyut Governorate
             governorateCities.put("Asyut", new String[]{
                     "Asyut", "New Asyut", "El Badari", "El Qusiya",
-                    "El Fath", "El Ghanayem", "Asyut City", "New Asyut City",
-                    "El Badari City", "El Qusiya City", "El Fath City", "El Ghanayem City",
-                    "Asyut District", "New Asyut District", "El Badari District", "El Qusiya District"
+                    "El Fath", "El Ghanayem", "Sahel Selim", "Abnoub",
+                    "Abu Tig", "Dairut", "Manfalut", "Sodfa",
+                    "El Balyana", "Nazlet Abdellah", "Beni Ibrahim",
+                    "El Wasti", "El Zarabi", "Arab El Awamer"
             });
 
             // Sohag Governorate
             governorateCities.put("Sohag", new String[]{
                     "Sohag", "New Sohag", "El Balyana", "El Maragha",
-                    "El Monshah", "Girga", "Sohag City", "New Sohag City",
-                    "El Balyana City", "El Maragha City", "El Monshah City", "Girga City",
-                    "Sohag District", "New Sohag District", "El Balyana District", "El Maragha District"
+                    "El Monshah", "Girga", "Dar El Salam", "Akhmim",
+                    "Sakulta", "Tahta", "Tema", "Juhayna El Gharbiyah",
+                    "El Kawthar", "El Usayrat", "El Mazalu",
+                    "Beit Dawood", "El Maha", "Awlad Elias"
             });
 
             // Qena Governorate
             governorateCities.put("Qena", new String[]{
-                    "Qena", "New Qena", "El Waqf", "El Uqsur",
-                    "El Qus", "El Qus", "Qena City", "New Qena City",
-                    "El Waqf City", "El Uqsur City", "El Qus City", "El Qus City",
-                    "Qena District", "New Qena District", "El Waqf District", "El Uqsur District"
+                    "Qena", "New Qena", "El Waqf", "Qus",
+                    "Dishna", "Naga Hammadi", "Abu Tesht", "Farshut",
+                    "Qift", "Naqada", "El Bayada", "El Qarn",
+                    "El Saniya", "El Marashda", "Abnud",
+                    "El Higaziya", "Dandara", "El Ghorayib"
             });
 
             // Aswan Governorate
             governorateCities.put("Aswan", new String[]{
-                    "Aswan", "New Aswan", "Abu Simbel", "El Kalabsha",
-                    "El Sebaiya", "Kom Ombo", "Aswan City", "New Aswan City",
-                    "Abu Simbel City", "El Kalabsha City", "El Sebaiya City", "Kom Ombo City",
-                    "Aswan District", "New Aswan District", "Abu Simbel District", "El Kalabsha District"
+                    "Aswan", "New Aswan", "Abu Simbel", "Kalabsha",
+                    "Sebaiya", "Kom Ombo", "Edfu", "Daraw",
+                    "Nasr El Nuba", "Aswan El Gadida", "Nasr",
+                    "El Basaliya", "El Sad El Ali", "Khor El Saha",
+                    "El Mahrousa", "El Malek El Nasser", "El Burj", "Gharb Soheil"
             });
 
             // Luxor Governorate
             governorateCities.put("Luxor", new String[]{
                     "Luxor", "New Luxor", "El Karnak", "El Qurna",
-                    "El Bayadiya", "El Armant", "Luxor City", "New Luxor City",
-                    "El Karnak City", "El Qurna City", "El Bayadiya City", "El Armant City",
-                    "Luxor District", "New Luxor District", "El Karnak District", "El Qurna District"
+                    "El Bayadiya", "Armant", "Esna", "El Tod",
+                    "El Zeiniya", "El Toud", "El Manshaa", "El Boghdadi",
+                    "El Madamoud", "Arabet Abydos", "Ezbet El Walda",
+                    "El Qornah", "El Debabiya", "El Awamieh"
             });
 
             // Red Sea Governorate
             governorateCities.put("Red Sea", new String[]{
                     "Hurghada", "El Gouna", "Safaga", "Marsa Alam",
-                    "El Quseir", "Shalateen", "Hurghada City", "El Gouna City",
-                    "Safaga City", "Marsa Alam City", "El Quseir City", "Shalateen City",
-                    "Hurghada District", "El Gouna District", "Safaga District", "Marsa Alam District"
+                    "El Quseir", "Shalateen", "Ras Gharib", "Berenice",
+                    "Halayeb", "El Shalatin", "Ras Ghareb", "Sahl Hasheesh",
+                    "Makadi Bay", "Port Ghalib", "Zafarana",
+                    "Wadi El Gemal", "El Hamraween", "Abu Dabbab"
             });
 
             // New Valley Governorate
             governorateCities.put("New Valley", new String[]{
-                    "El Kharga", "El Dakhla", "El Farafra", "El Bahariya",
-                    "El Siwa", "El Mut", "El Kharga City", "El Dakhla City",
-                    "El Farafra City", "El Bahariya City", "El Siwa City", "El Mut City",
-                    "El Kharga District", "El Dakhla District", "El Farafra District", "El Bahariya District"
+                    "El Kharga", "El Dakhla", "El Farafra",
+                    "El Mut", "Paris", "Balat", "El Sheikh Wali",
+                    "Mout", "Baris", "El Gedida", "Bashendi", "Teneida",
+                    "El Qasr", "El Gedid", "El Sherka",
+                    "El Qalamun", "El Hindaw", "El Zayat"
             });
 
             // Matrouh Governorate
             governorateCities.put("Matrouh", new String[]{
                     "Marsa Matrouh", "El Alamein", "El Dabaa", "El Sallum",
-                    "El Siwa", "El Negaila", "Marsa Matrouh City", "El Alamein City",
-                    "El Dabaa City", "El Sallum City", "El Siwa City", "El Negaila City",
-                    "Marsa Matrouh District", "El Alamein District", "El Dabaa District", "El Sallum District"
+                    "Siwa", "El Negaila", "Sidi Barrani", "El Hamam",
+                    "El Salloum", "Siwa Oasis", "El Hammam", "Barrani",
+                    "El Negila", "El Ubayyid", "El Bagdadi", "El Jarjurab",
+                    "El Qasr", "Abu Lahv"
             });
 
             // North Sinai Governorate
             governorateCities.put("North Sinai", new String[]{
-                    "El Arish", "El Sheikh Zuweid", "El Rafah", "El Bir El Abd",
-                    "El Hasana", "El Nakhl", "El Arish City", "El Sheikh Zuweid City",
-                    "El Rafah City", "El Bir El Abd City", "El Hasana City", "El Nakhl City",
-                    "El Arish District", "El Sheikh Zuweid District", "El Rafah District", "El Bir El Abd District"
+                    "El Arish", "El Sheikh Zuweid", "Rafah", "Bir El Abd",
+                    "El Hasana", "Nakhl", "Romani", "Nekhel",
+                    "Beer El Abd", "Sheikh Zuwaid", "El Massaeed", "El Rawda",
+                    "El Gora", "Baloza", "El Mazr", "El Reesa",
+                    "Abu Sweira", "El Tuma"
             });
 
             // South Sinai Governorate
             governorateCities.put("South Sinai", new String[]{
-                    "Sharm El Sheikh", "Dahab", "Nuweiba", "El Tur",
-                    "Saint Catherine", "El Tor", "Sharm El Sheikh City", "Dahab City",
-                    "Nuweiba City", "El Tur City", "Saint Catherine City", "El Tor City",
-                    "Sharm El Sheikh District", "Dahab District", "Nuweiba District", "El Tur District"
+                    "Sharm El Sheikh", "Dahab", "Nuweiba", "El Tor",
+                    "Saint Catherine", "Taba", "Ras Sidr", "Abu Rudeis",
+                    "Abu Zenima", "Ras Sudr", "El Nuseirat", "El Wadi",
+                    "Abu Sweira", "Wadi Feiran", "El Firan", "Farsh El Azraq",
+                    "Abu Rdees", "El Ruwaise"
             });
 
             // Port Said Governorate
             governorateCities.put("Port Said", new String[]{
-                    "Port Said", "New Port Said", "El Arab", "El Dawahi",
-                    "El Ganoub", "El Sharq", "Port Said City", "New Port Said City",
-                    "El Arab City", "El Dawahi City", "El Ganoub City", "El Sharq City",
-                    "Port Said District", "New Port Said District", "El Arab District", "El Dawahi District"
+                    "Port Said", "Port Fouad", "El Arab", "El Dawahi",
+                    "El Ganoub", "El Sharq", "El Manakh", "El Zohour",
+                    "El Dawa'i", "El Zuhur", "El Manakh", "El Gharb",
+                    "El Dawahy", "El Manasra", "El Qabouty",
+                    "El Asafra", "El Kuwait", "El Salam"
             });
 
             // Suez Governorate
             governorateCities.put("Suez", new String[]{
-                    "Suez", "New Suez", "El Arbaeen", "El Ganayen",
-                    "El Suez", "El Attaka", "Suez City", "New Suez City",
-                    "El Arbaeen City", "El Ganayen City", "El Suez City", "El Attaka City",
-                    "Suez District", "New Suez District", "El Arbaeen District", "El Ganayen District"
+                    "Suez", "El Arbaeen", "El Ganayen", "El Attaka",
+                    "Faisal", "Port Tawfik", "El Salam", "Ain El Sukhna",
+                    "El Arba'in", "El Ganayen", "El Tawfiqeya", "El Amal",
+                    "El Mustathmarin", "El Adabiya", "El Sokhna",
+                    "El Suez El Gadida", "El Manzala", "El Galaa"
             });
 
             // Ismailia Governorate
             governorateCities.put("Ismailia", new String[]{
-                    "Ismailia", "New Ismailia", "El Qantara", "El Qantara El Sharqiya",
-                    "El Qantara El Gharbiya", "El Tal El Kabir", "Ismailia City", "New Ismailia City",
-                    "El Qantara City", "El Qantara El Sharqiya City", "El Qantara El Gharbiya City",
-                    "El Tal El Kabir City", "Ismailia District", "New Ismailia District", "El Qantara District",
-                    "El Qantara El Sharqiya District"
+                    "Ismailia", "New Ismailia", "El Qantara", "El Qantara East",
+                    "El Qantara West", "Tal El Kabir", "Fayed", "El Qassassin",
+                    "Abu Suwair", "El Qantara Sharq", "El Qantara Gharb",
+                    "El Ismailia El Gadida", "Fayid", "Abu Suweir", "El Qassasin",
+                    "El Mahsama", "El Sabaa Abar", "El Manaif"
             });
 
             // Damietta Governorate
             governorateCities.put("Damietta", new String[]{
-                    "Damietta", "New Damietta", "El Zarqa", "El Kafr El Bahari",
-                    "El Kafr El Qibli", "El Raswa", "Damietta City", "New Damietta City",
-                    "El Zarqa City", "El Kafr El Bahari City", "El Kafr El Qibli City", "El Raswa City",
-                    "Damietta District", "New Damietta District", "El Zarqa District", "El Kafr El Bahari District"
+                    "Damietta", "New Damietta", "El Zarqa", "Kafr Saad",
+                    "Faraskour", "Kafr El Batikh", "Ezbet El Borg", "Ras El Bar",
+                    "Fareskour", "El Damietta El Gadida", "El Basarta", "El Roda",
+                    "El Senaniya", "Meet Abou Ghaleb", "Shark El Salam",
+                    "El Anania", "El Kafr El Qadim", "El Rekabiya"
             });
 
             // Beni Suef Governorate
             governorateCities.put("Beni Suef", new String[]{
                     "Beni Suef", "New Beni Suef", "El Fashn", "El Wasta",
-                    "Beba", "Nasser", "Beni Suef City", "New Beni Suef City",
-                    "El Fashn City", "El Wasta City", "Beba City", "Nasser City",
-                    "Beni Suef District", "New Beni Suef District", "El Fashn District", "El Wasta District"
+                    "Beba", "Ihnasiya", "Sumusta", "Nasser",
+                    "Biba", "El Beni Suef El Gadida", "Ahnasia",
+                    "Sumusta El Waqf", "El Shadmon", "Maymuna",
+                    "El Halabiya", "El Kom El Ahmar", "El Halalfa", "El Shantour"
             });
 
             // Save governorates and their cities
