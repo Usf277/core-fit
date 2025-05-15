@@ -1,5 +1,6 @@
 package com.corefit;
 
+import com.corefit.exceptions.GeneralException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -56,6 +57,10 @@ class DeleteTableService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private org.springframework.core.env.Environment env;
+
+    // Pattern to validate table names (alphanumeric plus underscore)
     private static final Pattern VALID_TABLE_NAME = Pattern.compile("^[a-zA-Z0-9_]+$");
 
     // Add a list of tables that are allowed to be deleted
@@ -76,8 +81,27 @@ class DeleteTableService {
 
     public boolean tableExists(String tableName) {
         try {
-            // Get the database name from the connection or use the known database name
-            String dbName = "core-fit";  // Hardcoded based on your connection string
+            // Extract database name from the environment variable or use DATABASE() function
+            String dbName = null;
+
+            try {
+                // Try to get database name from Spring Environment
+                String dbUrl = env.getProperty("spring.datasource.url");
+                if (dbUrl != null && dbUrl.contains("/")) {
+                    // Extract database name from JDBC URL
+                    String[] urlParts = dbUrl.split("/");
+                    if (urlParts.length > 3) {
+                        dbName = urlParts[3].split("\\?")[0]; // Get database name before parameters
+                    }
+                }
+            } catch (Exception ex) {
+                throw new GeneralException("Error" + ex.getMessage());
+            }
+
+            // If we couldn't get it from environment, query the database
+            if (dbName == null || dbName.isEmpty()) {
+                dbName = (String) entityManager.createNativeQuery("SELECT DATABASE()").getSingleResult();
+            }
 
             // Check if the table exists in the INFORMATION_SCHEMA using positional parameters
             Long count = (Long) entityManager.createNativeQuery(
@@ -100,6 +124,7 @@ class DeleteTableService {
             throw new IllegalArgumentException("Invalid table name or deletion not allowed");
         }
 
+        // Check if the table exists first
         if (!tableExists(tableName)) {
             throw new IllegalArgumentException("Table '" + tableName + "' does not exist in the database");
         }
