@@ -49,7 +49,7 @@ public class PlaygroundService {
 
         City city = cityService.findById(playgroundRequest.getCityId());
 
-        if (playgroundRequest.getImages() == null && playgroundRequest.getImages().isEmpty()) {
+        if (playgroundRequest.getImages() == null || playgroundRequest.getImages().isEmpty()) {
             throw new GeneralException("You must upload at least one image");
         }
 
@@ -88,7 +88,7 @@ public class PlaygroundService {
 
         City city = cityService.findById(playgroundRequest.getCityId());
 
-        if (playgroundRequest.getImages() == null && playgroundRequest.getImages().isEmpty()) {
+        if (playgroundRequest.getImages() == null || playgroundRequest.getImages().isEmpty()) {
             throw new GeneralException("You must upload at least one image");
         }
 
