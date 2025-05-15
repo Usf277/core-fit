@@ -51,7 +51,7 @@ public class Playground {
 
     @ElementCollection
     @CollectionTable(name = "playgroud_images", joinColumns = @JoinColumn(name = "playground_id"))
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     @OrderColumn(name = "image_order")
     private List<String> images;
 
