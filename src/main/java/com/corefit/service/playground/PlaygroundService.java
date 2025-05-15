@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 @Service
 public class PlaygroundService {
     @Autowired
@@ -36,24 +35,23 @@ public class PlaygroundService {
     @Autowired
     private AuthService authService;
     @Autowired
-    private FilesService filesService;
-    @Autowired
     private CityService cityService;
     @Autowired
     @Lazy
     private PlaygroundFavouriteService playgroundFavouriteService;
 
-
     @Transactional
-    public GeneralResponse<?> create(PlaygroundRequest playgroundRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> create(PlaygroundRequest playgroundRequest, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("User is not a provider");
         }
 
-        List<String> imageUrls = filesService.uploadImages(images);
-
         City city = cityService.findById(playgroundRequest.getCityId());
+
+        if (playgroundRequest.getImages() == null && playgroundRequest.getImages().isEmpty()) {
+            throw new GeneralException("You must upload at least one image");
+        }
 
         Playground playground = Playground.builder()
                 .name(playgroundRequest.getName())
@@ -67,7 +65,7 @@ public class PlaygroundService {
                 .bookingPrice(playgroundRequest.getBookingPrice())
                 .extraNightPrice(playgroundRequest.getExtraNightPrice())
                 .hasExtraPrice(playgroundRequest.isHasExtraPrice())
-                .images(imageUrls)
+                .images(playgroundRequest.getImages())
                 .user(user)
                 .isOpened(true)
                 .build();
@@ -77,7 +75,7 @@ public class PlaygroundService {
     }
 
     @Transactional
-    public GeneralResponse<?> update(PlaygroundRequest playgroundRequest, List<MultipartFile> images, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> update(PlaygroundRequest playgroundRequest, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         if (user.getType() != UserType.PROVIDER) {
             throw new GeneralException("User is not a provider");
@@ -90,10 +88,8 @@ public class PlaygroundService {
 
         City city = cityService.findById(playgroundRequest.getCityId());
 
-        if (images != null && !images.isEmpty()) {
-            filesService.deleteImages(playground.getImages());
-            List<String> imageUrls = filesService.uploadImages(images);
-            playground.setImages(imageUrls);
+        if (playgroundRequest.getImages() == null && playgroundRequest.getImages().isEmpty()) {
+            throw new GeneralException("You must upload at least one image");
         }
 
         playground.setName(playgroundRequest.getName());
@@ -107,6 +103,7 @@ public class PlaygroundService {
         playground.setBookingPrice(playgroundRequest.getBookingPrice());
         playground.setExtraNightPrice(playgroundRequest.getExtraNightPrice());
         playground.setHasExtraPrice(playgroundRequest.isHasExtraPrice());
+        playground.setImages(playgroundRequest.getImages());
 
         playgroundRepo.save(playground);
 

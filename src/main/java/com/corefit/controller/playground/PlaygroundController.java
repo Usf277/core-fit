@@ -6,6 +6,7 @@ import com.corefit.service.playground.PlaygroundService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +15,6 @@ import java.util.List;
 
 @RestController
 public class PlaygroundController {
-
     @Autowired
     private PlaygroundService playgroundService;
 
@@ -22,23 +22,19 @@ public class PlaygroundController {
         this.playgroundService = playgroundService;
     }
 
-    @PostMapping(path = "/create_playground", consumes = {"multipart/form-data"})
+    @PostMapping(path = "/create_playground", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeneralResponse<?>> createPlayground(
-            @ModelAttribute PlaygroundRequest playgroundRequest,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestBody PlaygroundRequest playgroundRequest,
             HttpServletRequest httpRequest) {
-
-        GeneralResponse<?> response = playgroundService.create(playgroundRequest, images, httpRequest);
+        GeneralResponse<?> response = playgroundService.create(playgroundRequest, httpRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping(path = "/update_playground", consumes = {"multipart/form-data"})
+    @PostMapping(path = "/update_playground", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GeneralResponse<?>> updatePlayground(
-            @ModelAttribute PlaygroundRequest playgroundRequest,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestBody PlaygroundRequest playgroundRequest,
             HttpServletRequest httpRequest) {
-
-        GeneralResponse<?> response = playgroundService.update(playgroundRequest, images, httpRequest);
+        GeneralResponse<?> response = playgroundService.update(playgroundRequest, httpRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -50,7 +46,6 @@ public class PlaygroundController {
             @RequestParam(required = false) Long cityId,
             @RequestParam(required = false) Integer avgRate,
             HttpServletRequest httpRequest) {
-
         GeneralResponse<?> response = playgroundService.getAll(page, size, search, cityId, avgRate, httpRequest);
         return ResponseEntity.ok(response);
     }

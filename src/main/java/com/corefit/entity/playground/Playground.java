@@ -44,7 +44,7 @@ public class Playground {
     @Builder.Default
     private boolean hasExtraPrice = false;
 
-    private double extraNightPrice ;
+    private double extraNightPrice;
 
     @Builder.Default
     private boolean isOpened = true;
@@ -52,6 +52,7 @@ public class Playground {
     @ElementCollection
     @CollectionTable(name = "playgroud_images", joinColumns = @JoinColumn(name = "playground_id"))
     @Column(name = "image_url")
+    @OrderColumn(name = "image_order")
     private List<String> images;
 
     @ManyToOne(fetch = FetchType.LAZY)
