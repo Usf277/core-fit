@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -20,4 +22,5 @@ public class PlaygroundRequest {
     private double bookingPrice;
     private boolean hasExtraPrice;
     private double extraNightPrice;
+    private List<String> images;
 }
