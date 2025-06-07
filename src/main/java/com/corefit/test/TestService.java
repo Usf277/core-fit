@@ -95,13 +95,13 @@ class TestService {
 
     public int generatePass() {
         int randomPass = new Random().nextInt(900_000) + 100_000;
-        Pass pass = Pass.builder().pass(randomPass).build();
+        Pass pass = Pass.builder().pass(randomPass).id(1).build();
         passRepository.save(pass);
         return randomPass;
     }
 
-    public String checkPass(Pass pass) {
-        Optional<Pass> optionalPass = passRepository.findById(pass.getId());
+    public String checkPass(int pass) {
+        Optional<Pass> optionalPass = passRepository.findById(1);
 
         if (optionalPass.isEmpty()) {
             return "❌ No record found for the provided ID.";
@@ -109,7 +109,7 @@ class TestService {
 
         Pass savedPass = optionalPass.get();
 
-        if (savedPass.getPass() == pass.getPass()) {
+        if (savedPass.getPass() == pass) {
             return "✅ The password you entered is correct.";
         } else {
             return "❌ The password you entered is incorrect. Please try again.";
