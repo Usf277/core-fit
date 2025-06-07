@@ -36,7 +36,7 @@ class TestController {
     }
 
     @PostMapping("/pass")
-    public ResponseEntity<String> checkPass(@RequestBody Pass pass) {
+    public ResponseEntity<String> checkPass(@RequestParam Integer pass) {
         String resultMessage = testService.checkPass(pass);
         return ResponseEntity.ok(resultMessage);
     }
