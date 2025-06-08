@@ -30,10 +30,12 @@ public class CartItem {
     private double total;
 
     public void updateTotal() {
-        if (product.getOffer() == 0)
-            this.total = quantity * product.getPrice();
-        else
-            this.total = quantity * (product.getPrice() - (product.getPrice() * product.getOffer() / 100));
+        double price = product.getOffer() == 0
+                ? product.getPrice()
+                : product.getPrice() - (product.getPrice() * product.getOffer() / 100);
+
+        this.total = Math.round(quantity * price * 10.0) / 10.0;
     }
+
 }
 

@@ -38,6 +38,8 @@ public class Cart {
     }
 
     public void updateTotalPrice() {
-        this.totalPrice = cartItems.stream().mapToDouble(CartItem::getTotal).sum();
+        double sum = cartItems.stream().mapToDouble(CartItem::getTotal).sum();
+        this.totalPrice = Math.round(sum * 10.0) / 10.0;
     }
+
 }
