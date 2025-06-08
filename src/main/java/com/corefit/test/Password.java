@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Pass {
+public class Password {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;

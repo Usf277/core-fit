@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/governorates",
                                 "/cities",
                                 "/categories",
-                                "/uploads/**"
+                                "/uploads/**",
+                                "/pass/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
