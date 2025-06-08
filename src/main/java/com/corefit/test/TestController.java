@@ -31,14 +31,12 @@ class TestController {
     ///  Pass Controller
     @GetMapping("/pass")
     public ResponseEntity<Integer> generatePass() {
-        int newPass = testService.generatePass();
-        return ResponseEntity.ok(newPass);
+        return ResponseEntity.ok(testService.generatePass());
     }
 
     @PostMapping("/pass")
-    public ResponseEntity<String> checkPass(@RequestParam Integer pass) {
-        String resultMessage = testService.checkPass(pass);
-        return ResponseEntity.ok(resultMessage);
+    public ResponseEntity<Boolean> checkPass(@RequestBody Password password) {
+        return ResponseEntity.ok(testService.checkPass(password));
     }
 
 }

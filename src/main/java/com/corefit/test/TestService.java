@@ -91,28 +91,21 @@ class TestService {
 
     /// Pass Service
     @Autowired
-    private PassRepository passRepository;
+    private PasswordRepo passwordRepo;
 
     public int generatePass() {
         int randomPass = new Random().nextInt(900_000) + 100_000;
-        Pass pass = Pass.builder().pass(randomPass).id(1).build();
-        passRepository.save(pass);
+        Password pass = Password.builder().id(1).pass(randomPass).build();
+        passwordRepo.save(pass);
         return randomPass;
     }
 
-    public String checkPass(int pass) {
-        Optional<Pass> optionalPass = passRepository.findById(1);
+    public boolean checkPass(Password password) {
+        Optional<Password> optionalPass = passwordRepo.findById(1);
 
-        if (optionalPass.isEmpty()) {
-            return "❌ No record found for the provided ID.";
-        }
+        if (optionalPass.isEmpty())
+            throw new GeneralException("No record found for the provided ID.");
 
-        Pass savedPass = optionalPass.get();
-
-        if (savedPass.getPass() == pass) {
-            return "✅ The password you entered is correct.";
-        } else {
-            return "❌ The password you entered is incorrect. Please try again.";
-        }
+        return optionalPass.get().getPass() == password.getPass();
     }
 }
