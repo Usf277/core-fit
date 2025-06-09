@@ -58,7 +58,7 @@ public class ReservationService {
         }
 
         // Step 2: Check for conflicts
-        List<Reservation> existingReservations = reservationRepo.findByPlaygroundAndDate(playground, String.valueOf(reservationRequest.getDate()));
+        List<Reservation> existingReservations = reservationRepo.findByPlaygroundAndDate(playground, reservationRequest.getDate());
 
         Set<LocalTime> reservedSlots = existingReservations.stream()
                 .flatMap(r -> r.getSlots().stream())
