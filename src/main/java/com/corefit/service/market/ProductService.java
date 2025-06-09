@@ -54,10 +54,18 @@ public class ProductService {
                         .anyMatch(favProduct -> favProduct.getId() == id);
             }
         }
-
         product.setFavourite(isFavourite);
 
-        return new GeneralResponse<>("Success", product);
+        Long rateCount = marketRepo.getMarketRateCount(product.getMarket().getId());
+        Double averageRate = marketRepo.getMarketAverageRate(product.getMarket().getId());
+        averageRate = Math.round(averageRate * 10.0) / 10.0;
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("Product", product);
+        data.put("rateCount", rateCount != null ? rateCount : 0);
+        data.put("averageRate", averageRate != null ? averageRate : 0.0);
+
+        return new GeneralResponse<>("Success", data);
     }
 
     public GeneralResponse<?> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
