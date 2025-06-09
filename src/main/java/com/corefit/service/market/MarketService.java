@@ -40,7 +40,7 @@ public class MarketService {
 
         Long rateCount = marketRepo.getMarketRateCount(id);
         Double averageRate = marketRepo.getMarketAverageRate(id);
-
+        averageRate = Math.round(averageRate * 10.0) / 10.0;
 
         Map<String, Object> data = new HashMap<>();
         data.put("Market", market);
