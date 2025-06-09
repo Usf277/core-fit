@@ -36,15 +36,15 @@ public class ReservationService {
         LocalTime nightStart = playground.getNightShiftStart();
         LocalTime nightEnd = playground.getNightShiftEnd();
 
-        Set<LocalTime> requestedSlots = new HashSet<>();
+        Set<LocalTime> requestedTimes = new HashSet<>();
 
-        // Step 1: Validate requested slots
-        for (ReservationSlot slot : reservationRequest.getSlots()) {
+        // Step 1: Validate times
+        for (String timeStr : reservationRequest.getSlots()) {
             LocalTime slotTime;
             try {
-                slotTime = LocalTime.parse(slot.getTime());
+                slotTime = LocalTime.parse(timeStr);
             } catch (Exception e) {
-                return new GeneralResponse<>("Invalid time format in slot: " + slot.getTime(), 400);
+                return new GeneralResponse<>("Invalid time format in slot: " + timeStr, 400);
             }
 
             boolean inMorning = isWithinShift(slotTime, morningStart, morningEnd);
@@ -54,40 +54,42 @@ public class ReservationService {
                 return new GeneralResponse<>("Slot " + slotTime + " is outside working hours", 400);
             }
 
-            requestedSlots.add(slotTime);
+            requestedTimes.add(slotTime);
         }
 
         // Step 2: Check for conflicts
         List<Reservation> existingReservations = reservationRepo.findByPlaygroundAndDate(playground, reservationRequest.getDate());
 
-        Set<LocalTime> reservedSlots = existingReservations.stream()
+        Set<LocalTime> reservedTimes = existingReservations.stream()
                 .flatMap(r -> r.getSlots().stream())
-                .map(ReservationSlot::getTime)
-                .map(LocalTime::parse)
+                .map(s -> LocalTime.parse(s.getTime()))
                 .collect(Collectors.toSet());
 
-        for (LocalTime requestedSlot : requestedSlots) {
-            if (reservedSlots.contains(requestedSlot)) {
-                return new GeneralResponse<>("Slot already booked: " + requestedSlot, 409);
+        for (LocalTime requested : requestedTimes) {
+            if (reservedTimes.contains(requested)) {
+                return new GeneralResponse<>("Slot already booked: " + requested, 409);
             }
         }
 
-        // Step 3: Save reservation
+        // Step 3: Build ReservationSlot list
+        List<ReservationSlot> slots = reservationRequest.getSlots().stream()
+                .map(time -> ReservationSlot.builder().time(time).build())
+                .collect(Collectors.toList());
+
         Reservation reservation = new Reservation();
         reservation.setUser(user);
         reservation.setPlayground(playground);
         reservation.setDate(reservationRequest.getDate());
+        reservation.setSlots(slots);
 
-        // Connect slots to this reservation
-        for (ReservationSlot slot : reservationRequest.getSlots()) {
-            slot.setReservation(reservation);
-        }
+        // Back-reference
+        slots.forEach(slot -> slot.setReservation(reservation));
 
-        reservation.setSlots(reservationRequest.getSlots());
         reservationRepo.save(reservation);
 
         return new GeneralResponse<>("Reservation completed successfully", reservation);
     }
+
 
     private boolean isWithinShift(LocalTime slot, LocalTime shiftStart, LocalTime shiftEnd) {
         if (shiftEnd.isAfter(shiftStart)) {
