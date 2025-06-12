@@ -95,6 +95,21 @@ public class ReservationService {
         return new GeneralResponse<>("Reservation completed successfully", mapToResponse(reservation));
     }
 
+    public GeneralResponse<?> getReservedSlots(Long playgroundId, LocalDate date) {
+        Playground playground = playgroundService.findById(playgroundId);
+
+        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, date);
+
+        List<String> reservedSlots = reservations.stream()
+                .flatMap(r -> r.getSlots().stream())
+                .map(slot -> slot.getTime().toString())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        return new GeneralResponse<>("Reserved slots fetched successfully", reservedSlots);
+    }
+
     @Transactional(readOnly = true)
     public GeneralResponse<?> getReservations(HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
