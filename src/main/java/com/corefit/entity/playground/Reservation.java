@@ -37,6 +37,6 @@ public class Reservation {
     private double price = 0.0;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    //@Column(nullable = false)
     private PaymentMethod paymentMethod;
 }
