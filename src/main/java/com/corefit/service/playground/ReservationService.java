@@ -74,6 +74,7 @@ public class ReservationService {
                 .playground(playground)
                 .date(request.getDate())
                 .price(totalCost)
+                .paymentMethod(request.getPaymentMethod())
                 .build();
 
         List<ReservationSlot> slotEntities = requestedTimes.stream()
