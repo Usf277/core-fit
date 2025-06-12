@@ -9,7 +9,6 @@ import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
 import com.corefit.service.helper.CityService;
-import com.corefit.service.helper.FilesService;
 import com.corefit.service.auth.AuthService;
 import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,10 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 

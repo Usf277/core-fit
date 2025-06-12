@@ -48,9 +48,11 @@ public class OrderService {
 
         Market market = cart.getMarket();
 
-        if (cart.getCartItems().isEmpty()) {
+        if (cart.getCartItems().isEmpty())
             throw new GeneralException("Your cart is empty. Please add items before placing an order.");
-        }
+
+        if (!market.isOpened())
+            throw new GeneralException("The market is already closed. Please reopen the cart first.");
 
         Order order = buildOrderFromCart(cart, orderRequest, user);
 
@@ -195,6 +197,7 @@ public class OrderService {
         notificationService.pushNotification(provider, content.providerTitle, content.providerMessage);
     }
 
+    /// Helper Methods:
     // Notification constructor record
     private record NotificationContent(String customerTitle, String customerMessage,
                                        String providerTitle, String providerMessage) {

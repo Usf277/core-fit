@@ -3,6 +3,8 @@ package com.corefit.entity.playground;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalTime;
+
 @Entity
 @Getter
 @Setter
@@ -16,7 +18,7 @@ public class ReservationSlot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String time;
+    private LocalTime time;
 
     @ManyToOne
     private Reservation reservation;
