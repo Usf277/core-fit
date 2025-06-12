@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/reservations")
 public class ReservationController {
@@ -21,6 +23,12 @@ public class ReservationController {
             @RequestBody ReservationRequest reservationRequest,
             HttpServletRequest httpRequest) {
         GeneralResponse<?> response = reservationService.bookPlayground(reservationRequest, httpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/reserved_slots")
+    public ResponseEntity<GeneralResponse<?>> getReservedSlots(@RequestParam Long playgroundId, @RequestParam LocalDate date) {
+        GeneralResponse<?> response = reservationService.getReservedSlots(playgroundId, date);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
