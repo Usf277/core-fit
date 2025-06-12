@@ -1,6 +1,7 @@
 package com.corefit.entity.playground;
 
 import com.corefit.entity.User;
+import com.corefit.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,14 +22,20 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Playground playground;
 
     private LocalDate date;
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReservationSlot> slots = new ArrayList<>();
+
+    @Builder.Default
+    private double price = 0.0;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
 }

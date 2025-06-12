@@ -2,20 +2,30 @@ package com.corefit.service.playground;
 
 import com.corefit.dto.request.playground.ReservationRequest;
 import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.response.playground.ReservationResponse;
 import com.corefit.entity.User;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.playground.Reservation;
 import com.corefit.entity.playground.ReservationSlot;
+import com.corefit.enums.PaymentMethod;
+import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.ReservationRepo;
 import com.corefit.service.auth.AuthService;
+import com.corefit.service.auth.WalletService;
+import com.corefit.service.helper.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,76 +36,180 @@ public class ReservationService {
     private AuthService authService;
     @Autowired
     private PlaygroundService playgroundService;
+    @Autowired
+    private WalletService walletService;
+    @Autowired
+    private NotificationService notificationService;
 
-    public GeneralResponse<?> bookPlayground(ReservationRequest reservationRequest, HttpServletRequest httpRequest) {
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public GeneralResponse<?> bookPlayground(ReservationRequest request, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
-        Playground playground = playgroundService.findById(reservationRequest.getPlaygroundId());
+        Playground playground = playgroundService.findById(request.getPlaygroundId());
+        User provider = playground.getUser();
+        validateRequest(request);
 
-        LocalTime morningStart = playground.getMorningShiftStart();
-        LocalTime morningEnd = playground.getMorningShiftEnd();
-        LocalTime nightStart = playground.getNightShiftStart();
-        LocalTime nightEnd = playground.getNightShiftEnd();
-
-        Set<LocalTime> requestedTimes = new HashSet<>();
-
-        // Step 1: Validate times
-        for (String timeStr : reservationRequest.getSlots()) {
-            LocalTime slotTime;
-            try {
-                slotTime = LocalTime.parse(timeStr);
-            } catch (Exception e) {
-                return new GeneralResponse<>("Invalid time format in slot: " + timeStr, 400);
-            }
-
-            boolean inMorning = isWithinShift(slotTime, morningStart, morningEnd);
-            boolean inNight = isWithinShift(slotTime, nightStart, nightEnd);
-
-            if (!inMorning && !inNight) {
-                return new GeneralResponse<>("Slot " + slotTime + " is outside working hours", 400);
-            }
-
-            requestedTimes.add(slotTime);
-        }
-
-        // Step 2: Check for conflicts
-        List<Reservation> existingReservations = reservationRepo.findByPlaygroundAndDate(playground, reservationRequest.getDate());
+        // Check for conflicts
+        Set<LocalTime> requestedTimes = validateAndParseSlots(request.getSlots(), playground);
+        List<Reservation> existingReservations = reservationRepo.findByPlaygroundAndDate(playground, request.getDate());
 
         Set<LocalTime> reservedTimes = existingReservations.stream()
                 .flatMap(r -> r.getSlots().stream())
-                .map(s -> LocalTime.parse(s.getTime()))
+                .map(ReservationSlot::getTime)
                 .collect(Collectors.toSet());
 
-        for (LocalTime requested : requestedTimes) {
-            if (reservedTimes.contains(requested)) {
-                return new GeneralResponse<>("Slot already booked: " + requested, 409);
-            }
+        List<LocalTime> conflicts = requestedTimes.stream().filter(reservedTimes::contains).toList();
+
+        if (!conflicts.isEmpty()) {
+            throw new GeneralException("The following time slots are already reserved: " + conflicts);
         }
 
-        // Step 3: Build ReservationSlot list
-        List<ReservationSlot> slots = reservationRequest.getSlots().stream()
-                .map(time -> ReservationSlot.builder().time(time).build())
+        // Calculate cost
+        double totalCost = calculateTotalPrice(requestedTimes, playground);
+        if (request.getPaymentMethod() == PaymentMethod.WALLET) {
+            walletService.withdraw(httpRequest, totalCost);
+        }
+
+        Reservation reservation = Reservation.builder()
+                .user(user)
+                .playground(playground)
+                .date(request.getDate())
+                .price(totalCost)
+                .build();
+
+        List<ReservationSlot> slotEntities = requestedTimes.stream()
+                .map(time -> ReservationSlot.builder().time(time).reservation(reservation).build())
                 .collect(Collectors.toList());
 
-        Reservation reservation = new Reservation();
-        reservation.setUser(user);
-        reservation.setPlayground(playground);
-        reservation.setDate(reservationRequest.getDate());
-        reservation.setSlots(slots);
-
-        // Back-reference
-        slots.forEach(slot -> slot.setReservation(reservation));
+        reservation.setSlots(slotEntities);
 
         reservationRepo.save(reservation);
 
-        return new GeneralResponse<>("Reservation completed successfully", reservation);
+
+        // Send notification
+        notificationService.pushNotification(user, "Reservation Confirmed",
+                "Your booking for " + playground.getName() + " on " + playground.getName() + " is confirmed.");
+
+        notificationService.pushNotification(provider, "New Reservation Received",
+                "You have received a new reservation from " + user.getUsername() + " for \"" + playground.getName() + "\" at " + reservation.getDate() + ".");
+
+        return new GeneralResponse<>("Reservation completed successfully", mapToResponse(reservation));
     }
 
+    @Transactional(readOnly = true)
+    public GeneralResponse<?> getReservations(HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
 
-    private boolean isWithinShift(LocalTime slot, LocalTime shiftStart, LocalTime shiftEnd) {
-        if (shiftEnd.isAfter(shiftStart)) {
-            return !slot.isBefore(shiftStart) && !slot.isAfter(shiftEnd);
-        } else {
-            return !slot.isBefore(shiftStart) || !slot.isAfter(shiftEnd);
+        List<Reservation> reservations = reservationRepo.findByUser(user);
+
+        List<ReservationResponse> responses = reservations.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new GeneralResponse<>("Reservations retrieved successfully", responses);
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public GeneralResponse<String> cancelReservation(Long reservationId, HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
+        Reservation reservation = reservationRepo.findByIdAndUser(reservationId, user)
+                .orElseThrow(() -> new GeneralException("Reservation not found or not owned by user"));
+
+        // Refund booking price
+        walletService.deposit(user.getId(), reservation.getPrice());
+
+        reservationRepo.delete(reservation);
+
+        // Send notification
+        notificationService.pushNotification(user, "Reservation Cancelled",
+                "Your booking for " + reservation.getPlayground().getName() + " on " + reservation.getDate() + " has been cancelled.");
+
+        return new GeneralResponse<>("Reservation cancelled successfully", null);
+    }
+
+    /// Helper Methods:
+    private void validateRequest(ReservationRequest request) {
+        if (request.getSlots() == null || request.getSlots().isEmpty()) {
+            throw new GeneralException("At least one slot is required");
         }
+
+        LocalDate today = LocalDate.now();
+        if (request.getDate().isBefore(today) || request.getDate().isAfter(today.plusDays(30))) {
+            throw new GeneralException("Booking date must be today or within 30 days");
+        }
+    }
+
+    // Validates and parses input time strings and ensures they fall within the playground’s working shifts.
+    private Set<LocalTime> validateAndParseSlots(List<String> slotStrings, Playground playground) {
+        if (slotStrings == null || slotStrings.isEmpty()) {
+            throw new GeneralException("No time slots provided for reservation.");
+        }
+
+        Set<LocalTime> parsedSlots = new HashSet<>();
+        for (String timeStr : slotStrings) {
+            LocalTime time;
+            try {
+                time = LocalTime.parse(timeStr);
+            } catch (Exception e) {
+                throw new GeneralException("Invalid time format: " + timeStr);
+            }
+
+            boolean isInMorning = isWithinShift(time, playground.getMorningShiftStart(), playground.getMorningShiftEnd());
+            boolean isInNight = isWithinShift(time, playground.getNightShiftStart(), playground.getNightShiftEnd());
+
+            if (!isInMorning && !isInNight) {
+                throw new GeneralException("Slot " + time + " is outside of working hours.");
+            }
+
+            if (!parsedSlots.add(time)) {
+                throw new GeneralException("Duplicate slot provided: " + time);
+            }
+        }
+
+        return parsedSlots;
+    }
+
+    // Checks whether a time is within the bounds of a shift (including overnight shifts).
+    private boolean isWithinShift(LocalTime time, LocalTime shiftStart, LocalTime shiftEnd) {
+        if (shiftStart == null || shiftEnd == null) return false;
+
+        return shiftEnd.isAfter(shiftStart)
+                ? !time.isBefore(shiftStart) && !time.isAfter(shiftEnd)
+                : !time.isBefore(shiftStart) || !time.isAfter(shiftEnd); // overnight shift
+    }
+
+    // Calculate the total booking price
+    private double calculateTotalPrice(Set<LocalTime> requestedTimes, Playground playground) {
+        double basePrice = playground.getBookingPrice();
+        double extraNightPrice = playground.getExtraNightPrice();
+        boolean hasExtraPrice = playground.isHasExtraPrice();
+
+        double totalCost = 0.0;
+
+        for (LocalTime time : requestedTimes) {
+            totalCost += basePrice;
+
+            boolean isNightSlot = isWithinShift(time, playground.getNightShiftStart(), playground.getNightShiftEnd());
+
+            if (hasExtraPrice && isNightSlot) {
+                totalCost += extraNightPrice;
+            }
+        }
+
+        return totalCost;
+    }
+
+    // Maps a Reservation entity to a DTO.
+    private ReservationResponse mapToResponse(Reservation reservation) {
+        List<String> slots = reservation.getSlots().stream().map(slot -> slot.getTime().toString())
+                .collect(Collectors.toList());
+
+        return ReservationResponse.builder()
+                .id(reservation.getId())
+                .userId(reservation.getUser().getId())
+                .playgroundId(reservation.getPlayground().getId())
+                .date(reservation.getDate())
+                .slots(slots)
+                .price(reservation.getPrice())
+                .build();
     }
 }
