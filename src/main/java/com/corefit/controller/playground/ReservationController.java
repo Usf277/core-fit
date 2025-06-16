@@ -44,8 +44,16 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @DeleteMapping("/cancel")
+    @PostMapping("/cancel")
     public ResponseEntity<GeneralResponse<String>> cancelReservation(
+            @RequestParam Long id,
+            HttpServletRequest httpRequest) {
+        GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<GeneralResponse<String>> updateReservation(
             @RequestParam Long id,
             HttpServletRequest httpRequest) {
         GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
