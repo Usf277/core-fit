@@ -191,18 +191,4 @@ public class MarketService {
         redisTemplate.delete("market:open:" + id);
         return new GeneralResponse<>("Market status changed successfully");
     }
-
-    // Checks if the market is open using Redis cache or database fallback.
-    public boolean isMarketOpen(Long marketId) {
-        String key = "market:open:" + marketId;
-        Boolean isOpen = redisTemplate.opsForValue().get(key);
-
-        if (isOpen == null) {
-            isOpen = marketRepo.findById(marketId)
-                    .map(Market::isOpened)
-                    .orElse(false);
-            redisTemplate.opsForValue().set(key, isOpen, 1, TimeUnit.HOURS);
-        }
-        return isOpen;
-    }
 }

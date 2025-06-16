@@ -19,5 +19,5 @@ public interface ReservationRepo extends JpaRepository<Reservation, Integer> {
 
     Optional<Reservation> findByIdAndUser(Long id, User user);
 
-    List<Reservation> findByPlaygroundId(Long playgroundId);
+    List<Reservation> findByPlayground(Playground playground);
 }
