@@ -28,6 +28,7 @@ public class Playground {
     private String description;
 
     @ManyToOne
+    @JoinColumn(nullable = false)
     private City city;
 
     private String address;
