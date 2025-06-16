@@ -27,7 +27,7 @@ public class MarketController {
 
     @GetMapping("/markets")
     public ResponseEntity<GeneralResponse<?>> findAll(
-            @RequestParam int page,
+            @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long categoryId,

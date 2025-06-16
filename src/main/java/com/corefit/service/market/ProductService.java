@@ -15,16 +15,13 @@ import com.corefit.repository.market.MarketRepo;
 import com.corefit.repository.market.ProductRepo;
 import com.corefit.repository.market.SubCategoryRepo;
 import com.corefit.service.auth.AuthService;
-import com.corefit.service.helper.FilesService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -38,6 +35,8 @@ public class ProductService {
     private AuthService authService;
     @Autowired
     private FavouritesRepo favouritesRepo;
+    @Autowired
+    private MarketService marketService;
 
     public GeneralResponse<?> findById(long id, HttpServletRequest httpRequest) {
         Product product = productRepo.findById(id)
@@ -68,42 +67,32 @@ public class ProductService {
         return new GeneralResponse<>("Success", data);
     }
 
+    @Transactional
     public GeneralResponse<?> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
-        size = (size == null || size <= 0) ? 10 : size;
-        page = (page == null || page < 1) ? 1 : page;
+        if (marketId != null && !marketService.isMarketOpen(marketId)) {
+            return new GeneralResponse<>("Market is closed", Page.empty());
+        }
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(Math.max(page != null ? page - 1 : 0, 0), size != null ? size : 10, Sort.by(Sort.Direction.ASC, "id"));
         Page<Product> productsPage = productRepo.findAllByFilters(marketId, subCategoryId, name, pageable);
 
-        long userId = -1;
-        Set<Long> favouriteProductIds = new HashSet<>();
+        long userId = authService.extractUserIdFromRequest(httpRequest);
+        Set<Long> favouriteProductIds = Set.of();
 
         try {
-            userId = authService.extractUserIdFromRequest(httpRequest);
-
             if (userId > 0) {
-                User user = authService.findUserById(userId);
-
-                if (user != null && user.getType() == UserType.GENERAL) {
-                    favouritesRepo.findByUser_Id(userId).ifPresent(favourites ->
-                            favouriteProductIds.addAll(
-                                    favourites.getProducts().stream()
-                                            .map(Product::getId)
-                                            .collect(Collectors.toSet())
-                            )
-                    );
-                }
+                favouriteProductIds = favouritesRepo.findFavouriteProductIdsByUserId(userId);
             }
         } catch (Exception e) {
-            throw new GeneralException("Error retrieving user favorites");
+            throw new GeneralException("Error retrieving user favorites" + e.getMessage());
         }
 
         Set<Long> finalFavouriteProductIds = favouriteProductIds;
 
         Page<ProductResponse> productResponses = productsPage.map(product -> {
-            ProductResponse productResponse = mapToDto(product);
-            productResponse.setFavourite(finalFavouriteProductIds.contains(product.getId()));
-            return productResponse;
+            ProductResponse response = mapToDto(product);
+            response.setFavourite(finalFavouriteProductIds.contains(product.getId()));
+            return response;
         });
 
         Map<String, Object> data = new HashMap<>();
@@ -208,4 +197,6 @@ public class ProductService {
                 .isFavourite(product.isFavourite())
                 .build();
     }
+
+
 }
