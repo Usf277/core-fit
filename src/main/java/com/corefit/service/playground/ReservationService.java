@@ -8,6 +8,7 @@ import com.corefit.entity.playground.Playground;
 import com.corefit.entity.playground.Reservation;
 import com.corefit.entity.playground.ReservationSlot;
 import com.corefit.enums.PaymentMethod;
+import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.ReservationRepo;
 import com.corefit.service.auth.AuthService;
@@ -113,10 +114,35 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public GeneralResponse<?> getReservations(HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getMyReservations(HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
 
         List<Reservation> reservations = reservationRepo.findByUser(user);
+
+        List<ReservationResponse> responses = reservations.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new GeneralResponse<>("Reservations retrieved successfully", responses);
+    }
+
+    @Transactional(readOnly = true)
+    public GeneralResponse<?> getReservations(Long playgroundId, HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
+
+        if (user.getType() != UserType.PROVIDER) {
+            throw new GeneralException("User is not authorized to view reservations");
+        }
+
+        if (playgroundId == null) {
+            throw new GeneralException("Playground ID must not be null");
+        }
+
+        List<Reservation> reservations = reservationRepo.findByPlaygroundId(playgroundId);
+
+        if (reservations.isEmpty()) {
+            return new GeneralResponse<>("No reservations found for the given playground", List.of());
+        }
 
         List<ReservationResponse> responses = reservations.stream()
                 .map(this::mapToResponse)
@@ -132,7 +158,9 @@ public class ReservationService {
                 .orElseThrow(() -> new GeneralException("Reservation not found or not owned by user"));
 
         // Refund booking price
-        walletService.deposit(user.getId(), reservation.getPrice());
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+            walletService.deposit(user.getId(), reservation.getPrice());
+        }
 
         reservationRepo.delete(reservation);
 
