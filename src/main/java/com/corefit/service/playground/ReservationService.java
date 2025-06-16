@@ -138,7 +138,13 @@ public class ReservationService {
             throw new GeneralException("Playground ID must not be null");
         }
 
-        List<Reservation> reservations = reservationRepo.findByPlaygroundId(playgroundId);
+        Playground playground = playgroundService.findById(playgroundId);
+
+        if (!playground.getUser().getId().equals(user.getId())) {
+            throw new GeneralException("You are not the owner of this playground");
+        }
+
+        List<Reservation> reservations = reservationRepo.findByPlayground(playground);
 
         if (reservations.isEmpty()) {
             return new GeneralResponse<>("No reservations found for the given playground", List.of());

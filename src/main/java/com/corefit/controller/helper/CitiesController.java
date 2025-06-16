@@ -17,7 +17,7 @@ public class CitiesController {
     private CityRepo cityRepo;
 
     @GetMapping("/cities")
-    public ResponseEntity<?> getCitiesByGovernorateId(@RequestParam long governorate_id) {
+    public ResponseEntity<?> getCitiesByGovernorateId(@RequestParam(required = false) Long governorate_id) {
         try {
             GeneralResponse<?> response = cityService.getAllCities(governorate_id);
             return ResponseEntity.status(HttpStatus.OK).body(response);

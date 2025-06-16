@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -18,9 +19,18 @@ public class CityService {
         return cityRepo.findById(id);
     }
 
-    public GeneralResponse<?> getAllCities(long governorate_id) {
+    public GeneralResponse<?> getAllCities(Long governorateId) {
+        List<City> cities;
+
+        if (governorateId != null)
+            cities = cityRepo.findAllByGovernorateId(governorateId);
+        else
+            cities = cityRepo.findAll();
+
         Map<String, Object> data = new HashMap<>();
-        data.put("cities", cityRepo.findAllByGovernorateId(governorate_id));
-        return new GeneralResponse<>("Success", data);
+        data.put("cities", cities);
+
+        return new GeneralResponse<>("Cities retrieved successfully", data);
     }
+
 }

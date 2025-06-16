@@ -69,8 +69,12 @@ public class ProductService {
 
     @Transactional
     public GeneralResponse<?> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
-        if (marketId != null && !marketService.isMarketOpen(marketId)) {
-            return new GeneralResponse<>("Market is closed", Page.empty());
+        if (marketId != null) {
+            Market market = marketRepo.findById(marketId)
+                    .orElseThrow(() -> new GeneralException("Market not found"));
+
+            if (!market.isOpened())
+                return new GeneralResponse<>("Market is closed", Page.empty());
         }
 
         Pageable pageable = PageRequest.of(Math.max(page != null ? page - 1 : 0, 0), size != null ? size : 10, Sort.by(Sort.Direction.ASC, "id"));
@@ -79,16 +83,15 @@ public class ProductService {
         long userId = authService.extractUserIdFromRequest(httpRequest);
         Set<Long> favouriteProductIds = Set.of();
 
-        try {
-            if (userId > 0) {
+        if (userId > 0) {
+            try {
                 favouriteProductIds = favouritesRepo.findFavouriteProductIdsByUserId(userId);
+            } catch (Exception e) {
+                throw new GeneralException("Error retrieving user favorites: " + e.getMessage());
             }
-        } catch (Exception e) {
-            throw new GeneralException("Error retrieving user favorites" + e.getMessage());
         }
 
         Set<Long> finalFavouriteProductIds = favouriteProductIds;
-
         Page<ProductResponse> productResponses = productsPage.map(product -> {
             ProductResponse response = mapToDto(product);
             response.setFavourite(finalFavouriteProductIds.contains(product.getId()));
