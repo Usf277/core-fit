@@ -34,8 +34,6 @@ public class MarketService {
     private FilesService filesService;
     @Autowired
     private CategoryService categoryService;
-    @Autowired
-    private RedisTemplate<String, Boolean> redisTemplate;
 
     public GeneralResponse<?> getMarketById(long id) {
         Market market = marketRepo.findById(id)
@@ -188,7 +186,6 @@ public class MarketService {
         }
         market.setOpened(!market.isOpened());
         marketRepo.save(market);
-        redisTemplate.delete("market:open:" + id);
         return new GeneralResponse<>("Market status changed successfully");
     }
 }
