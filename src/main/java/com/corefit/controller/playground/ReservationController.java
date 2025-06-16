@@ -18,7 +18,7 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
-    @PostMapping
+    @PostMapping("/book")
     public ResponseEntity<GeneralResponse<?>> bookPlayground(
             @RequestBody ReservationRequest reservationRequest,
             HttpServletRequest httpRequest) {
@@ -26,19 +26,25 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/reserved_slots")
+    @GetMapping("/slots")
     public ResponseEntity<GeneralResponse<?>> getReservedSlots(@RequestParam Long playgroundId, @RequestParam LocalDate date) {
         GeneralResponse<?> response = reservationService.getReservedSlots(playgroundId, date);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<GeneralResponse<?>> getReservations(HttpServletRequest httpRequest) {
-        GeneralResponse<?> response = reservationService.getReservations(httpRequest);
+    @GetMapping("/my")
+    public ResponseEntity<GeneralResponse<?>> getMyReservations(HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = reservationService.getMyReservations(httpRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @DeleteMapping("/{id}")
+    @GetMapping("/playground")
+    public ResponseEntity<GeneralResponse<?>> getReservations(@RequestParam Long playgroundId, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = reservationService.getReservations(playgroundId, httpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @DeleteMapping("/cancel/{id}")
     public ResponseEntity<GeneralResponse<String>> cancelReservation(
             @PathVariable Long id,
             HttpServletRequest httpRequest) {

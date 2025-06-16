@@ -21,6 +21,7 @@ public class Playground {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
     @Column(columnDefinition = "TEXT")
@@ -39,7 +40,8 @@ public class Playground {
 
     private LocalTime nightShiftEnd;
 
-    private double bookingPrice;
+    @Column(nullable = false)
+    private Double bookingPrice;
 
     @Builder.Default
     private boolean hasExtraPrice = false;
@@ -47,6 +49,7 @@ public class Playground {
     private double extraNightPrice;
 
     @Builder.Default
+    @Column(nullable = false)
     private boolean isOpened = true;
 
     @ElementCollection
