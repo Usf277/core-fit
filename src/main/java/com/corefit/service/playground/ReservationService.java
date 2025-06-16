@@ -158,7 +158,9 @@ public class ReservationService {
                 .orElseThrow(() -> new GeneralException("Reservation not found or not owned by user"));
 
         // Refund booking price
-        walletService.deposit(user.getId(), reservation.getPrice());
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+            walletService.deposit(user.getId(), reservation.getPrice());
+        }
 
         reservationRepo.delete(reservation);
 

@@ -44,9 +44,9 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @DeleteMapping("/cancel/{id}")
+    @DeleteMapping("/cancel")
     public ResponseEntity<GeneralResponse<String>> cancelReservation(
-            @PathVariable Long id,
+            @RequestParam Long id,
             HttpServletRequest httpRequest) {
         GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
         return ResponseEntity.ok(response);
