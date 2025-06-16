@@ -151,7 +151,6 @@ public class ReservationService {
         return new GeneralResponse<>("Reservations retrieved successfully", responses);
     }
 
-
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public GeneralResponse<String> cancelReservation(Long reservationId, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
