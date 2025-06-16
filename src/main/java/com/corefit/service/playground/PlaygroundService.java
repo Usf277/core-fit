@@ -102,6 +102,7 @@ public class PlaygroundService {
         playground.setExtraNightPrice(playgroundRequest.getExtraNightPrice());
         playground.setHasExtraPrice(playgroundRequest.isHasExtraPrice());
         playground.setImages(playgroundRequest.getImages());
+        playground.setTeemMembers(playgroundRequest.getTeamMembers());
 
         playgroundRepo.save(playground);
 

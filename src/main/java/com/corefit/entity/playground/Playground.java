@@ -50,7 +50,7 @@ public class Playground {
     private double extraNightPrice;
 
     @Column(nullable = false)
-    private Integer teemMembers;
+    private Integer teamMembers;
 
     @Builder.Default
     @Column(nullable = false)
