@@ -20,6 +20,7 @@ public class PlaygroundRequest {
     private String nightShiftStart;
     private String nightShiftEnd;
     private double bookingPrice;
+    private Integer teamMembers;
     private boolean hasExtraPrice;
     private double extraNightPrice;
     private List<String> images;

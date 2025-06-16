@@ -48,6 +48,9 @@ public class Playground {
 
     private double extraNightPrice;
 
+    @Column(nullable = false)
+    private Integer teemMembers;
+
     @Builder.Default
     @Column(nullable = false)
     private boolean isOpened = true;
