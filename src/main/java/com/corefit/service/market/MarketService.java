@@ -16,11 +16,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class MarketService {
@@ -32,7 +34,8 @@ public class MarketService {
     private FilesService filesService;
     @Autowired
     private CategoryService categoryService;
-
+    @Autowired
+    private RedisTemplate<String, Boolean> redisTemplate;
 
     public GeneralResponse<?> getMarketById(long id) {
         Market market = marketRepo.findById(id)
@@ -185,6 +188,21 @@ public class MarketService {
         }
         market.setOpened(!market.isOpened());
         marketRepo.save(market);
+        redisTemplate.delete("market:open:" + id);
         return new GeneralResponse<>("Market status changed successfully");
+    }
+
+    // Checks if the market is open using Redis cache or database fallback.
+    public boolean isMarketOpen(Long marketId) {
+        String key = "market:open:" + marketId;
+        Boolean isOpen = redisTemplate.opsForValue().get(key);
+
+        if (isOpen == null) {
+            isOpen = marketRepo.findById(marketId)
+                    .map(Market::isOpened)
+                    .orElse(false);
+            redisTemplate.opsForValue().set(key, isOpen, 1, TimeUnit.HOURS);
+        }
+        return isOpen;
     }
 }

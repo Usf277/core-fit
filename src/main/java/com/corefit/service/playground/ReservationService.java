@@ -96,6 +96,7 @@ public class ReservationService {
         return new GeneralResponse<>("Reservation completed successfully", mapToResponse(reservation));
     }
 
+    @Transactional(readOnly = true)
     public GeneralResponse<?> getReservedSlots(Long playgroundId, LocalDate date) {
         Playground playground = playgroundService.findById(playgroundId);
 
