@@ -28,6 +28,7 @@ public class Playground {
     private String description;
 
     @ManyToOne
+    @JoinColumn(nullable = false)
     private City city;
 
     private String address;
@@ -47,6 +48,9 @@ public class Playground {
     private boolean hasExtraPrice = false;
 
     private double extraNightPrice;
+
+    @Column(nullable = false)
+    private Integer teamMembers;
 
     @Builder.Default
     @Column(nullable = false)

@@ -60,6 +60,7 @@ public class PlaygroundService {
                 .nightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()))
                 .nightShiftEnd(DateParser.parseTime(playgroundRequest.getNightShiftEnd()))
                 .bookingPrice(playgroundRequest.getBookingPrice())
+                .teamMembers(playgroundRequest.getTeamMembers())
                 .extraNightPrice(playgroundRequest.getExtraNightPrice())
                 .hasExtraPrice(playgroundRequest.isHasExtraPrice())
                 .images(playgroundRequest.getImages())
@@ -101,6 +102,7 @@ public class PlaygroundService {
         playground.setExtraNightPrice(playgroundRequest.getExtraNightPrice());
         playground.setHasExtraPrice(playgroundRequest.isHasExtraPrice());
         playground.setImages(playgroundRequest.getImages());
+        playground.setTeamMembers(playgroundRequest.getTeamMembers());
 
         playgroundRepo.save(playground);
 
