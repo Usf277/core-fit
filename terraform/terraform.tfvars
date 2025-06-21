@@ -1,0 +1,1 @@
+mysqlusername = corefit-user
