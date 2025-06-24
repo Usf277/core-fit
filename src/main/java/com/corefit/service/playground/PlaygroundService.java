@@ -8,8 +8,8 @@ import com.corefit.entity.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
-import com.corefit.service.helper.CityService;
 import com.corefit.service.auth.AuthService;
+import com.corefit.service.helper.CityService;
 import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Service
 public class PlaygroundService {
@@ -36,90 +39,48 @@ public class PlaygroundService {
     @Autowired
     @Lazy
     private PlaygroundFavouriteService playgroundFavouriteService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional
-    public GeneralResponse<?> create(PlaygroundRequest playgroundRequest, HttpServletRequest httpRequest) {
+    public GeneralResponse<Playground> create(PlaygroundRequest request, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
-        if (user.getType() != UserType.PROVIDER) {
-            throw new GeneralException("User is not a provider");
-        }
+        validateProvider(user);
 
-        City city = cityService.findById(playgroundRequest.getCityId());
+        City city = cityService.findById(request.getCityId());
+        validateRequest(request);
 
-        if (playgroundRequest.getImages() == null || playgroundRequest.getImages().isEmpty()) {
-            throw new GeneralException("You must upload at least one image");
-        }
-
-        Playground playground = Playground.builder()
-                .name(playgroundRequest.getName())
-                .description(playgroundRequest.getDescription())
-                .city(city)
-                .address(playgroundRequest.getAddress())
-                .morningShiftStart(DateParser.parseTime(playgroundRequest.getMorningShiftStart()))
-                .morningShiftEnd(DateParser.parseTime(playgroundRequest.getMorningShiftEnd()))
-                .nightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()))
-                .nightShiftEnd(DateParser.parseTime(playgroundRequest.getNightShiftEnd()))
-                .bookingPrice(playgroundRequest.getBookingPrice())
-                .teemMembers(playgroundRequest.getTeamMembers())
-                .extraNightPrice(playgroundRequest.getExtraNightPrice())
-                .hasExtraPrice(playgroundRequest.isHasExtraPrice())
-                .images(playgroundRequest.getImages())
-                .user(user)
-                .isOpened(true)
-                .build();
-
+        Playground playground = buildPlayground(request, user, city);
         playgroundRepo.save(playground);
+
         return new GeneralResponse<>("Playground added successfully", playground);
     }
 
     @Transactional
-    public GeneralResponse<?> update(PlaygroundRequest playgroundRequest, HttpServletRequest httpRequest) {
+    public GeneralResponse<Playground> update(PlaygroundRequest request, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
-        if (user.getType() != UserType.PROVIDER) {
-            throw new GeneralException("User is not a provider");
-        }
+        validateProvider(user);
 
-        Playground playground = findById(playgroundRequest.getId());
-        if (!playground.getUser().getId().equals(user.getId())) {
-            throw new GeneralException("You do not have permission to update this playground");
-        }
+        Playground playground = findById(request.getId());
+        validateOwnership(playground, user);
 
-        City city = cityService.findById(playgroundRequest.getCityId());
+        City city = cityService.findById(request.getCityId());
+        validateRequest(request);
 
-        if (playgroundRequest.getImages() == null || playgroundRequest.getImages().isEmpty()) {
-            throw new GeneralException("You must upload at least one image");
-        }
-
-        playground.setName(playgroundRequest.getName());
-        playground.setDescription(playgroundRequest.getDescription());
-        playground.setAddress(playgroundRequest.getAddress());
-        playground.setCity(city);
-        playground.setMorningShiftStart(DateParser.parseTime(playgroundRequest.getMorningShiftStart()));
-        playground.setMorningShiftEnd(DateParser.parseTime(playgroundRequest.getMorningShiftEnd()));
-        playground.setNightShiftStart(DateParser.parseTime(playgroundRequest.getNightShiftStart()));
-        playground.setNightShiftEnd(DateParser.parseTime(playgroundRequest.getNightShiftEnd()));
-        playground.setBookingPrice(playgroundRequest.getBookingPrice());
-        playground.setExtraNightPrice(playgroundRequest.getExtraNightPrice());
-        playground.setHasExtraPrice(playgroundRequest.isHasExtraPrice());
-        playground.setImages(playgroundRequest.getImages());
-        playground.setTeemMembers(playgroundRequest.getTeamMembers());
-
+        updatePlayground(playground, request, city);
         playgroundRepo.save(playground);
 
         return new GeneralResponse<>("Playground updated successfully", playground);
     }
 
     @Transactional(readOnly = true)
-    public GeneralResponse<?> getAll(Integer page, Integer size, String search, Long cityId, Integer avgRate, HttpServletRequest httpRequest) {
-        if (size == null || size <= 0) size = 5;
-        if (page == null || page < 1) page = 1;
-
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").ascending());
+    public GeneralResponse<Map<String, Object>> getAll(Integer page, Integer size, String search, Long cityId, Integer avgRate, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
 
-        Map<String, Object> data = new HashMap<>();
-        Page<Playground> playgrounds;
+        Pageable pageable = PageRequest.of(page != null && page >= 1 ? page - 1 : 0, size != null && size > 0 ? size : 5,
+                Sort.by("id").ascending());
 
+        Page<Playground> playgrounds;
         if (user.getType() == UserType.PROVIDER) {
             playgrounds = playgroundRepo.findAllByUserId(user.getId(), pageable);
         } else {
@@ -127,9 +88,9 @@ public class PlaygroundService {
         }
 
         Set<Long> favIds = playgroundFavouriteService.getFavouritePlaygroundIdsForUser(user.getId());
-
         playgrounds.forEach(playground -> playground.setFavourite(favIds.contains(playground.getId())));
 
+        Map<String, Object> data = new HashMap<>();
         data.put("playgrounds", playgrounds.getContent());
         data.put("totalElements", playgrounds.getTotalElements());
         data.put("totalPages", playgrounds.getTotalPages());
@@ -140,12 +101,12 @@ public class PlaygroundService {
     }
 
     @Transactional(readOnly = true)
-    public GeneralResponse<?> getById(Long id, HttpServletRequest httpRequest) {
+    public GeneralResponse<Playground> getById(Long id, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         Playground playground = findById(id);
 
         if (user.getType() == UserType.PROVIDER && !playground.getUser().getId().equals(user.getId())) {
-            throw new GeneralException("You do not have permission to view this playground");
+            throw new GeneralException("You do not have permission to access this playground");
         }
 
         boolean isFavorite = playgroundFavouriteService.existsByUserIdAndPlaygroundId(user.getId(), playground.getId());
@@ -154,10 +115,99 @@ public class PlaygroundService {
         return new GeneralResponse<>("Playground retrieved successfully", playground);
     }
 
-    /// Helper method
-    @Transactional(readOnly = true)
+    /// Helper Methods
     public Playground findById(Long id) {
         return playgroundRepo.findById(id)
-                .orElseThrow(() -> new GeneralException("Playground not found with ID: " + id));
+                .orElseThrow(() -> new GeneralException("Playground not found"));
+    }
+
+    private void validateProvider(User user) {
+        if (user.getType() != UserType.PROVIDER) {
+            throw new GeneralException("User is not a provider");
+        }
+    }
+
+    private void validateOwnership(Playground playground, User user) {
+        if (!playground.getUser().getId().equals(user.getId())) {
+            throw new GeneralException("You do not have permission to access this playground");
+        }
+    }
+
+    private void validateRequest(PlaygroundRequest request) {
+        if (request.getImages() == null || request.getImages().isEmpty()) {
+            throw new GeneralException("You must upload at least one image");
+        }
+
+        if (request.getBookingPrice() < 0 || (request.isHasExtraPrice() && request.getExtraNightPrice() < 0)) {
+            throw new GeneralException("Prices must be non-negative");
+        }
+
+        if (request.getTeamMembers() <= 0) {
+            throw new GeneralException("Team members must be positive");
+        }
+
+        validateShiftTimes(request);
+        validatePassword(request);
+    }
+
+    private void validateShiftTimes(PlaygroundRequest request) {
+        LocalTime morningStart = DateParser.parseTime(request.getMorningShiftStart());
+        LocalTime morningEnd = DateParser.parseTime(request.getMorningShiftEnd());
+        LocalTime nightStart = DateParser.parseTime(request.getNightShiftStart());
+        LocalTime nightEnd = DateParser.parseTime(request.getNightShiftEnd());
+
+        if (morningStart == null || morningEnd == null || nightStart == null || nightEnd == null) {
+            throw new GeneralException("Shift times must be valid and start before end");
+        }
+
+        if (morningStart.isAfter(morningEnd) || nightStart.isAfter(nightEnd) || morningEnd.isAfter(nightStart)) {
+            throw new GeneralException("Shift times must be valid and start before end");
+        }
+    }
+
+    private void validatePassword(PlaygroundRequest request) {
+        if (request.getPassword() != null && !Pattern.compile("^\\d{6}$").matcher(request.getPassword().toString()).matches()) {
+            throw new GeneralException("Password must be exactly 6 digits");
+        }
+    }
+
+    private Playground buildPlayground(PlaygroundRequest request, User user, City city) {
+        return Playground.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .city(city)
+                .address(request.getAddress())
+                .morningShiftStart(DateParser.parseTime(request.getMorningShiftStart()))
+                .morningShiftEnd(DateParser.parseTime(request.getMorningShiftEnd()))
+                .nightShiftStart(DateParser.parseTime(request.getNightShiftStart()))
+                .nightShiftEnd(DateParser.parseTime(request.getNightShiftEnd()))
+                .bookingPrice(request.getBookingPrice())
+                .teamMembers(request.getTeamMembers())
+                .extraNightPrice(request.getExtraNightPrice())
+                .hasExtraPrice(request.isHasExtraPrice())
+                .images(request.getImages())
+                .user(user)
+                .password(request.getPassword() != null ?
+                        passwordEncoder.encode(request.getPassword().toString()) : null)
+                .isOpened(true)
+                .build();
+    }
+
+    private void updatePlayground(Playground playground, PlaygroundRequest request, City city) {
+        playground.setName(request.getName());
+        playground.setDescription(request.getDescription());
+        playground.setAddress(request.getAddress());
+        playground.setCity(city);
+        playground.setMorningShiftStart(DateParser.parseTime(request.getMorningShiftStart()));
+        playground.setMorningShiftEnd(DateParser.parseTime(request.getMorningShiftEnd()));
+        playground.setNightShiftStart(DateParser.parseTime(request.getNightShiftStart()));
+        playground.setNightShiftEnd(DateParser.parseTime(request.getNightShiftEnd()));
+        playground.setBookingPrice(request.getBookingPrice());
+        playground.setExtraNightPrice(request.getExtraNightPrice());
+        playground.setHasExtraPrice(request.isHasExtraPrice());
+        playground.setImages(request.getImages());
+        playground.setTeamMembers(request.getTeamMembers());
+        playground.setPassword(request.getPassword() != null ?
+                passwordEncoder.encode(request.getPassword().toString()) : null);
     }
 }
