@@ -1,6 +1,6 @@
-package com.corefit.repository;
+package com.corefit.repository.auth;
 
-import com.corefit.entity.FcmToken;
+import com.corefit.entity.auth.FcmToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

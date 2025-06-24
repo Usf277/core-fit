@@ -2,9 +2,9 @@ package com.corefit.service.playground;
 
 import com.corefit.dto.request.playground.PlaygroundRequest;
 import com.corefit.dto.response.GeneralResponse;
-import com.corefit.entity.City;
+import com.corefit.entity.helper.City;
 import com.corefit.entity.playground.Playground;
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;

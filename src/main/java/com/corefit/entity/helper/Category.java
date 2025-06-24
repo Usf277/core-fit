@@ -1,5 +1,6 @@
-package com.corefit.entity.market;
+package com.corefit.entity.helper;
 
+import com.corefit.entity.market.Market;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;

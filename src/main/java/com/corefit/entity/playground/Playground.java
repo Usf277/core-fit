@@ -1,7 +1,7 @@
 package com.corefit.entity.playground;
 
-import com.corefit.entity.City;
-import com.corefit.entity.User;
+import com.corefit.entity.helper.City;
+import com.corefit.entity.auth.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,4 +1,4 @@
-package com.corefit.entity;
+package com.corefit.entity.auth;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -2,8 +2,8 @@ package com.corefit.service.market;
 
 import com.corefit.dto.request.market.CategoryRequest;
 import com.corefit.dto.response.GeneralResponse;
-import com.corefit.entity.market.Category;
-import com.corefit.repository.market.CategoryRepo;
+import com.corefit.entity.helper.Category;
+import com.corefit.repository.helper.CategoryRepo;
 import com.corefit.service.helper.FilesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,5 +1,7 @@
-package com.corefit.entity;
+package com.corefit.entity.auth;
 
+import com.corefit.entity.helper.City;
+import com.corefit.entity.helper.Governorate;
 import com.corefit.entity.market.Cart;
 import com.corefit.entity.market.Market;
 import com.corefit.entity.market.Rate;

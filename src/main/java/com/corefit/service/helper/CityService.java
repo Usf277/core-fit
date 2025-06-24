@@ -1,8 +1,8 @@
 package com.corefit.service.helper;
 
 import com.corefit.dto.response.GeneralResponse;
-import com.corefit.entity.City;
-import com.corefit.repository.CityRepo;
+import com.corefit.entity.helper.City;
+import com.corefit.repository.helper.CityRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

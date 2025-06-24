@@ -1,9 +1,9 @@
 package com.corefit.config;
 
-import com.corefit.entity.City;
-import com.corefit.entity.Governorate;
-import com.corefit.repository.CityRepo;
-import com.corefit.repository.GovernorateRepo;
+import com.corefit.entity.helper.City;
+import com.corefit.entity.helper.Governorate;
+import com.corefit.repository.helper.CityRepo;
+import com.corefit.repository.helper.GovernorateRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

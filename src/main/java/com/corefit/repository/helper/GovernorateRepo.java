@@ -1,6 +1,6 @@
-package com.corefit.repository;
+package com.corefit.repository.helper;
 
-import com.corefit.entity.Governorate;
+import com.corefit.entity.helper.Governorate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
