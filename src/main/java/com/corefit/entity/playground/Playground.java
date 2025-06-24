@@ -33,12 +33,16 @@ public class Playground {
 
     private String address;
 
+    @Column(nullable = false)
     private LocalTime morningShiftStart;
 
+    @Column(nullable = false)
     private LocalTime morningShiftEnd;
 
+    @Column(nullable = false)
     private LocalTime nightShiftStart;
 
+    @Column(nullable = false)
     private LocalTime nightShiftEnd;
 
     @Column(nullable = false)
@@ -52,12 +56,15 @@ public class Playground {
     @Column(nullable = false)
     private Integer teamMembers;
 
+    @Column(length = 60)
+    private String password; // Hashed
+
     @Builder.Default
     @Column(nullable = false)
     private boolean isOpened = true;
 
     @ElementCollection
-    @CollectionTable(name = "playgroud_images", joinColumns = @JoinColumn(name = "playground_id"))
+    @CollectionTable(name = "playground_images", joinColumns = @JoinColumn(name = "playground_id"))
     @Column(name = "image_url", columnDefinition = "TEXT")
     @OrderColumn(name = "image_order")
     private List<String> images;

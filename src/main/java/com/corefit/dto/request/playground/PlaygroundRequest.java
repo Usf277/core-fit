@@ -24,4 +24,5 @@ public class PlaygroundRequest {
     private boolean hasExtraPrice;
     private double extraNightPrice;
     private List<String> images;
+    private Integer password;
 }
