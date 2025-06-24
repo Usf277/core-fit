@@ -147,7 +147,7 @@ public class PlaygroundService {
         }
 
         validateShiftTimes(request);
-        validatePassword(request);
+        validatePassword(request.getPassword().toString());
     }
 
     private void validateShiftTimes(PlaygroundRequest request) {
@@ -156,19 +156,22 @@ public class PlaygroundService {
         LocalTime nightStart = DateParser.parseTime(request.getNightShiftStart());
         LocalTime nightEnd = DateParser.parseTime(request.getNightShiftEnd());
 
-        if (morningStart == null || morningEnd == null || nightStart == null || nightEnd == null) {
-            throw new GeneralException("Shift times must be valid and start before end");
-        }
+        if (morningStart == null || morningEnd == null || nightStart == null || nightEnd == null)
+            throw new GeneralException("Shift times must be valid and not null");
 
-        if (morningStart.isAfter(morningEnd) || nightStart.isAfter(nightEnd) || morningEnd.isAfter(nightStart)) {
-            throw new GeneralException("Shift times must be valid and start before end");
-        }
+        if (morningStart.isAfter(morningEnd))
+            throw new GeneralException("Morning shift start time must be before end time");
+
+        if (nightStart.isAfter(nightEnd))
+            throw new GeneralException("Night shift start time must be before end time");
+
+        if (morningEnd.isAfter(nightStart))
+            throw new GeneralException("There must be a gap between morning and night shifts");
     }
 
-    private void validatePassword(PlaygroundRequest request) {
-        if (request.getPassword() != null && !Pattern.compile("^\\d{6}$").matcher(request.getPassword().toString()).matches()) {
+    private void validatePassword(String password) {
+        if (password != null && !Pattern.compile("^\\d{6}$").matcher(password).matches())
             throw new GeneralException("Password must be exactly 6 digits");
-        }
     }
 
     private Playground buildPlayground(PlaygroundRequest request, User user, City city) {
