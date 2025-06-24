@@ -1,6 +1,6 @@
-package com.corefit.repository.market;
+package com.corefit.repository.helper;
 
-import com.corefit.entity.market.Category;
+import com.corefit.entity.helper.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

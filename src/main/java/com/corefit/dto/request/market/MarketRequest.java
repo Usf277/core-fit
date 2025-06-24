@@ -1,7 +1,7 @@
 package com.corefit.dto.request.market;
 
 
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;

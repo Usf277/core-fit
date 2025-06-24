@@ -6,7 +6,7 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.market.Cart;
 import com.corefit.entity.market.CartItem;
 import com.corefit.entity.market.Product;
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.CartItemRepo;

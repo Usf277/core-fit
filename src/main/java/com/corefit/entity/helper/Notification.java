@@ -1,5 +1,6 @@
-package com.corefit.entity;
+package com.corefit.entity.helper;
 
+import com.corefit.entity.auth.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

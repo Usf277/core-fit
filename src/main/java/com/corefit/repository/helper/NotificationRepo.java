@@ -1,6 +1,6 @@
-package com.corefit.repository;
+package com.corefit.repository.helper;
 
-import com.corefit.entity.Notification;
+import com.corefit.entity.helper.Notification;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

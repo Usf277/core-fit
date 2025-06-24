@@ -2,7 +2,7 @@ package com.corefit.repository.playground;
 
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.playground.Reservation;
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

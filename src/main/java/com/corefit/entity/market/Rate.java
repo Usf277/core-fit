@@ -1,6 +1,6 @@
 package com.corefit.entity.market;
 
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

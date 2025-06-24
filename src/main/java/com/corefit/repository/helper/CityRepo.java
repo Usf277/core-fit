@@ -1,6 +1,6 @@
-package com.corefit.repository;
+package com.corefit.repository.helper;
 
-import com.corefit.entity.City;
+import com.corefit.entity.helper.City;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

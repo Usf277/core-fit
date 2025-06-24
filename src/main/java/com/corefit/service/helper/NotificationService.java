@@ -2,12 +2,12 @@ package com.corefit.service.helper;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.NotificationResponse;
-import com.corefit.entity.FcmToken;
-import com.corefit.entity.Notification;
-import com.corefit.entity.User;
+import com.corefit.entity.auth.FcmToken;
+import com.corefit.entity.helper.Notification;
+import com.corefit.entity.auth.User;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.repository.FcmTokenRepo;
-import com.corefit.repository.NotificationRepo;
+import com.corefit.repository.auth.FcmTokenRepo;
+import com.corefit.repository.helper.NotificationRepo;
 import com.corefit.service.auth.AuthService;
 import com.corefit.service.auth.FCMService;
 import jakarta.servlet.http.HttpServletRequest;

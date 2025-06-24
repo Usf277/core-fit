@@ -2,7 +2,7 @@ package com.corefit.service.playground;
 
 import com.corefit.dto.request.playground.PlaygroundFavouriteRequest;
 import com.corefit.dto.response.GeneralResponse;
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.playground.PlaygroundFavourite;
 import com.corefit.repository.playground.PlaygroundFavouritesRepo;

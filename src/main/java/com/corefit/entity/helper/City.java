@@ -1,4 +1,4 @@
-package com.corefit.entity;
+package com.corefit.entity.helper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

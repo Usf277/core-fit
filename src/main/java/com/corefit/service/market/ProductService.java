@@ -3,7 +3,7 @@ package com.corefit.service.market;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.market.ProductResponse;
 import com.corefit.dto.request.market.ProductRequest;
-import com.corefit.entity.*;
+import com.corefit.entity.auth.User;
 import com.corefit.entity.market.Favourites;
 import com.corefit.entity.market.Market;
 import com.corefit.entity.market.Product;

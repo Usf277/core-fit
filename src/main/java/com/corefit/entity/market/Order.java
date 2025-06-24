@@ -1,6 +1,6 @@
 package com.corefit.entity.market;
 
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;
 import jakarta.persistence.*;

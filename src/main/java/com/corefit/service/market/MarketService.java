@@ -2,9 +2,9 @@ package com.corefit.service.market;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.request.market.MarketRequest;
-import com.corefit.entity.market.Category;
+import com.corefit.entity.helper.Category;
 import com.corefit.entity.market.Market;
-import com.corefit.entity.User;
+import com.corefit.entity.auth.User;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.MarketRepo;
@@ -16,13 +16,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class MarketService {

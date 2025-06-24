@@ -1,8 +1,8 @@
 package com.corefit.service.helper;
 
 import com.corefit.dto.response.GeneralResponse;
-import com.corefit.entity.Governorate;
-import com.corefit.repository.GovernorateRepo;
+import com.corefit.entity.helper.Governorate;
+import com.corefit.repository.helper.GovernorateRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

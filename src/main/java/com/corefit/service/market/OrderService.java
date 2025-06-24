@@ -6,7 +6,7 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.market.OrderItemResponse;
 import com.corefit.dto.response.market.OrderResponse;
 import com.corefit.dto.response.market.OrdersResponse;
-import com.corefit.entity.*;
+import com.corefit.entity.auth.User;
 import com.corefit.entity.market.*;
 import com.corefit.enums.OrderStatus;
 import com.corefit.enums.PaymentMethod;

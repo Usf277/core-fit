@@ -2,7 +2,7 @@ package com.corefit.controller.helper;
 
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.exceptions.GeneralException;
-import com.corefit.repository.CityRepo;
+import com.corefit.repository.helper.CityRepo;
 import com.corefit.service.helper.CityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
