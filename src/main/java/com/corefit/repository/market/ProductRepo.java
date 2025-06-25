@@ -20,5 +20,11 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
             "(:marketId IS NULL OR p.market.id = :marketId) AND " +
             "(:subCategoryId IS NULL OR p.subCategory.id = :subCategoryId) AND " +
             "p.market.isOpened = true AND p.isHidden = false")
+    Page<Product> findAllByFiltersAndMarketIsOpened(Long marketId, Long subCategoryId, String name, Pageable pageable);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.market WHERE " +
+            "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+            "(:marketId IS NULL OR p.market.id = :marketId) AND " +
+            "(:subCategoryId IS NULL OR p.subCategory.id = :subCategoryId)")
     Page<Product> findAllByFilters(Long marketId, Long subCategoryId, String name, Pageable pageable);
 }
