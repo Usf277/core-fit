@@ -77,9 +77,11 @@ public class ProductService {
         }
 
         Pageable pageable = PageRequest.of(Math.max(page != null ? page - 1 : 0, 0), size != null ? size : 10, Sort.by(Sort.Direction.ASC, "id"));
-        Page<Product> productsPage = (user.getType() == UserType.PROVIDER)
+        boolean isProvider = user.getType() == UserType.PROVIDER;
+        Page<Product> productsPage = isProvider
                 ? productRepo.findAllByFilters(marketId, subCategoryId, name, pageable)
                 : productRepo.findAllByFiltersAndMarketIsOpened(marketId, subCategoryId, name, pageable);
+
 
         Set<Long> favouriteProductIds;
         try {
@@ -102,7 +104,6 @@ public class ProductService {
 
         return new GeneralResponse<>("Products retrieved successfully", data);
     }
-
 
     @Transactional
     public GeneralResponse<?> insert(ProductRequest productRequest, HttpServletRequest httpRequest) {
@@ -197,6 +198,4 @@ public class ProductService {
                 .isFavourite(product.isFavourite())
                 .build();
     }
-
-
 }
