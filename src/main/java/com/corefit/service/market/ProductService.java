@@ -72,13 +72,13 @@ public class ProductService {
             Market market = marketRepo.findById(marketId)
                     .orElseThrow(() -> new GeneralException("Market not found"));
 
-            if (!market.isOpened())
+            if (!market.isOpened() && user.getType().equals(UserType.GENERAL))
                 return new GeneralResponse<>("Market is closed", Page.empty());
         }
 
         Pageable pageable = PageRequest.of(Math.max(page != null ? page - 1 : 0, 0), size != null ? size : 10, Sort.by(Sort.Direction.ASC, "id"));
-        boolean isProvider = user.getType() == UserType.PROVIDER;
-        Page<Product> productsPage = isProvider
+
+        Page<Product> productsPage = user.getType() == UserType.PROVIDER
                 ? productRepo.findAllByFilters(marketId, subCategoryId, name, pageable)
                 : productRepo.findAllByFiltersAndMarketIsOpened(marketId, subCategoryId, name, pageable);
 
