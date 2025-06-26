@@ -180,6 +180,8 @@ public class PlaygroundService {
                 .description(request.getDescription())
                 .city(city)
                 .address(request.getAddress())
+                .lat(request.getLat())
+                .lng(request.getLng())
                 .morningShiftStart(DateParser.parseTime(request.getMorningShiftStart()))
                 .morningShiftEnd(DateParser.parseTime(request.getMorningShiftEnd()))
                 .nightShiftStart(DateParser.parseTime(request.getNightShiftStart()))
@@ -200,6 +202,8 @@ public class PlaygroundService {
         playground.setName(request.getName());
         playground.setDescription(request.getDescription());
         playground.setAddress(request.getAddress());
+        playground.setLat(request.getLat());
+        playground.setLng(request.getLng());
         playground.setCity(city);
         playground.setMorningShiftStart(DateParser.parseTime(request.getMorningShiftStart()));
         playground.setMorningShiftEnd(DateParser.parseTime(request.getMorningShiftEnd()));
