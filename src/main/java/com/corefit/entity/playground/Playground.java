@@ -33,6 +33,10 @@ public class Playground {
 
     private String address;
 
+    private String lat;
+
+    private String lng;
+
     @Column(nullable = false)
     private LocalTime morningShiftStart;
 

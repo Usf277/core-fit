@@ -35,8 +35,6 @@ public class ProductService {
     private AuthService authService;
     @Autowired
     private FavouritesRepo favouritesRepo;
-    @Autowired
-    private MarketService marketService;
 
     public GeneralResponse<?> findById(long id, HttpServletRequest httpRequest) {
         Product product = productRepo.findById(id)
@@ -69,32 +67,32 @@ public class ProductService {
 
     @Transactional
     public GeneralResponse<?> getAll(Integer page, Integer size, Long marketId, Long subCategoryId, String name, HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
         if (marketId != null) {
             Market market = marketRepo.findById(marketId)
                     .orElseThrow(() -> new GeneralException("Market not found"));
 
-            if (!market.isOpened())
+            if (!market.isOpened() && user.getType().equals(UserType.GENERAL))
                 return new GeneralResponse<>("Market is closed", Page.empty());
         }
 
         Pageable pageable = PageRequest.of(Math.max(page != null ? page - 1 : 0, 0), size != null ? size : 10, Sort.by(Sort.Direction.ASC, "id"));
-        Page<Product> productsPage = productRepo.findAllByFilters(marketId, subCategoryId, name, pageable);
 
-        long userId = authService.extractUserIdFromRequest(httpRequest);
-        Set<Long> favouriteProductIds = Set.of();
+        Page<Product> productsPage = user.getType() == UserType.PROVIDER
+                ? productRepo.findAllByFilters(marketId, subCategoryId, name, pageable)
+                : productRepo.findAllByFiltersAndMarketIsOpened(marketId, subCategoryId, name, pageable);
 
-        if (userId > 0) {
-            try {
-                favouriteProductIds = favouritesRepo.findFavouriteProductIdsByUserId(userId);
-            } catch (Exception e) {
-                throw new GeneralException("Error retrieving user favorites: " + e.getMessage());
-            }
+
+        Set<Long> favouriteProductIds;
+        try {
+            favouriteProductIds = favouritesRepo.findFavouriteProductIdsByUserId(user.getId());
+        } catch (Exception e) {
+            throw new GeneralException("Error retrieving user favorites: " + e.getMessage());
         }
 
-        Set<Long> finalFavouriteProductIds = favouriteProductIds;
         Page<ProductResponse> productResponses = productsPage.map(product -> {
             ProductResponse response = mapToDto(product);
-            response.setFavourite(finalFavouriteProductIds.contains(product.getId()));
+            response.setFavourite(favouriteProductIds.contains(product.getId()));
             return response;
         });
 
@@ -200,6 +198,4 @@ public class ProductService {
                 .isFavourite(product.isFavourite())
                 .build();
     }
-
-
 }

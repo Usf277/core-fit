@@ -159,14 +159,15 @@ public class PlaygroundService {
         if (morningStart == null || morningEnd == null || nightStart == null || nightEnd == null)
             throw new GeneralException("Shift times must be valid and not null");
 
-        if (morningStart.isAfter(morningEnd))
+        if (!morningStart.isBefore(morningEnd))
             throw new GeneralException("Morning shift start time must be before end time");
 
-        if (nightStart.isAfter(nightEnd))
-            throw new GeneralException("Night shift start time must be before end time");
+        if (!nightStart.isAfter(morningEnd) && !nightEnd.isBefore(morningEnd)) {
+            throw new GeneralException("Night shift must start after the morning shift ends");
+        }
 
-        if (morningEnd.isAfter(nightStart))
-            throw new GeneralException("There must be a gap between morning and night shifts");
+        if (nightStart.equals(nightEnd))
+            throw new GeneralException("Night shift start and end times must not be the same");
     }
 
     private void validatePassword(String password) {
@@ -180,6 +181,8 @@ public class PlaygroundService {
                 .description(request.getDescription())
                 .city(city)
                 .address(request.getAddress())
+                .lat(request.getLat())
+                .lng(request.getLng())
                 .morningShiftStart(DateParser.parseTime(request.getMorningShiftStart()))
                 .morningShiftEnd(DateParser.parseTime(request.getMorningShiftEnd()))
                 .nightShiftStart(DateParser.parseTime(request.getNightShiftStart()))
@@ -200,6 +203,8 @@ public class PlaygroundService {
         playground.setName(request.getName());
         playground.setDescription(request.getDescription());
         playground.setAddress(request.getAddress());
+        playground.setLat(request.getLat());
+        playground.setLng(request.getLng());
         playground.setCity(city);
         playground.setMorningShiftStart(DateParser.parseTime(request.getMorningShiftStart()));
         playground.setMorningShiftEnd(DateParser.parseTime(request.getMorningShiftEnd()));
