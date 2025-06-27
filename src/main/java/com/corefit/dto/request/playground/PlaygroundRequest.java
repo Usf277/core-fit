@@ -1,6 +1,7 @@
 package com.corefit.dto.request.playground;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,4 +28,5 @@ public class PlaygroundRequest {
     private double extraNightPrice;
     private List<String> images;
     private Integer password;
+    private boolean passwordEnabled;
 }

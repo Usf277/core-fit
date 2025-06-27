@@ -77,18 +77,14 @@ public class PlaygroundService {
     public GeneralResponse<Map<String, Object>> getAll(Integer page, Integer size, String search, Long cityId, Integer avgRate, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
 
-        Pageable pageable = PageRequest.of(page != null && page >= 1 ? page - 1 : 0, size != null && size > 0 ? size : 5,
-                Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page != null && page >= 1 ? page - 1 : 0, size != null && size > 0 ? size : 5, Sort.by("id").ascending());
 
-        Page<Playground> playgrounds;
-        if (user.getType() == UserType.PROVIDER) {
-            playgrounds = playgroundRepo.findAllByUserId(user.getId(), pageable);
-        } else {
-            playgrounds = playgroundRepo.findAllByFilters(search, cityId, avgRate, pageable);
-        }
+        Page<Playground> playgrounds = (user.getType() == UserType.PROVIDER)
+                ? playgroundRepo.findAllByUserId(user.getId(), pageable)
+                : playgroundRepo.findAllByFilters(search, cityId, avgRate, pageable);
 
         Set<Long> favIds = playgroundFavouriteService.getFavouritePlaygroundIdsForUser(user.getId());
-        playgrounds.forEach(playground -> playground.setFavourite(favIds.contains(playground.getId())));
+        playgrounds.forEach(pg -> pg.setFavourite(favIds.contains(pg.getId())));
 
         Map<String, Object> data = new HashMap<>();
         data.put("playgrounds", playgrounds.getContent());
@@ -117,8 +113,7 @@ public class PlaygroundService {
 
     /// Helper Methods
     public Playground findById(Long id) {
-        return playgroundRepo.findById(id)
-                .orElseThrow(() -> new GeneralException("Playground not found"));
+        return playgroundRepo.findById(id).orElseThrow(() -> new GeneralException("Playground not found"));
     }
 
     private void validateProvider(User user) {
@@ -137,17 +132,19 @@ public class PlaygroundService {
         if (request.getImages() == null || request.getImages().isEmpty()) {
             throw new GeneralException("You must upload at least one image");
         }
-
         if (request.getBookingPrice() < 0 || (request.isHasExtraPrice() && request.getExtraNightPrice() < 0)) {
             throw new GeneralException("Prices must be non-negative");
         }
-
-        if (request.getTeamMembers() <= 0) {
+        if (request.getTeamMembers() == null || request.getTeamMembers() <= 0) {
             throw new GeneralException("Team members must be positive");
         }
-
         validateShiftTimes(request);
-        validatePassword(request.getPassword().toString());
+
+        if (request.isPasswordEnabled()) {
+            if (request.getPassword() == null || !Pattern.compile("^\\d{6}$").matcher(request.getPassword().toString()).matches()) {
+                throw new GeneralException("Password must be exactly 6 digits");
+            }
+        }
     }
 
     private void validateShiftTimes(PlaygroundRequest request) {
@@ -162,17 +159,14 @@ public class PlaygroundService {
         if (!morningStart.isBefore(morningEnd))
             throw new GeneralException("Morning shift start time must be before end time");
 
-        if (!nightStart.isAfter(morningEnd) && !nightEnd.isBefore(morningEnd)) {
-            throw new GeneralException("Night shift must start after the morning shift ends");
-        }
-
         if (nightStart.equals(nightEnd))
             throw new GeneralException("Night shift start and end times must not be the same");
-    }
 
-    private void validatePassword(String password) {
-        if (password != null && !Pattern.compile("^\\d{6}$").matcher(password).matches())
-            throw new GeneralException("Password must be exactly 6 digits");
+        boolean nightStartsAfterMorningEnd = nightStart.isAfter(morningEnd);
+        boolean nightEndsBeforeMorningEnd = nightEnd.isBefore(morningEnd);
+        if (!nightStartsAfterMorningEnd && !nightEndsBeforeMorningEnd)
+            throw new GeneralException("Night shift must start after morning shift ends");
+
     }
 
     private Playground buildPlayground(PlaygroundRequest request, User user, City city) {
@@ -193,8 +187,8 @@ public class PlaygroundService {
                 .hasExtraPrice(request.isHasExtraPrice())
                 .images(request.getImages())
                 .user(user)
-                .password(request.getPassword() != null ?
-                        passwordEncoder.encode(request.getPassword().toString()) : null)
+                .password(request.getPassword() != null ? passwordEncoder.encode(request.getPassword().toString()) : null)
+                .passwordEnabled(request.isPasswordEnabled())
                 .isOpened(true)
                 .build();
     }
@@ -215,7 +209,7 @@ public class PlaygroundService {
         playground.setHasExtraPrice(request.isHasExtraPrice());
         playground.setImages(request.getImages());
         playground.setTeamMembers(request.getTeamMembers());
-        playground.setPassword(request.getPassword() != null ?
-                passwordEncoder.encode(request.getPassword().toString()) : null);
+        playground.setPassword(request.getPassword() != null ? passwordEncoder.encode(request.getPassword().toString()) : null);
+        playground.setPasswordEnabled(request.isPasswordEnabled());
     }
 }

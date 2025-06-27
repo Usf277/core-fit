@@ -64,6 +64,9 @@ public class Playground {
     private String password; // Hashed
 
     @Builder.Default
+    private boolean passwordEnabled = false;
+
+    @Builder.Default
     @Column(nullable = false)
     private boolean isOpened = true;
 
