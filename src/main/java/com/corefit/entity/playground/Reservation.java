@@ -41,4 +41,10 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentMethod paymentMethod;
+
+    @Builder.Default
+    private boolean isCancelled = false;
+
+    @Builder.Default
+    private boolean isEnded = false;
 }

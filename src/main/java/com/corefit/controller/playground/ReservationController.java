@@ -34,8 +34,8 @@ public class ReservationController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<GeneralResponse<?>> getMyReservations(HttpServletRequest httpRequest) {
-        GeneralResponse<?> response = reservationService.getMyReservations(httpRequest);
+    public ResponseEntity<GeneralResponse<?>> getMyReservations(@RequestParam String status, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = reservationService.getMyReservations(status, httpRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

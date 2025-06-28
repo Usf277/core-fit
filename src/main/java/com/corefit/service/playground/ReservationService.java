@@ -125,16 +125,21 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public GeneralResponse<?> getMyReservations(HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getMyReservations(String status, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
-        List<Reservation> reservations = reservationRepo.findByUser(user);
 
-        List<ReservationResponse> responses = reservations.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        List<Reservation> reservations;
+        switch (status.toLowerCase()) {
+            case "current" -> reservations = reservationRepo.findCurrentByUser(user);
+            case "previous" -> reservations = reservationRepo.findPreviousByUser(user);
+            default -> throw new GeneralException("Invalid status. Expected 'current' or 'previous'");
+        }
+
+        List<ReservationResponse> responses = reservations.stream().map(this::mapToResponse).toList();
 
         return new GeneralResponse<>("Reservations retrieved successfully", responses);
     }
+
 
     @Transactional(readOnly = true)
     public GeneralResponse<?> getReservations(Long playgroundId, HttpServletRequest httpRequest) {
@@ -184,6 +189,7 @@ public class ReservationService {
             redisTemplate.delete(REDIS_KEY + reservationId);
         });
 
+        reservation.setCancelled(true);
         reservationRepo.delete(reservation);
 
         // Send notification
