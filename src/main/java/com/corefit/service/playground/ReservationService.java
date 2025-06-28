@@ -235,7 +235,7 @@ public class ReservationService {
 
         // Check owner password
         if (playground.isPasswordEnabled() && playground.getPassword() != null && passwordEncoder.matches(password, playground.getPassword())) {
-            return new GeneralResponse<>("Access granted", "Owner password verified");
+            return new GeneralResponse<>("Access granted using playground owner password", "true");
         }
 
         // Check reservation passwords
@@ -244,11 +244,11 @@ public class ReservationService {
             ReservationPassword reservationPassword = reservationPasswordRepo.findByReservationId(reservation.getId()).orElse(null);
             if (reservationPassword != null && passwordEncoder.matches(password, reservationPassword.getPassword())) {
                 if (now.isBefore(reservationPassword.getCreatedAt().plusMinutes(10))) {
-                    return new GeneralResponse<>("Access granted", "Reservation password verified");
+                    return new GeneralResponse<>("Access granted using temporary reservation password", "true");
                 }
             }
         }
-        throw new GeneralException("Invalid password or expired");
+        return new GeneralResponse<>("Access denied: invalid or expired password", "false");
     }
 
     /// Helper Methods
