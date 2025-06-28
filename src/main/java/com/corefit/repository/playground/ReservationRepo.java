@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface ReservationRepo extends JpaRepository<Reservation, Integer> {
+    Optional<Reservation> findById(Long id);
 
     List<Reservation> findByPlaygroundAndDate(Playground playground, LocalDate date);
 

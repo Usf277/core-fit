@@ -27,6 +27,12 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping
+    public ResponseEntity<GeneralResponse<?>> reservationDetails(@RequestParam Long reservationId, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = reservationService.reservationDetails(reservationId, httpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @GetMapping("/slots")
     public ResponseEntity<GeneralResponse<?>> getReservedSlots(@RequestParam Long playgroundId, @RequestParam LocalDate date) {
         GeneralResponse<?> response = reservationService.getReservedSlots(playgroundId, date);

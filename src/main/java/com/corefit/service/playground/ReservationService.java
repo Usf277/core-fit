@@ -11,6 +11,7 @@ import com.corefit.entity.playground.ReservationSlot;
 import com.corefit.enums.PaymentMethod;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
+import com.corefit.repository.playground.PlaygroundRateRepo;
 import com.corefit.repository.playground.ReservationPasswordRepo;
 import com.corefit.repository.playground.ReservationRepo;
 import com.corefit.service.auth.AuthService;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -42,6 +42,8 @@ public class ReservationService {
     private AuthService authService;
     @Autowired
     private PlaygroundService playgroundService;
+    @Autowired
+    private PlaygroundRateRepo playgroundRateRepo;
     @Autowired
     private WalletService walletService;
     @Autowired
@@ -110,6 +112,28 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
+    public GeneralResponse<?> reservationDetails(Long reservationId, HttpServletRequest httpRequest) {
+        Reservation reservation = reservationRepo.findById(reservationId)
+                .orElseThrow(() -> new GeneralException("Reservation not found"));
+
+        User user = authService.extractUserFromRequest(httpRequest);
+
+        // Access control: GENERAL users can only see their own reservations
+        if (user.getType() == UserType.GENERAL) {
+            if (!reservation.getUser().getId().equals(user.getId())) {
+                throw new GeneralException("You are not authorized to view this reservation");
+            }
+        } else if (user.getType() == UserType.PROVIDER) {
+            if (!reservation.getPlayground().getUser().getId().equals(user.getId())) {
+                throw new GeneralException("You are not authorized to view this reservation");
+            }
+        }
+
+        return new GeneralResponse<>("Reservation details retrieved successfully", mapToResponse(reservation));
+    }
+
+
+    @Transactional(readOnly = true)
     public GeneralResponse<?> getReservedSlots(Long playgroundId, LocalDate date) {
         Playground playground = playgroundService.findById(playgroundId);
         List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, date);
@@ -139,7 +163,6 @@ public class ReservationService {
 
         return new GeneralResponse<>("Reservations retrieved successfully", responses);
     }
-
 
     @Transactional(readOnly = true)
     public GeneralResponse<?> getReservations(Long playgroundId, HttpServletRequest httpRequest) {
@@ -324,17 +347,29 @@ public class ReservationService {
     }
 
     private ReservationResponse mapToResponse(Reservation reservation) {
-        List<String> slots = reservation.getSlots().stream().map(slot -> slot.getTime().toString())
+        Playground playground = reservation.getPlayground();
+
+        List<String> slotTimes = reservation.getSlots().stream()
+                .map(slot -> slot.getTime().toString())
                 .collect(Collectors.toList());
+
+        long numberOfRates = playgroundRateRepo.countByPlayground(playground);
 
         return ReservationResponse.builder()
                 .id(reservation.getId())
                 .userId(reservation.getUser().getId())
-                .playgroundId(reservation.getPlayground().getId())
                 .date(reservation.getDate())
-                .slots(slots)
+                .slots(slotTimes)
                 .price(reservation.getPrice())
                 .cancelled(reservation.isCancelled())
+                .createdAt(reservation.getCreatedAt())
+
+                .playgroundId(playground.getId())
+                .playgroundName(playground.getName())
+                .playgroundAddress(playground.getAddress())
+                .playgroundAvgRate(playground.getAvgRate())
+                .numberPlaygroundRates(numberOfRates)
+                .teamMembers(playground.getTeamMembers())
                 .build();
     }
 
