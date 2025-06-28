@@ -1,5 +1,6 @@
 package com.corefit.controller.playground;
 
+import com.corefit.dto.request.playground.PasswordRequest;
 import com.corefit.dto.request.playground.ReservationRequest;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.service.playground.ReservationService;
@@ -66,7 +67,7 @@ public class ReservationController {
     }
 
     @PostMapping("/verify-password")
-    public GeneralResponse<String> verifyPassword(@RequestParam Long playgroundId, @RequestParam String password) {
-        return reservationService.verifyPassword(playgroundId, password);
+    public GeneralResponse<String> verifyPassword(@RequestBody PasswordRequest request) {
+        return reservationService.verifyPassword(request.getPlaygroundId(), request.getPassword());
     }
 }
