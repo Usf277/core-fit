@@ -17,4 +17,5 @@ public class ReservationResponse {
     private LocalDate date;
     private List<String> slots;
     private double price;
+    private boolean cancelled;
 }

@@ -334,6 +334,7 @@ public class ReservationService {
                 .date(reservation.getDate())
                 .slots(slots)
                 .price(reservation.getPrice())
+                .cancelled(reservation.isCancelled())
                 .build();
     }
 

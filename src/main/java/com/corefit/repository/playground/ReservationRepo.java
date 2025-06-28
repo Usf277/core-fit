@@ -16,8 +16,6 @@ public interface ReservationRepo extends JpaRepository<Reservation, Integer> {
 
     List<Reservation> findByPlaygroundAndDate(Playground playground, LocalDate date);
 
-    List<Reservation> findByUser(User user);
-
     Optional<Reservation> findByIdAndUser(Long id, User user);
 
     List<Reservation> findByPlayground(Playground playground);
@@ -29,5 +27,4 @@ public interface ReservationRepo extends JpaRepository<Reservation, Integer> {
 
     @Query("SELECT r FROM Reservation r WHERE r.user = :user AND (r.isCancelled = true OR r.isEnded = true)")
     List<Reservation> findPreviousByUser(User user);
-
 }
