@@ -59,4 +59,14 @@ public class ReservationController {
         GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/generate-password")
+    public GeneralResponse<String> generateReservationPassword(@RequestParam Long reservationId, @RequestParam Long playgroundId, HttpServletRequest httpRequest) {
+        return reservationService.generateReservationPassword(playgroundId, reservationId, httpRequest);
+    }
+
+    @PostMapping("/verify-password")
+    public GeneralResponse<String> verifyPassword(@RequestParam Long playgroundId, @RequestParam String password) {
+        return reservationService.verifyPassword(playgroundId, password);
+    }
 }

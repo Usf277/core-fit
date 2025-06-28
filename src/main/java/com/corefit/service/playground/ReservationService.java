@@ -6,29 +6,38 @@ import com.corefit.dto.response.playground.ReservationResponse;
 import com.corefit.entity.auth.User;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.playground.Reservation;
+import com.corefit.entity.playground.ReservationPassword;
 import com.corefit.entity.playground.ReservationSlot;
 import com.corefit.enums.PaymentMethod;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
+import com.corefit.repository.playground.ReservationPasswordRepo;
 import com.corefit.repository.playground.ReservationRepo;
 import com.corefit.service.auth.AuthService;
 import com.corefit.service.auth.WalletService;
 import com.corefit.service.helper.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
     @Autowired
     private ReservationRepo reservationRepo;
+    @Autowired
+    private ReservationPasswordRepo reservationPasswordRepo;
     @Autowired
     private AuthService authService;
     @Autowired
@@ -37,11 +46,19 @@ public class ReservationService {
     private WalletService walletService;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+    private static final String REDIS_KEY = "reservation:password:";
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public GeneralResponse<?> bookPlayground(ReservationRequest request, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         Playground playground = playgroundService.findById(request.getPlaygroundId());
+        if (!playground.isOpened()) {
+            throw new GeneralException("The playground is Closed");
+        }
         User provider = playground.getUser();
         validateRequest(request);
 
@@ -82,10 +99,9 @@ public class ReservationService {
 
         reservationRepo.save(reservation);
 
-
         // Send notification
         notificationService.pushNotification(user, "Reservation Confirmed",
-                "Your booking for " + playground.getName() + " on " + playground.getName() + " is confirmed.");
+                "Your booking for " + playground.getName() + " on " + request.getDate() + " is confirmed.");
 
         notificationService.pushNotification(provider, "New Reservation Received",
                 "You have received a new reservation from " + user.getUsername() + " for \"" + playground.getName() + "\" at " + reservation.getDate() + ".");
@@ -96,7 +112,6 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public GeneralResponse<?> getReservedSlots(Long playgroundId, LocalDate date) {
         Playground playground = playgroundService.findById(playgroundId);
-
         List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, date);
 
         List<String> reservedSlots = reservations.stream()
@@ -112,7 +127,6 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public GeneralResponse<?> getMyReservations(HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
-
         List<Reservation> reservations = reservationRepo.findByUser(user);
 
         List<ReservationResponse> responses = reservations.stream()
@@ -164,6 +178,12 @@ public class ReservationService {
             walletService.deposit(user.getId(), reservation.getPrice());
         }
 
+        // Delete associated reservation password
+        reservationPasswordRepo.findByReservationId(reservationId).ifPresent(reservationPassword -> {
+            reservationPasswordRepo.deleteById(reservationPassword.getId());
+            redisTemplate.delete(REDIS_KEY + reservationId);
+        });
+
         reservationRepo.delete(reservation);
 
         // Send notification
@@ -173,7 +193,65 @@ public class ReservationService {
         return new GeneralResponse<>("Reservation cancelled successfully", null);
     }
 
-    /// Helper Methods:
+    @Transactional
+    public GeneralResponse<String> generateReservationPassword(Long playgroundId, Long reservationId, HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
+        Playground playground = playgroundService.findById(playgroundId);
+
+        Reservation reservation = reservationRepo.findByIdAndUser(reservationId, user)
+                .orElseThrow(() -> new GeneralException("Reservation not found or not owned by user"));
+
+        if (!playground.isPasswordEnabled() || playground.getPassword() == null) {
+            throw new GeneralException("Playground does not require a reservation password");
+        }
+
+        String randomPassword = generateRandomPassword(playground.getPassword());
+        String hashedPassword = passwordEncoder.encode(randomPassword);
+
+        ReservationPassword reservationPassword = ReservationPassword.builder()
+                .reservation(reservation)
+                .password(hashedPassword)
+                .createdAt(LocalDateTime.now())
+                .build();
+        reservationPasswordRepo.save(reservationPassword);
+
+        // Cache in Redis with 10-minute TTL
+        redisTemplate.opsForValue().set(REDIS_KEY + reservationId, hashedPassword, 10, TimeUnit.MINUTES);
+
+        // Schedule deletion after 10 minutes
+        schedulePasswordDeletion(reservationId, reservationPassword.getId());
+
+        // Send notification with password
+        notificationService.pushNotification(user, "Temporary Password Generated",
+                "Your temporary password for reservation at " + playground.getName() + " is: " + randomPassword);
+
+        return new GeneralResponse<>("Temporary reservation password generated", randomPassword);
+    }
+
+    @Transactional(readOnly = true)
+    public GeneralResponse<String> verifyPassword(Long playgroundId, String password) {
+        Playground playground = playgroundService.findById(playgroundId);
+        LocalDateTime now = LocalDateTime.now();
+
+        // Check owner password
+        if (playground.isPasswordEnabled() && playground.getPassword() != null && passwordEncoder.matches(password, playground.getPassword())) {
+            return new GeneralResponse<>("Access granted", "Owner password verified");
+        }
+
+        // Check reservation passwords
+        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, now.toLocalDate());
+        for (Reservation reservation : reservations) {
+            ReservationPassword reservationPassword = reservationPasswordRepo.findByReservationId(reservation.getId()).orElse(null);
+            if (reservationPassword != null && passwordEncoder.matches(password, reservationPassword.getPassword())) {
+                if (now.isBefore(reservationPassword.getCreatedAt().plusMinutes(10))) {
+                    return new GeneralResponse<>("Access granted", "Reservation password verified");
+                }
+            }
+        }
+        throw new GeneralException("Invalid password or expired");
+    }
+
+    /// Helper Methods
     private void validateRequest(ReservationRequest request) {
         if (request.getSlots() == null || request.getSlots().isEmpty()) {
             throw new GeneralException("At least one slot is required");
@@ -185,7 +263,6 @@ public class ReservationService {
         }
     }
 
-    // Validates and parses input time strings and ensures they fall within the playground’s working shifts.
     private Set<LocalTime> validateAndParseSlots(List<String> slotStrings, Playground playground) {
         if (slotStrings == null || slotStrings.isEmpty()) {
             throw new GeneralException("No time slots provided for reservation.");
@@ -215,7 +292,6 @@ public class ReservationService {
         return parsedSlots;
     }
 
-    // Checks whether a time is within the bounds of a shift (including overnight shifts).
     private boolean isWithinShift(LocalTime time, LocalTime shiftStart, LocalTime shiftEnd) {
         if (shiftStart == null || shiftEnd == null) return false;
 
@@ -224,19 +300,15 @@ public class ReservationService {
                 : !time.isBefore(shiftStart) || !time.isAfter(shiftEnd); // overnight shift
     }
 
-    // Calculate the total booking price
     private double calculateTotalPrice(Set<LocalTime> requestedTimes, Playground playground) {
         double basePrice = playground.getBookingPrice();
         double extraNightPrice = playground.getExtraNightPrice();
         boolean hasExtraPrice = playground.isHasExtraPrice();
 
         double totalCost = 0.0;
-
         for (LocalTime time : requestedTimes) {
             totalCost += basePrice;
-
             boolean isNightSlot = isWithinShift(time, playground.getNightShiftStart(), playground.getNightShiftEnd());
-
             if (hasExtraPrice && isNightSlot) {
                 totalCost += extraNightPrice;
             }
@@ -245,7 +317,6 @@ public class ReservationService {
         return totalCost;
     }
 
-    // Maps a Reservation entity to a DTO.
     private ReservationResponse mapToResponse(Reservation reservation) {
         List<String> slots = reservation.getSlots().stream().map(slot -> slot.getTime().toString())
                 .collect(Collectors.toList());
@@ -258,5 +329,26 @@ public class ReservationService {
                 .slots(slots)
                 .price(reservation.getPrice())
                 .build();
+    }
+
+    private String generateRandomPassword(String playgroundPassword) {
+        Random random = new Random();
+        String randomPassword;
+        do {
+            randomPassword = String.format("%06d", random.nextInt(1000000));
+        } while (playgroundPassword != null && passwordEncoder.matches(randomPassword, playgroundPassword));
+        return randomPassword;
+    }
+
+    private void schedulePasswordDeletion(Long reservationId, Long reservationPasswordId) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(10 * 60 * 1000); // 10 minutes
+                reservationPasswordRepo.deleteById(reservationPasswordId);
+                redisTemplate.delete(REDIS_KEY + reservationId);
+            } catch (Exception e) {
+                throw new GeneralException("Password could not be deleted.");
+            }
+        }).start();
     }
 }
