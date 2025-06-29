@@ -15,4 +15,6 @@ public interface PlaygroundRateRepo extends JpaRepository<PlaygroundRate, Long> 
     Page<PlaygroundRate> findAllByPlaygroundId(Long playgroundId, Pageable pageable);
 
     List<PlaygroundRate> findByPlayground(Playground playground);
+
+    long countByPlayground(Playground playground);
 }

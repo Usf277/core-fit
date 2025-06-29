@@ -27,6 +27,12 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping
+    public ResponseEntity<GeneralResponse<?>> reservationDetails(@RequestParam Long reservationId, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = reservationService.reservationDetails(reservationId, httpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @GetMapping("/slots")
     public ResponseEntity<GeneralResponse<?>> getReservedSlots(@RequestParam Long playgroundId, @RequestParam LocalDate date) {
         GeneralResponse<?> response = reservationService.getReservedSlots(playgroundId, date);
@@ -34,8 +40,8 @@ public class ReservationController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<GeneralResponse<?>> getMyReservations(HttpServletRequest httpRequest) {
-        GeneralResponse<?> response = reservationService.getMyReservations(httpRequest);
+    public ResponseEntity<GeneralResponse<?>> getMyReservations(@RequestParam String status, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = reservationService.getMyReservations(status, httpRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -46,17 +52,7 @@ public class ReservationController {
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<GeneralResponse<String>> cancelReservation(
-            @RequestParam Long id,
-            HttpServletRequest httpRequest) {
-        GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/update")
-    public ResponseEntity<GeneralResponse<String>> updateReservation(
-            @RequestParam Long id,
-            HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<String>> cancelReservation(@RequestParam Long id, HttpServletRequest httpRequest) {
         GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
         return ResponseEntity.ok(response);
     }
