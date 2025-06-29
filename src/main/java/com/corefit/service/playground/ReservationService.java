@@ -268,11 +268,13 @@ public class ReservationService {
     }
 
     @Transactional
-    public GeneralResponse<String> verifyPassword(Long playgroundId, String password) {
+    public GeneralResponse<String> verifyPassword(Long playgroundId, String inputPassword) {
         Playground playground = playgroundService.findById(playgroundId);
+        LocalDateTime now = LocalDateTime.now();
 
-        // Check owner password
-        if (playground.isPasswordEnabled() && playground.getPassword() != null && passwordEncoder.matches(password, playground.getPassword())) {
+        // ✅ Try matching with owner's password
+        if (playground.isPasswordEnabled() && playground.getPassword() != null &&
+                passwordEncoder.matches(inputPassword, playground.getPassword())) {
             return new GeneralResponse<>("Access granted using playground owner password", "true");
         }
 
@@ -280,12 +282,16 @@ public class ReservationService {
 
         for (Reservation reservation : reservations) {
             String redisKey = "reservation:password:" + reservation.getId();
-            String cachedHashedPassword = redisTemplate.opsForValue().get(redisKey);
+            String redisHashed = redisTemplate.opsForValue().get(redisKey);
 
-            if (cachedHashedPassword != null && passwordEncoder.matches(password, cachedHashedPassword)) {
-                // Delete immediately after use
-                // redisTemplate.delete(redisKey);
-                //reservationPasswordRepo.findByReservationId(reservation.getId()).ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
+            System.out.println("Checking Redis key: " + redisKey);
+            System.out.println("Provided: " + inputPassword);
+            System.out.println("Hashed in Redis: " + redisHashed);
+
+            if (redisHashed != null && passwordEncoder.matches(inputPassword, redisHashed)) {
+                redisTemplate.delete(redisKey);
+                reservationPasswordRepo.findByReservationId(reservation.getId())
+                        .ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
                 return new GeneralResponse<>("Access granted using temporary reservation password", "true");
             }
         }
