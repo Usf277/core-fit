@@ -270,30 +270,26 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public GeneralResponse<String> verifyPassword(Long playgroundId, String password) {
         Playground playground = playgroundService.findById(playgroundId);
-        LocalDateTime now = LocalDateTime.now();
 
         // Check owner password
         if (playground.isPasswordEnabled() && playground.getPassword() != null && passwordEncoder.matches(password, playground.getPassword())) {
             return new GeneralResponse<>("Access granted using playground owner password", "true");
         }
 
-        // Check reservation passwords
-        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, now.toLocalDate());
+        // Check reservation passwords (one-time use regardless of time)
+        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, LocalDate.now());
 
         for (Reservation reservation : reservations) {
             ReservationPassword reservationPassword = reservationPasswordRepo.findByReservationId(reservation.getId()).orElse(null);
             if (reservationPassword != null && passwordEncoder.matches(password, reservationPassword.getPassword())) {
-                if (now.isBefore(reservationPassword.getCreatedAt().plusMinutes(10))) {
-                    reservationPasswordRepo.deleteById(reservationPassword.getId());
-                    redisTemplate.delete("reservation:password:" + reservation.getId());
+                reservationPasswordRepo.deleteById(reservationPassword.getId());
+                redisTemplate.delete("reservation:password:" + reservation.getId());
 
-                    return new GeneralResponse<>("Access granted using temporary reservation password", "true");
-                }
+                return new GeneralResponse<>("Access granted using one-time reservation password", "true");
             }
         }
         return new GeneralResponse<>("Access denied: invalid or expired password", "false");
     }
-
 
     /// Helper Methods
     private void validateRequest(ReservationRequest request) {
