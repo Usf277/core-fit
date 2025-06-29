@@ -267,29 +267,33 @@ public class ReservationService {
         return new GeneralResponse<>("Temporary reservation password generated", randomPassword);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public GeneralResponse<String> verifyPassword(Long playgroundId, String password) {
         Playground playground = playgroundService.findById(playgroundId);
+        LocalDateTime now = LocalDateTime.now();
 
         // Check owner password
         if (playground.isPasswordEnabled() && playground.getPassword() != null && passwordEncoder.matches(password, playground.getPassword())) {
             return new GeneralResponse<>("Access granted using playground owner password", "true");
         }
 
-        // Check reservation passwords (one-time use regardless of time)
-        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, LocalDate.now());
+        // Check reservation passwords
+        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, now.toLocalDate());
 
         for (Reservation reservation : reservations) {
             ReservationPassword reservationPassword = reservationPasswordRepo.findByReservationId(reservation.getId()).orElse(null);
             if (reservationPassword != null && passwordEncoder.matches(password, reservationPassword.getPassword())) {
-                reservationPasswordRepo.deleteById(reservationPassword.getId());
-                redisTemplate.delete("reservation:password:" + reservation.getId());
+                if (now.isBefore(reservationPassword.getCreatedAt().plusMinutes(10))) {
+                    reservationPasswordRepo.deleteById(reservationPassword.getId());
+                    redisTemplate.delete("reservation:password:" + reservation.getId());
 
-                return new GeneralResponse<>("Access granted using one-time reservation password", "true");
+                    return new GeneralResponse<>("Access granted using temporary reservation password", "true");
+                }
             }
         }
         return new GeneralResponse<>("Access denied: invalid or expired password", "false");
     }
+
 
     /// Helper Methods
     private void validateRequest(ReservationRequest request) {
