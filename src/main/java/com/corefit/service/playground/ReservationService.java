@@ -58,9 +58,9 @@ public class ReservationService {
     public GeneralResponse<?> bookPlayground(ReservationRequest request, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         Playground playground = playgroundService.findById(request.getPlaygroundId());
-        if (!playground.isOpened()) {
+        if (!playground.isOpened())
             throw new GeneralException("The playground is Closed");
-        }
+
         User provider = playground.getUser();
         validateRequest(request);
 
@@ -90,6 +90,8 @@ public class ReservationService {
                 .playground(playground)
                 .date(request.getDate())
                 .price(totalCost)
+                .isCancelled(false)
+                .isEnded(false)
                 .paymentMethod(request.getPaymentMethod())
                 .build();
 
@@ -106,13 +108,14 @@ public class ReservationService {
                 "Your booking for " + playground.getName() + " on " + request.getDate() + " is confirmed.");
 
         notificationService.pushNotification(provider, "New Reservation Received",
-                "You have received a new reservation from " + user.getUsername() + " for \"" + playground.getName() + "\" at " + reservation.getDate() + ".");
+                "You have received a new reservation from " + user.getUsername() +
+                        " for \"" + playground.getName() + "\" at " + reservation.getDate() + ".");
 
         return new GeneralResponse<>("Reservation completed successfully", mapToResponse(reservation));
     }
 
     @Transactional(readOnly = true)
-    public GeneralResponse<?> reservationDetails(Long reservationId, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getReservationDetails(Long reservationId, HttpServletRequest httpRequest) {
         Reservation reservation = reservationRepo.findById(reservationId)
                 .orElseThrow(() -> new GeneralException("Reservation not found"));
 
@@ -167,25 +170,21 @@ public class ReservationService {
     public GeneralResponse<?> getReservations(Long playgroundId, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
 
-        if (user.getType() != UserType.PROVIDER) {
+        if (user.getType() != UserType.PROVIDER)
             throw new GeneralException("User is not authorized to view reservations");
-        }
 
-        if (playgroundId == null) {
+        if (playgroundId == null)
             throw new GeneralException("Playground ID must not be null");
-        }
 
         Playground playground = playgroundService.findById(playgroundId);
 
-        if (!playground.getUser().getId().equals(user.getId())) {
+        if (!playground.getUser().getId().equals(user.getId()))
             throw new GeneralException("You are not the owner of this playground");
-        }
 
         List<Reservation> reservations = reservationRepo.findByPlayground(playground);
 
-        if (reservations.isEmpty()) {
+        if (reservations.isEmpty())
             return new GeneralResponse<>("No reservations found for the given playground", List.of());
-        }
 
         List<ReservationResponse> responses = reservations.stream()
                 .map(this::mapToResponse)
@@ -225,7 +224,8 @@ public class ReservationService {
 
         User provider = reservation.getPlayground().getUser();
         notificationService.pushNotification(provider, "Reservation Cancelled",
-                "A reservation has been cancelled by " + user.getUsername() + " for \"" + reservation.getPlayground().getName() + "\" on " + reservation.getDate() + ".");
+                "A reservation has been cancelled by " + user.getUsername() + " for \""
+                        + reservation.getPlayground().getName() + "\" on " + reservation.getDate() + ".");
 
         return new GeneralResponse<>("Reservation cancelled successfully", null);
     }
@@ -238,9 +238,11 @@ public class ReservationService {
         Reservation reservation = reservationRepo.findByIdAndUser(reservationId, user)
                 .orElseThrow(() -> new GeneralException("Reservation not found or not owned by user"));
 
-        if (!playground.isPasswordEnabled() || playground.getPassword() == null) {
+        if (reservation.isCancelled() || reservation.isEnded())
+            throw new GeneralException("Cannot generate password for a cancelled or ended reservation");
+
+        if (!playground.isPasswordEnabled() || playground.getPassword() == null)
             throw new GeneralException("Playground does not require a reservation password");
-        }
 
         String randomPassword = generateRandomPassword(playground.getPassword());
         String hashedPassword = passwordEncoder.encode(randomPassword);
@@ -277,16 +279,21 @@ public class ReservationService {
 
         // Check reservation passwords
         List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, now.toLocalDate());
+
         for (Reservation reservation : reservations) {
             ReservationPassword reservationPassword = reservationPasswordRepo.findByReservationId(reservation.getId()).orElse(null);
             if (reservationPassword != null && passwordEncoder.matches(password, reservationPassword.getPassword())) {
                 if (now.isBefore(reservationPassword.getCreatedAt().plusMinutes(10))) {
+                    reservationPasswordRepo.deleteById(reservationPassword.getId());
+                    redisTemplate.delete("reservation:password:" + reservation.getId());
+
                     return new GeneralResponse<>("Access granted using temporary reservation password", "true");
                 }
             }
         }
         return new GeneralResponse<>("Access denied: invalid or expired password", "false");
     }
+
 
     /// Helper Methods
     private void validateRequest(ReservationRequest request) {
@@ -295,8 +302,26 @@ public class ReservationService {
         }
 
         LocalDate today = LocalDate.now();
-        if (request.getDate().isBefore(today) || request.getDate().isAfter(today.plusDays(30))) {
+        LocalDate requestedDate = request.getDate();
+
+        if (requestedDate.isBefore(today) || requestedDate.isAfter(today.plusDays(30))) {
             throw new GeneralException("Booking date must be today or within 30 days");
+        }
+
+        if (requestedDate.isEqual(today)) {
+            LocalTime now = LocalTime.now();
+            for (String slot : request.getSlots()) {
+                LocalTime slotTime;
+                try {
+                    slotTime = LocalTime.parse(slot);
+                } catch (Exception e) {
+                    throw new GeneralException("Invalid time format: " + slot);
+                }
+
+                if (slotTime.isBefore(now)) {
+                    throw new GeneralException("Cannot book a slot that has already passed: " + slot);
+                }
+            }
         }
     }
 
