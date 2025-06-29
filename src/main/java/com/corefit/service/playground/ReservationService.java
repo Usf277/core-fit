@@ -238,11 +238,13 @@ public class ReservationService {
         Reservation reservation = reservationRepo.findByIdAndUser(reservationId, user)
                 .orElseThrow(() -> new GeneralException("Reservation not found or not owned by user"));
 
-        if (reservation.isCancelled() || reservation.isEnded())
+        if (reservation.isCancelled() || reservation.isEnded()) {
             throw new GeneralException("Cannot generate password for a cancelled or ended reservation");
+        }
 
-        if (!playground.isPasswordEnabled() || playground.getPassword() == null)
+        if (!playground.isPasswordEnabled() || playground.getPassword() == null) {
             throw new GeneralException("Playground does not require a reservation password");
+        }
 
         String randomPassword = generateRandomPassword(playground.getPassword());
         String hashedPassword = passwordEncoder.encode(randomPassword);
@@ -252,15 +254,13 @@ public class ReservationService {
                 .password(hashedPassword)
                 .createdAt(LocalDateTime.now())
                 .build();
+
         reservationPasswordRepo.save(reservationPassword);
 
-        // Cache in Redis with 10-minute TTL
-        redisTemplate.opsForValue().set(REDIS_KEY + reservationId, hashedPassword, 10, TimeUnit.MINUTES);
+        // Save in Redis with TTL (10 minutes)
+        redisTemplate.opsForValue().set("reservation:password:" + reservationId, hashedPassword, 10, TimeUnit.MINUTES);
 
-        // Schedule deletion after 10 minutes
-        schedulePasswordDeletion(reservationId, reservationPassword.getId());
-
-        // Send notification with password
+        // Send notification
         notificationService.pushNotification(user, "Temporary Password Generated",
                 "Your temporary password for reservation at " + playground.getName() + " is: " + randomPassword);
 
@@ -270,30 +270,29 @@ public class ReservationService {
     @Transactional
     public GeneralResponse<String> verifyPassword(Long playgroundId, String password) {
         Playground playground = playgroundService.findById(playgroundId);
-        LocalDateTime now = LocalDateTime.now();
 
         // Check owner password
         if (playground.isPasswordEnabled() && playground.getPassword() != null && passwordEncoder.matches(password, playground.getPassword())) {
             return new GeneralResponse<>("Access granted using playground owner password", "true");
         }
 
-        // Check reservation passwords
-        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, now.toLocalDate());
+        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, LocalDate.now());
 
         for (Reservation reservation : reservations) {
-            ReservationPassword reservationPassword = reservationPasswordRepo.findByReservationId(reservation.getId()).orElse(null);
-            if (reservationPassword != null && passwordEncoder.matches(password, reservationPassword.getPassword())) {
-                if (now.isBefore(reservationPassword.getCreatedAt().plusMinutes(10))) {
-                    reservationPasswordRepo.deleteById(reservationPassword.getId());
-                    redisTemplate.delete("reservation:password:" + reservation.getId());
+            String redisKey = "reservation:password:" + reservation.getId();
+            String cachedHashedPassword = redisTemplate.opsForValue().get(redisKey);
 
-                    return new GeneralResponse<>("Access granted using temporary reservation password", "true");
-                }
+            if (cachedHashedPassword != null && passwordEncoder.matches(password, cachedHashedPassword)) {
+                // Delete immediately after use
+                redisTemplate.delete(redisKey);
+                reservationPasswordRepo.findByReservationId(reservation.getId()).ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
+
+                return new GeneralResponse<>("Access granted using temporary reservation password", "true");
             }
         }
+
         return new GeneralResponse<>("Access denied: invalid or expired password", "false");
     }
-
 
     /// Helper Methods
     private void validateRequest(ReservationRequest request) {
