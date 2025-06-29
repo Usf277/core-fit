@@ -284,9 +284,8 @@ public class ReservationService {
 
             if (cachedHashedPassword != null && passwordEncoder.matches(password, cachedHashedPassword)) {
                 // Delete immediately after use
-                redisTemplate.delete(redisKey);
-                reservationPasswordRepo.findByReservationId(reservation.getId()).ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
-
+                // redisTemplate.delete(redisKey);
+                //reservationPasswordRepo.findByReservationId(reservation.getId()).ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
                 return new GeneralResponse<>("Access granted using temporary reservation password", "true");
             }
         }
