@@ -28,8 +28,8 @@ public class ReservationController {
     }
 
     @GetMapping
-    public ResponseEntity<GeneralResponse<?>> reservationDetails(@RequestParam Long reservationId, HttpServletRequest httpRequest) {
-        GeneralResponse<?> response = reservationService.reservationDetails(reservationId, httpRequest);
+    public ResponseEntity<GeneralResponse<?>> getReservationDetails(@RequestParam Long reservationId, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = reservationService.getReservationDetails(reservationId, httpRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -52,8 +52,8 @@ public class ReservationController {
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<GeneralResponse<String>> cancelReservation(@RequestParam Long id, HttpServletRequest httpRequest) {
-        GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
+    public ResponseEntity<GeneralResponse<String>> cancelReservation(@RequestParam Long reservationId, HttpServletRequest httpRequest) {
+        GeneralResponse<String> response = reservationService.cancelReservation(reservationId, httpRequest);
         return ResponseEntity.ok(response);
     }
 
