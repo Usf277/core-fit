@@ -52,17 +52,7 @@ public class ReservationController {
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<GeneralResponse<String>> cancelReservation(
-            @RequestParam Long id,
-            HttpServletRequest httpRequest) {
-        GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/update")
-    public ResponseEntity<GeneralResponse<String>> updateReservation(
-            @RequestParam Long id,
-            HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<String>> cancelReservation(@RequestParam Long id, HttpServletRequest httpRequest) {
         GeneralResponse<String> response = reservationService.cancelReservation(id, httpRequest);
         return ResponseEntity.ok(response);
     }

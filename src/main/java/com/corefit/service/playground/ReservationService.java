@@ -132,7 +132,6 @@ public class ReservationService {
         return new GeneralResponse<>("Reservation details retrieved successfully", mapToResponse(reservation));
     }
 
-
     @Transactional(readOnly = true)
     public GeneralResponse<?> getReservedSlots(Long playgroundId, LocalDate date) {
         Playground playground = playgroundService.findById(playgroundId);
@@ -198,26 +197,35 @@ public class ReservationService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public GeneralResponse<String> cancelReservation(Long reservationId, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
-        Reservation reservation = reservationRepo.findByIdAndUser(reservationId, user)
-                .orElseThrow(() -> new GeneralException("Reservation not found or not owned by user"));
+        Reservation reservation = reservationRepo.findById(reservationId)
+                .orElseThrow(() -> new GeneralException("Reservation not found"));
 
-        // Refund booking price
-        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+        if (!reservation.getUser().getId().equals(user.getId()))
+            throw new GeneralException("You are not allowed to cancel this reservation.");
+
+        if (reservation.isCancelled())
+            throw new GeneralException("Reservation is already cancelled.");
+
+        if (reservation.isEnded())
+            throw new GeneralException("Cannot cancel a reservation that has already ended.");
+
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET)
             walletService.deposit(user.getId(), reservation.getPrice());
-        }
 
-        // Delete associated reservation password
+        reservation.setCancelled(true);
+        reservationRepo.save(reservation);
+
         reservationPasswordRepo.findByReservationId(reservationId).ifPresent(reservationPassword -> {
             reservationPasswordRepo.deleteById(reservationPassword.getId());
             redisTemplate.delete(REDIS_KEY + reservationId);
         });
 
-        reservation.setCancelled(true);
-        reservationRepo.delete(reservation);
-
-        // Send notification
         notificationService.pushNotification(user, "Reservation Cancelled",
-                "Your booking for " + reservation.getPlayground().getName() + " on " + reservation.getDate() + " has been cancelled.");
+                "Your booking for \"" + reservation.getPlayground().getName() + "\" on " + reservation.getDate() + " has been cancelled.");
+
+        User provider = reservation.getPlayground().getUser();
+        notificationService.pushNotification(provider, "Reservation Cancelled",
+                "A reservation has been cancelled by " + user.getUsername() + " for \"" + reservation.getPlayground().getName() + "\" on " + reservation.getDate() + ".");
 
         return new GeneralResponse<>("Reservation cancelled successfully", null);
     }
@@ -362,6 +370,7 @@ public class ReservationService {
                 .slots(slotTimes)
                 .price(reservation.getPrice())
                 .cancelled(reservation.isCancelled())
+                .ended(reservation.isEnded())
                 .createdAt(reservation.getCreatedAt())
 
                 .playgroundId(playground.getId())

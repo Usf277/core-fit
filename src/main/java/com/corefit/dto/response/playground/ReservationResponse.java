@@ -18,6 +18,7 @@ public class ReservationResponse {
     private List<String> slots;
     private double price;
     private boolean cancelled;
+    private boolean ended;
     private LocalDateTime createdAt;
 
 
