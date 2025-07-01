@@ -22,7 +22,7 @@ public class ReservationPassword {
     @JoinColumn(nullable = false, unique = true)
     private Reservation reservation;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 60)
     private String password; // Hashed
 
     @Column(nullable = false)
