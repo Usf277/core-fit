@@ -248,12 +248,21 @@ public class ReservationService {
 
         String redisKey = REDIS_KEY + reservationId;
 
-        // delete any existing password from Redis and DB
+        // delete old password if exists
         redisTemplate.delete(redisKey);
         reservationPasswordRepo.findByReservationId(reservationId)
                 .ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
 
-        String randomPassword = generateRandomPassword(playground.getPassword());
+        // fetch all reservation passwords for same playground & same date
+        LocalDate today = LocalDate.now();
+        List<String> todayHashedPasswords = reservationPasswordRepo
+                .findAllByPlaygroundAndDate(playground, today)
+                .stream()
+                .map(ReservationPassword::getPassword)
+                .collect(Collectors.toList());
+
+
+        String randomPassword = generateRandomPassword(playground.getPassword(), todayHashedPasswords);
         String hashedPassword = passwordEncoder.encode(randomPassword);
 
         ReservationPassword reservationPassword = ReservationPassword.builder()
@@ -263,11 +272,8 @@ public class ReservationService {
                 .build();
 
         reservationPasswordRepo.save(reservationPassword);
-
-        // Save in Redis with TTL (10 minutes)
         redisTemplate.opsForValue().set(redisKey, hashedPassword, 10, TimeUnit.MINUTES);
 
-        // Send notification
         notificationService.pushNotification(user, "Temporary Password Generated",
                 "Your temporary password for reservation at " + playground.getName() + " is: " + randomPassword);
 
@@ -283,19 +289,18 @@ public class ReservationService {
         }
 
         List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, LocalDate.now());
-
         for (Reservation reservation : reservations) {
             String redisKey = REDIS_KEY + reservation.getId();
-            String redisHashed = redisTemplate.opsForValue().get(redisKey);
+            String hashedPassword = redisTemplate.opsForValue().get(redisKey);
 
-            if (redisHashed != null && passwordEncoder.matches(inputPassword, redisHashed)) {
+            if (hashedPassword != null && passwordEncoder.matches(inputPassword, hashedPassword)) {
                 redisTemplate.delete(redisKey);
                 reservationPasswordRepo.findByReservationId(reservation.getId())
                         .ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
+
                 return new GeneralResponse<>("Access granted using temporary reservation password", "true");
             }
         }
-
         return new GeneralResponse<>("Access denied: invalid or expired password", "false");
     }
 
@@ -411,12 +416,31 @@ public class ReservationService {
                 .build();
     }
 
-    private String generateRandomPassword(String playgroundPassword) {
+    private String generateRandomPassword(String playgroundPassword, List<String> todayHashedPasswords) {
         Random random = new Random();
         String randomPassword;
-        do {
+
+        while (true) {
             randomPassword = String.format("%06d", random.nextInt(1000000));
-        } while (playgroundPassword != null && passwordEncoder.matches(randomPassword, playgroundPassword));
+
+            boolean isDuplicate = false;
+
+            if (playgroundPassword != null && passwordEncoder.matches(randomPassword, playgroundPassword)) {
+                isDuplicate = true;
+            }
+
+            for (String hashed : todayHashedPasswords) {
+                if (passwordEncoder.matches(randomPassword, hashed)) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+
+            if (!isDuplicate) {
+                break;
+            }
+        }
         return randomPassword;
     }
+
 }
