@@ -66,7 +66,7 @@ public class ReservationService {
 
         // Check for conflicts
         Set<LocalTime> requestedTimes = validateAndParseSlots(request.getSlots(), playground);
-        List<Reservation> existingReservations = reservationRepo.findByPlaygroundAndDate(playground, request.getDate());
+        List<Reservation> existingReservations = reservationRepo.findActiveByPlaygroundAndDate(playground, request.getDate());
 
         Set<LocalTime> reservedTimes = existingReservations.stream()
                 .flatMap(r -> r.getSlots().stream())
@@ -140,10 +140,7 @@ public class ReservationService {
     public GeneralResponse<?> getReservedSlots(Long playgroundId, LocalDate date) {
         Playground playground = playgroundService.findById(playgroundId);
 
-        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, date)
-                .stream()
-                .filter(reservation -> !reservation.isCancelled())
-                .toList();
+        List<Reservation> reservations = reservationRepo.findActiveByPlaygroundAndDate(playground, date);
 
         List<String> reservedSlots = reservations.stream()
                 .flatMap(r -> r.getSlots().stream())
@@ -296,7 +293,7 @@ public class ReservationService {
             return new GeneralResponse<>("Access granted using playground owner password", "true");
         }
 
-        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, LocalDate.now());
+        List<Reservation> reservations = reservationRepo.findActiveReservations(playground, LocalDate.now());
         for (Reservation reservation : reservations) {
             String redisKey = REDIS_KEY + reservation.getId();
             String hashedPassword = redisTemplate.opsForValue().get(redisKey);

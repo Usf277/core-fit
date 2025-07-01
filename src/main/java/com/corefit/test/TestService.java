@@ -7,8 +7,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.Random;
 import java.util.regex.Pattern;
 
 @Service
@@ -87,25 +85,5 @@ class TestService {
         } catch (Exception e) {
             throw new RuntimeException("Error dropping table: " + e.getMessage(), e);
         }
-    }
-
-    /// Pass Service
-    @Autowired
-    private PasswordRepo passwordRepo;
-
-    public int generatePass() {
-        int randomPass = new Random().nextInt(900_000) + 100_000;
-        Password pass = Password.builder().id(1).pass(randomPass).build();
-        passwordRepo.save(pass);
-        return randomPass;
-    }
-
-    public boolean checkPass(Password password) {
-        Optional<Password> optionalPass = passwordRepo.findById(1);
-
-        if (optionalPass.isEmpty())
-            throw new GeneralException("No record found for the provided ID.");
-
-        return optionalPass.get().getPass() == password.getPass();
     }
 }
