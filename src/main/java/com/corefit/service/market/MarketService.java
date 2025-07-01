@@ -166,7 +166,7 @@ public class MarketService {
                 filesService.deleteImage(imagePath);
             }
         } catch (IOException e) {
-            throw new GeneralException("Failed to upload image: " + e.getMessage());
+            throw new GeneralException("Failed to delete image: " + e.getMessage());
         }
 
         marketRepo.deleteById(id);

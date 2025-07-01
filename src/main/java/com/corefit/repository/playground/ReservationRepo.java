@@ -21,6 +21,9 @@ public interface ReservationRepo extends JpaRepository<Reservation, Integer> {
     @Query("SELECT r FROM Reservation r WHERE r.playground = :playground AND r.date = :date AND r.isCancelled = false AND r.isEnded = false")
     List<Reservation> findActiveReservations(Playground playground, LocalDate date);
 
+    @Query("SELECT r FROM Reservation r WHERE r.playground = :playground AND r.isCancelled = false AND r.isEnded = false")
+    List<Reservation> findActiveReservations(Playground playground);
+
     Optional<Reservation> findByIdAndUser(Long id, User user);
 
     List<Reservation> findByPlayground(Playground playground);

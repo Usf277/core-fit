@@ -2,6 +2,7 @@ package com.corefit.controller.playground;
 
 import com.corefit.dto.request.playground.PlaygroundRequest;
 import com.corefit.dto.response.GeneralResponse;
+import com.corefit.exceptions.GeneralException;
 import com.corefit.service.playground.PlaygroundService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +24,13 @@ public class PlaygroundController {
     }
 
     @PostMapping(path = "/create_playground", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GeneralResponse<?>> createPlayground(
-            @RequestBody PlaygroundRequest playgroundRequest,
-            HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<?>> createPlayground(@RequestBody PlaygroundRequest playgroundRequest, HttpServletRequest httpRequest) {
         GeneralResponse<?> response = playgroundService.create(playgroundRequest, httpRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping(path = "/update_playground", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GeneralResponse<?>> updatePlayground(
-            @RequestBody PlaygroundRequest playgroundRequest,
-            HttpServletRequest httpRequest) {
+    public ResponseEntity<GeneralResponse<?>> updatePlayground(@RequestBody PlaygroundRequest playgroundRequest, HttpServletRequest httpRequest) {
         GeneralResponse<?> response = playgroundService.update(playgroundRequest, httpRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -53,6 +50,18 @@ public class PlaygroundController {
     @GetMapping("/playground")
     public ResponseEntity<GeneralResponse<?>> getPlaygrounds(@RequestParam Long id, HttpServletRequest httpRequest) {
         GeneralResponse<?> response = playgroundService.getById(id, httpRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/playground/change_status")
+    public ResponseEntity<GeneralResponse<?>> changeStatus(@RequestParam Long playgroundId, HttpServletRequest httpRequest) {
+            GeneralResponse<?> response = playgroundService.changeStatus(playgroundId, httpRequest);
+            return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/playground/delete")
+    public ResponseEntity<GeneralResponse<?>> deletePlayground(@RequestParam Long playgroundId, HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = playgroundService.delete(playgroundId, httpRequest);
         return ResponseEntity.ok(response);
     }
 }

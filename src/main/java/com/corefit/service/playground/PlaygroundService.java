@@ -5,13 +5,19 @@ import com.corefit.dto.response.GeneralResponse;
 import com.corefit.entity.helper.City;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.auth.User;
+import com.corefit.entity.playground.Reservation;
+import com.corefit.enums.PaymentMethod;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
+import com.corefit.repository.playground.ReservationRepo;
 import com.corefit.service.auth.AuthService;
+import com.corefit.service.auth.WalletService;
 import com.corefit.service.helper.CityService;
+import com.corefit.service.helper.NotificationService;
 import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.catalina.LifecycleState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -24,9 +30,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class PlaygroundService {
@@ -41,6 +49,12 @@ public class PlaygroundService {
     private PlaygroundFavouriteService playgroundFavouriteService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ReservationRepo reservationRepo;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private WalletService walletService;
 
     @Transactional
     public GeneralResponse<Playground> create(PlaygroundRequest request, HttpServletRequest httpRequest) {
@@ -109,6 +123,61 @@ public class PlaygroundService {
         playground.setFavourite(isFavorite);
 
         return new GeneralResponse<>("Playground retrieved successfully", playground);
+    }
+
+    @Transactional
+    public GeneralResponse<?> changeStatus(Long id, HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
+        Playground playground = findById(id);
+
+        validateProvider(user);
+        validateOwnership(playground, user);
+
+        boolean willBeClosed = playground.isOpened();
+        playground.setOpened(!playground.isOpened());
+        playgroundRepo.save(playground);
+
+        if (willBeClosed) {
+            List<Reservation> activeReservations = reservationRepo.findActiveReservations(playground);
+            for (Reservation reservation : activeReservations) {
+                handleReservationCancellation(playground, reservation, false);
+                reservation.setCancelled(true);
+                reservationRepo.save(reservation);
+            }
+        }
+
+        String statusMessage = playground.isOpened() ? "opened" : "closed";
+
+        notificationService.pushNotification(user, "Playground Status Changed",
+                String.format("You have successfully %s your playground \"%s\".", statusMessage, playground.getName()));
+
+        return new GeneralResponse<>("Playground " + statusMessage + " successfully");
+    }
+
+    @Transactional
+    public GeneralResponse<?> delete(Long id, HttpServletRequest httpRequest) {
+        User user = authService.extractUserFromRequest(httpRequest);
+        Playground playground = findById(id);
+
+        validateProvider(user);
+        validateOwnership(playground, user);
+
+        List<Reservation> reservations = reservationRepo.findByPlayground(playground);
+        for (Reservation reservation : reservations) {
+
+            if (!reservation.isCancelled() && !reservation.isEnded()) {
+                handleReservationCancellation(playground, reservation, true);
+            }
+
+            reservationRepo.delete(reservation);
+        }
+
+        playgroundRepo.delete(playground);
+
+        notificationService.pushNotification(user, "Playground Removed",
+                String.format("You have successfully removed the playground \"%s\". All active reservations have been cancelled and users were notified.", playground.getName()));
+
+        return new GeneralResponse<>("Playground deleted successfully");
     }
 
     /// Helper Methods
@@ -211,5 +280,26 @@ public class PlaygroundService {
         playground.setTeamMembers(request.getTeamMembers());
         playground.setPassword(request.getPassword() != null ? passwordEncoder.encode(request.getPassword().toString()) : null);
         playground.setPasswordEnabled(request.isPasswordEnabled());
+    }
+
+    private void handleReservationCancellation(Playground playground, Reservation reservation, boolean isDeleteScenario) {
+        String action = isDeleteScenario ? "deleted" : "closed";
+        String message = String.format(
+                "Your reservation at \"%s\" on %s at [%s] has been cancelled because the playground was %s.",
+                playground.getName(), reservation.getDate(), formatSlots(reservation), action);
+
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+            walletService.deposit(reservation.getUser().getId(), reservation.getPrice());
+            message += String.format(" %.2f EGP has been refunded to your wallet.", reservation.getPrice());
+        }
+
+        notificationService.pushNotification(reservation.getUser(), "❌ Reservation Cancelled", message);
+    }
+
+    private String formatSlots(Reservation reservation) {
+        return reservation.getSlots().stream()
+                .map(slot -> slot.getTime().toString())
+                .sorted()
+                .collect(Collectors.joining(", "));
     }
 }
