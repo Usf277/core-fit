@@ -105,11 +105,12 @@ public class ReservationService {
 
         // Send notification
         notificationService.pushNotification(user, "Reservation Confirmed",
-                "Your booking for " + playground.getName() + " on " + request.getDate() + " is confirmed.");
+                String.format("You successfully booked \"%s\" on %s at %s. Total cost: %.2f EGP.", playground.getName(),
+                        request.getDate(), formatSlots(requestedTimes), totalCost));
 
         notificationService.pushNotification(provider, "New Reservation Received",
-                "You have received a new reservation from " + user.getUsername() +
-                        " for \"" + playground.getName() + "\" at " + reservation.getDate() + ".");
+                String.format("%s has booked \"%s\" on %s at %s. Total price: %.2f EGP.", user.getUsername(),
+                        playground.getName(), request.getDate(), formatSlots(requestedTimes), totalCost));
 
         return new GeneralResponse<>("Reservation completed successfully", mapToResponse(reservation));
     }
@@ -219,13 +220,15 @@ public class ReservationService {
             redisTemplate.delete(REDIS_KEY + reservationId);
         });
 
-        notificationService.pushNotification(user, "Reservation Cancelled",
-                "Your booking for \"" + reservation.getPlayground().getName() + "\" on " + reservation.getDate() + " has been cancelled.");
+        // Send notification
+        Playground playground = reservation.getPlayground();
+        User provider = playground.getUser();
 
-        User provider = reservation.getPlayground().getUser();
-        notificationService.pushNotification(provider, "Reservation Cancelled",
-                "A reservation has been cancelled by " + user.getUsername() + " for \""
-                        + reservation.getPlayground().getName() + "\" on " + reservation.getDate() + ".");
+        notificationService.pushNotification(user, "❌ Reservation Cancelled",
+                buildUserCancelMessage(playground, reservation));
+
+        notificationService.pushNotification(provider, "⚠️ Reservation Cancelled by User",
+                buildProviderCancelMessage(playground, reservation, user));
 
         return new GeneralResponse<>("Reservation cancelled successfully", null);
     }
@@ -274,8 +277,9 @@ public class ReservationService {
         reservationPasswordRepo.save(reservationPassword);
         redisTemplate.opsForValue().set(redisKey, hashedPassword, 10, TimeUnit.MINUTES);
 
-        notificationService.pushNotification(user, "Temporary Password Generated",
-                "Your temporary password for reservation at " + playground.getName() + " is: " + randomPassword);
+        notificationService.pushNotification(user, "🔐 Temporary Password Generated",
+                "Your temporary password for \"" + playground.getName() + "\" on " + reservation.getDate()
+                        + " is: " + randomPassword + ". This password is valid for 10 minutes only.");
 
         return new GeneralResponse<>("Temporary reservation password generated", randomPassword);
     }
@@ -416,6 +420,28 @@ public class ReservationService {
                 .build();
     }
 
+    private String formatSlots(Set<LocalTime> times) {
+        return times.stream().sorted().map(LocalTime::toString).collect(Collectors.joining(", "));
+    }
+
+    private String buildUserCancelMessage(Playground playground, Reservation reservation) {
+        String message = String.format("You have cancelled your reservation for \"%s\" on %s.",
+                playground.getName(), reservation.getDate());
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+            message += String.format(" An amount of %.2f EGP has been refunded to your wallet.", reservation.getPrice());
+        }
+        return message;
+    }
+
+    private String buildProviderCancelMessage(Playground playground, Reservation reservation, User user) {
+        String message = String.format("User %s has cancelled their reservation for \"%s\" on %s.",
+                user.getUsername(), playground.getName(), reservation.getDate());
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+            message += String.format(" Refunded: %.2f EGP.", reservation.getPrice());
+        }
+        return message;
+    }
+
     private String generateRandomPassword(String playgroundPassword, List<String> todayHashedPasswords) {
         Random random = new Random();
         String randomPassword;
@@ -442,5 +468,4 @@ public class ReservationService {
         }
         return randomPassword;
     }
-
 }
