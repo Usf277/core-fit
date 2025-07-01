@@ -15,7 +15,11 @@ import java.util.Optional;
 public interface ReservationRepo extends JpaRepository<Reservation, Integer> {
     Optional<Reservation> findById(Long id);
 
-    List<Reservation> findByPlaygroundAndDate(Playground playground, LocalDate date);
+    @Query("SELECT r FROM Reservation r WHERE r.playground = :playground AND r.date = :date AND r.isCancelled = false")
+    List<Reservation> findActiveByPlaygroundAndDate(Playground playground, LocalDate date);
+
+    @Query("SELECT r FROM Reservation r WHERE r.playground = :playground AND r.date = :date AND r.isCancelled = false AND r.isEnded = false")
+    List<Reservation> findActiveReservations(Playground playground, LocalDate date);
 
     Optional<Reservation> findByIdAndUser(Long id, User user);
 

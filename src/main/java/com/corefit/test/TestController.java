@@ -27,17 +27,4 @@ class TestController {
             return ResponseEntity.badRequest().body("Failed to drop table: " + e.getMessage());
         }
     }
-
-    ///  Pass Controller
-    @GetMapping("/pass")
-    public ResponseEntity<Integer> generatePass() {
-        return ResponseEntity.ok(testService.generatePass());
-    }
-
-    @PostMapping("/pass")
-    public ResponseEntity<Boolean> checkPass(@RequestBody Password password) {
-        boolean isValid = testService.checkPass(password);
-        return ResponseEntity.ok(isValid);
-    }
-
 }
