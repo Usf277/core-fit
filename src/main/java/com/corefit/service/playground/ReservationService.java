@@ -139,7 +139,11 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public GeneralResponse<?> getReservedSlots(Long playgroundId, LocalDate date) {
         Playground playground = playgroundService.findById(playgroundId);
-        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, date);
+
+        List<Reservation> reservations = reservationRepo.findByPlaygroundAndDate(playground, date)
+                .stream()
+                .filter(reservation -> !reservation.isCancelled())
+                .toList();
 
         List<String> reservedSlots = reservations.stream()
                 .flatMap(r -> r.getSlots().stream())
