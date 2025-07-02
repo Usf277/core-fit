@@ -81,13 +81,16 @@ public class ReservationService {
 
         // Calculate cost
         double totalCost = calculateTotalPrice(requestedTimes, playground);
-        if (request.getPaymentMethod() == PaymentMethod.WALLET) {
-            String purpose = String.format("Reservation at \"%s\" on %s [%s]",
-                    playground.getName(),
-                    request.getDate(),
-                    formatSlots(requestedTimes));
+        String slotTimes = formatSlots(requestedTimes);
 
-            walletService.withdraw(httpRequest, totalCost, purpose);
+        if (request.getPaymentMethod() == PaymentMethod.WALLET) {
+            String withdrawPurpose = String.format("Outgoing: payment for reservation at \"%s\" on %s [%s]",
+                    playground.getName(), request.getDate(), slotTimes);
+
+            String depositPurpose = String.format("Incoming: received payment for reservation at \"%s\" from %s on %s [%s]",
+                    playground.getName(), user.getUsername(), request.getDate(), slotTimes);
+
+            walletService.transfer(user, playground.getUser(), totalCost, withdrawPurpose, depositPurpose);
         }
 
         Reservation reservation = Reservation.builder()
@@ -111,11 +114,11 @@ public class ReservationService {
         // Send notification
         notificationService.pushNotification(user, "Reservation Confirmed",
                 String.format("You successfully booked \"%s\" on %s at %s. Total cost: %.2f EGP.", playground.getName(),
-                        request.getDate(), formatSlots(requestedTimes), totalCost));
+                        request.getDate(), slotTimes, totalCost));
 
         notificationService.pushNotification(provider, "New Reservation Received",
                 String.format("%s has booked \"%s\" on %s at %s. Total price: %.2f EGP.", user.getUsername(),
-                        playground.getName(), request.getDate(), formatSlots(requestedTimes), totalCost));
+                        playground.getName(), request.getDate(), slotTimes, totalCost));
 
         return new GeneralResponse<>("Reservation completed successfully", mapToResponse(reservation));
     }
@@ -215,14 +218,20 @@ public class ReservationService {
         if (reservation.isEnded())
             throw new GeneralException("Cannot cancel a reservation that has already ended.");
 
-        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
-            String purpose = String.format(
-                    "Refund for cancelled reservation at \"%s\" on %s [%s]",
-                    reservation.getPlayground().getName(),
-                    reservation.getDate(),
-                    formatSlots(reservation.getSlots().stream().map(ReservationSlot::getTime).collect(Collectors.toSet())));
 
-            walletService.deposit(user.getId(), reservation.getPrice(), purpose);
+        Playground playground = reservation.getPlayground();
+        User provider = playground.getUser();
+
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+            String slots = formatSlots(reservation.getSlots().stream().map(ReservationSlot::getTime).collect(Collectors.toSet()));
+
+            String withdrawPurpose = String.format("Outgoing: refund to %s for cancelled reservation at \"%s\" on %s [%s]",
+                    user.getUsername(), playground.getName(), reservation.getDate(), slots);
+
+            String depositPurpose = String.format("Incoming: refund for cancelled reservation at \"%s\" on %s [%s]",
+                    playground.getName(), reservation.getDate(), slots);
+
+            walletService.transfer(provider, user, reservation.getPrice(), depositPurpose, withdrawPurpose);
         }
 
         reservation.setCancelled(true);
@@ -234,9 +243,6 @@ public class ReservationService {
         });
 
         // Send notification
-        Playground playground = reservation.getPlayground();
-        User provider = playground.getUser();
-
         notificationService.pushNotification(user, "❌ Reservation Cancelled",
                 buildUserCancelMessage(playground, reservation));
 

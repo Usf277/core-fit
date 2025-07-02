@@ -299,15 +299,19 @@ public class PlaygroundService {
 
     private void cancelReservationBySystem(Playground playground, Reservation reservation, boolean isDeleteScenario) {
         String action = isDeleteScenario ? "deleted" : "closed";
-        String message = String.format(
-                "Your reservation at \"%s\" on %s at [%s] was cancelled because the playground was %s.",
-                playground.getName(), reservation.getDate(), formatSlots(reservation), action);
+        String slotTimes = formatSlots(reservation);
+
+        String message = String.format("Your reservation at \"%s\" on %s at [%s] was cancelled because the playground was %s.",
+                playground.getName(), reservation.getDate(), slotTimes, action);
 
         if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
-            String purpose = String.format("Refund for reservation on %s at [%s] - playground %s %s",
-                    reservation.getDate(), formatSlots(reservation), playground.getName(), action);
+            String withdrawPurpose = String.format("Outgoing: refund to %s for reservation at \"%s\" on %s [%s] (playground %s)",
+                    reservation.getUser().getUsername(), playground.getName(), reservation.getDate(), slotTimes, action);
 
-            walletService.deposit(reservation.getUser().getId(), reservation.getPrice(), purpose);
+            String depositPurpose = String.format("Incoming: refund for reservation at \"%s\" on %s [%s] (playground %s)",
+                    playground.getName(), reservation.getDate(), slotTimes, action);
+
+            walletService.transfer(playground.getUser(), reservation.getUser(), reservation.getPrice(), withdrawPurpose, depositPurpose);
             message += String.format(" %.2f EGP has been refunded to your wallet.", reservation.getPrice());
         }
 
