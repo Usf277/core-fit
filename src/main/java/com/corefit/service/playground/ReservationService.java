@@ -82,7 +82,12 @@ public class ReservationService {
         // Calculate cost
         double totalCost = calculateTotalPrice(requestedTimes, playground);
         if (request.getPaymentMethod() == PaymentMethod.WALLET) {
-            walletService.withdraw(httpRequest, totalCost);
+            String purpose = String.format("Reservation at \"%s\" on %s [%s]",
+                    playground.getName(),
+                    request.getDate(),
+                    formatSlots(requestedTimes));
+
+            walletService.withdraw(httpRequest, totalCost, purpose);
         }
 
         Reservation reservation = Reservation.builder()
@@ -210,8 +215,15 @@ public class ReservationService {
         if (reservation.isEnded())
             throw new GeneralException("Cannot cancel a reservation that has already ended.");
 
-        if (reservation.getPaymentMethod() == PaymentMethod.WALLET)
-            walletService.deposit(user.getId(), reservation.getPrice());
+        if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
+            String purpose = String.format(
+                    "Refund for cancelled reservation at \"%s\" on %s [%s]",
+                    reservation.getPlayground().getName(),
+                    reservation.getDate(),
+                    formatSlots(reservation.getSlots().stream().map(ReservationSlot::getTime).collect(Collectors.toSet())));
+
+            walletService.deposit(user.getId(), reservation.getPrice(), purpose);
+        }
 
         reservation.setCancelled(true);
         reservationRepo.save(reservation);

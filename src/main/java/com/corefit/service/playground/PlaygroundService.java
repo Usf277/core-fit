@@ -304,7 +304,10 @@ public class PlaygroundService {
                 playground.getName(), reservation.getDate(), formatSlots(reservation), action);
 
         if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
-            walletService.deposit(reservation.getUser().getId(), reservation.getPrice());
+            String purpose = String.format("Refund for reservation on %s at [%s] - playground %s %s",
+                    reservation.getDate(), formatSlots(reservation), playground.getName(), action);
+
+            walletService.deposit(reservation.getUser().getId(), reservation.getPrice(), purpose);
             message += String.format(" %.2f EGP has been refunded to your wallet.", reservation.getPrice());
         }
 
