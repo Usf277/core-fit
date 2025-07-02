@@ -57,7 +57,7 @@ public class OrderService {
         Order order = buildOrderFromCart(cart, orderRequest, user);
 
         if (orderRequest.getPaymentMethod() == PaymentMethod.WALLET) {
-            processWalletPayment(httpRequest, cart.getTotalPrice());
+            processWalletPayment(httpRequest, cart.getTotalPrice(), order.getId(), market.getName());
         }
 
         orderRepo.save(order);
@@ -268,9 +268,10 @@ public class OrderService {
         return order;
     }
 
-    private void processWalletPayment(HttpServletRequest request, double amount) {
+    private void processWalletPayment(HttpServletRequest request, double amount, Long orderId, String marketName) {
+        String purpose = String.format("Order #%d at market \"%s\"", orderId, marketName);
         try {
-            walletService.withdraw(request, amount);
+            walletService.withdraw(request, amount, purpose);
         } catch (Exception e) {
             throw new GeneralException("Wallet payment failed: " + e.getMessage());
         }
@@ -279,7 +280,10 @@ public class OrderService {
     private void refundWalletIfNeeded(Order order) {
         if (order.getPaymentMethod() == PaymentMethod.WALLET) {
             try {
-                walletService.deposit(order.getUser().getId(), order.getTotalPrice());
+                String purpose = String.format("Refund for canceled order #%d at market \"%s\"",
+                        order.getId(), order.getMarket().getName());
+
+                walletService.deposit(order.getUser().getId(), order.getTotalPrice(), purpose);
             } catch (Exception e) {
                 throw new GeneralException("Wallet refund failed: " + e.getMessage());
             }
