@@ -57,7 +57,10 @@ public class OrderService {
         Order order = buildOrderFromCart(cart, orderRequest, user);
 
         if (orderRequest.getPaymentMethod() == PaymentMethod.WALLET) {
-            processWalletPayment(httpRequest, cart.getTotalPrice(), order.getId(), market.getName());
+            String withdrawPurpose = String.format("Outgoing: payment for order at \"%s\" market", market.getName());
+            String depositPurpose = String.format("Incoming: received payment for order from %s in \"%s\" market", user.getUsername(), market.getName());
+
+            walletService.transfer(user, market.getUser(), cart.getTotalPrice(), withdrawPurpose, depositPurpose);
         }
 
         orderRepo.save(order);
@@ -126,7 +129,7 @@ public class OrderService {
             throw new GeneralException("This order is already cancelled.");
         }
 
-        refundWalletIfNeeded(order);
+        reverseOrderPayment(order);
         order.setStatus(OrderStatus.ORDER_CANCELED);
         orderRepo.save(order);
 
@@ -183,11 +186,10 @@ public class OrderService {
 
     private void handleStatusSpecificActions(Order order, OrderStatus newStatus) {
         if (newStatus == OrderStatus.ORDER_CANCELED) {
-            if (order.getStatus() == OrderStatus.ORDER_DELIVERED ||
-                    order.getStatus() == OrderStatus.ORDER_UNDER_DELIVERY) {
+            if (order.getStatus() == OrderStatus.ORDER_DELIVERED || order.getStatus() == OrderStatus.ORDER_UNDER_DELIVERY) {
                 throw new GeneralException("Delivered orders cannot be canceled.");
             }
-            refundWalletIfNeeded(order);
+            reverseOrderPayment(order);
         }
     }
 
@@ -268,25 +270,18 @@ public class OrderService {
         return order;
     }
 
-    private void processWalletPayment(HttpServletRequest request, double amount, Long orderId, String marketName) {
-        String purpose = String.format("Order #%d at market \"%s\"", orderId, marketName);
-        try {
-            walletService.withdraw(request, amount, purpose);
-        } catch (Exception e) {
-            throw new GeneralException("Wallet payment failed: " + e.getMessage());
-        }
-    }
-
-    private void refundWalletIfNeeded(Order order) {
+    private void reverseOrderPayment(Order order) {
         if (order.getPaymentMethod() == PaymentMethod.WALLET) {
-            try {
-                String purpose = String.format("Refund for canceled order #%d at market \"%s\"",
-                        order.getId(), order.getMarket().getName());
+            User user = order.getUser();
+            User provider = order.getMarket().getUser();
 
-                walletService.deposit(order.getUser().getId(), order.getTotalPrice(), purpose);
-            } catch (Exception e) {
-                throw new GeneralException("Wallet refund failed: " + e.getMessage());
-            }
+            String withdrawPurpose = String.format("Outgoing: refund to %s for cancelled order #%d in \"%s\" market",
+                    user.getUsername(), order.getId(), order.getMarket().getName());
+
+            String depositPurpose = String.format("Incoming: refund for cancelled order #%d in \"%s\" market",
+                    order.getId(), order.getMarket().getName());
+
+            walletService.transfer(provider, user, order.getTotalPrice(), withdrawPurpose, depositPurpose);
         }
     }
 
