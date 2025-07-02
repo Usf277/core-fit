@@ -10,6 +10,7 @@ import com.corefit.enums.PaymentMethod;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.playground.PlaygroundRepo;
+import com.corefit.repository.playground.ReservationPasswordRepo;
 import com.corefit.repository.playground.ReservationRepo;
 import com.corefit.service.auth.AuthService;
 import com.corefit.service.auth.WalletService;
@@ -17,13 +18,13 @@ import com.corefit.service.helper.CityService;
 import com.corefit.service.helper.NotificationService;
 import com.corefit.utils.DateParser;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.catalina.LifecycleState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class PlaygroundService {
+    private static final String RESERVATION_REDIS_KEY = "reservation:password:";
     @Autowired
     private PlaygroundRepo playgroundRepo;
     @Autowired
@@ -52,9 +54,13 @@ public class PlaygroundService {
     @Autowired
     private ReservationRepo reservationRepo;
     @Autowired
+    private ReservationPasswordRepo reservationPasswordRepo;
+    @Autowired
     private NotificationService notificationService;
     @Autowired
     private WalletService walletService;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @Transactional
     public GeneralResponse<Playground> create(PlaygroundRequest request, HttpServletRequest httpRequest) {
@@ -139,15 +145,19 @@ public class PlaygroundService {
 
         if (willBeClosed) {
             List<Reservation> activeReservations = reservationRepo.findActiveReservations(playground);
-            for (Reservation reservation : activeReservations) {
-                handleReservationCancellation(playground, reservation, false);
-                reservation.setCancelled(true);
-                reservationRepo.save(reservation);
-            }
+
+            activeReservations.forEach(reservation -> cancelReservationBySystem(playground, reservation, false));
+            reservationRepo.saveAll(activeReservations);
+
+            // Delete all reservation passwords from DB & Redis
+            reservationPasswordRepo.deleteAllByPlayground(playground);
+            List<String> redisKeys = activeReservations.stream()
+                    .map(r -> RESERVATION_REDIS_KEY + r.getId())
+                    .toList();
+            redisTemplate.delete(redisKeys);
         }
 
         String statusMessage = playground.isOpened() ? "opened" : "closed";
-
         notificationService.pushNotification(user, "Playground Status Changed",
                 String.format("You have successfully %s your playground \"%s\".", statusMessage, playground.getName()));
 
@@ -163,14 +173,16 @@ public class PlaygroundService {
         validateOwnership(playground, user);
 
         List<Reservation> reservations = reservationRepo.findByPlayground(playground);
-        for (Reservation reservation : reservations) {
 
-            if (!reservation.isCancelled() && !reservation.isEnded()) {
-                handleReservationCancellation(playground, reservation, true);
-            }
+        reservations.forEach(reservation -> cancelReservationBySystem(playground, reservation, true));
 
-            reservationRepo.delete(reservation);
-        }
+        reservationRepo.deleteAll(reservations);
+        reservationPasswordRepo.deleteAllByPlayground(playground);
+
+        List<String> redisKeys = reservations.stream()
+                .map(r -> RESERVATION_REDIS_KEY + r.getId())
+                .toList();
+        redisTemplate.delete(redisKeys);
 
         playgroundRepo.delete(playground);
 
@@ -282,10 +294,10 @@ public class PlaygroundService {
         playground.setPasswordEnabled(request.isPasswordEnabled());
     }
 
-    private void handleReservationCancellation(Playground playground, Reservation reservation, boolean isDeleteScenario) {
+    private void cancelReservationBySystem(Playground playground, Reservation reservation, boolean isDeleteScenario) {
         String action = isDeleteScenario ? "deleted" : "closed";
         String message = String.format(
-                "Your reservation at \"%s\" on %s at [%s] has been cancelled because the playground was %s.",
+                "Your reservation at \"%s\" on %s at [%s] was cancelled because the playground was %s.",
                 playground.getName(), reservation.getDate(), formatSlots(reservation), action);
 
         if (reservation.getPaymentMethod() == PaymentMethod.WALLET) {
@@ -293,6 +305,7 @@ public class PlaygroundService {
             message += String.format(" %.2f EGP has been refunded to your wallet.", reservation.getPrice());
         }
 
+        reservation.setCancelled(true);
         notificationService.pushNotification(reservation.getUser(), "❌ Reservation Cancelled", message);
     }
 
