@@ -174,7 +174,10 @@ public class PlaygroundService {
 
         List<Reservation> reservations = reservationRepo.findByPlayground(playground);
 
-        reservations.forEach(reservation -> cancelReservationBySystem(playground, reservation, true));
+        for (Reservation reservation : reservations) {
+            if (!reservation.isCancelled() && !reservation.isEnded())
+                cancelReservationBySystem(playground, reservation, true);
+        }
 
         reservationRepo.deleteAll(reservations);
         reservationPasswordRepo.deleteAllByPlayground(playground);
