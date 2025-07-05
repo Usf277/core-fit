@@ -1,14 +1,19 @@
 package com.corefit.config;
 
+import com.corefit.entity.helper.AppContent;
 import com.corefit.entity.helper.City;
 import com.corefit.entity.helper.Governorate;
+import com.corefit.enums.AppContentType;
+import com.corefit.repository.helper.AppContentRepo;
 import com.corefit.repository.helper.CityRepo;
 import com.corefit.repository.helper.GovernorateRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -17,9 +22,58 @@ public class DataInitializer implements CommandLineRunner {
     private GovernorateRepo governorateRepository;
     @Autowired
     private CityRepo cityRepository;
+    @Autowired
+    private AppContentRepo appContentRepo;
 
     @Override
     public void run(String... args) {
+        if (appContentRepo.count() == 0) {
+            AppContent about = AppContent.builder()
+                    .type(AppContentType.ABOUT)
+                    .updatedAt(LocalDateTime.now())
+                    .content("""
+                            CoreFit is a platform that connects users with top-rated sports playgrounds and local markets in their area.
+                            
+                            You can easily browse available playgrounds, view available time slots, and make secure reservations.
+                            The platform also allows you to explore nearby markets, add items to your cart, and place orders directly.
+                            
+                            CoreFit is designed to make your sports experience smoother and your local shopping easier — all in one place!
+                            """)
+                    .build();
+
+            AppContent privacy = AppContent.builder()
+                    .type(AppContentType.PRIVACY)
+                    .updatedAt(LocalDateTime.now())
+                    .content("""
+                            At CoreFit, we respect your privacy.
+                            
+                            - We do not share your personal data (email, phone, location) with third parties without your consent.
+                            - Your wallet transactions and reservation history are secure and private.
+                            - All data is stored securely and used only to enhance your user experience.
+                            
+                            By using CoreFit, you agree to our commitment to protecting your personal information.
+                            """)
+                    .build();
+
+            AppContent terms = AppContent.builder()
+                    .type(AppContentType.TERMS)
+                    .updatedAt(LocalDateTime.now())
+                    .content("""
+                            By using the CoreFit app, you agree to the following terms and conditions:
+                            
+                            1. You must provide accurate personal information during registration.
+                            2. Reservation cancellation policies may apply and vary by playground.
+                            3. Wallet refunds are only applicable in eligible cancellation cases.
+                            4. Marketplace orders must comply with the seller's return/refund policies.
+                            5. Abuse of the system (fake reservations, spam orders) may result in account suspension.
+                            
+                            CoreFit reserves the right to update these terms at any time. Continued use of the app means you accept all changes.
+                            """)
+                    .build();
+
+            appContentRepo.saveAll(List.of(about, privacy, terms));
+        }
+
         if (governorateRepository.count() == 0) {
             Map<String, String[]> governorateCities = new HashMap<>();
 
