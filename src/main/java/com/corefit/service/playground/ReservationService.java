@@ -432,6 +432,7 @@ public class ReservationService {
 
                 .playgroundId(playground.getId())
                 .playgroundName(playground.getName())
+                .playgroundImages(playground.getImages())
                 .playgroundAddress(playground.getAddress())
                 .playgroundAvgRate(playground.getAvgRate())
                 .numberPlaygroundRates(numberOfRates)
