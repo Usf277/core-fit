@@ -23,7 +23,7 @@ public class AppContent {
     private AppContentType type; // ABOUT, PRIVACY, TERMS
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     private LocalDateTime updatedAt;
