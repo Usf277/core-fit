@@ -21,9 +21,9 @@ public class ReservationResponse {
     private boolean ended;
     private LocalDateTime createdAt;
 
-
     private Long playgroundId;
     private String playgroundName;
+    private List<String> playgroundImages;
     private String playgroundAddress;
     private int playgroundAvgRate;
     private long numberPlaygroundRates;
