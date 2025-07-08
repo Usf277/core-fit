@@ -87,6 +87,8 @@ public class Playground {
 
     private int avgRate;
 
+    private long rateCount;
+
     @Transient
     private boolean isFavourite;
 }
