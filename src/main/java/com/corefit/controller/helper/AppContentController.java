@@ -14,8 +14,8 @@ public class AppContentController {
     @Autowired
     private AppContentService appContentService;
 
-    @GetMapping("/app-content/{type}")
-    public ResponseEntity<GeneralResponse<?>> getContent(@PathVariable AppContentType type) {
-        return ResponseEntity.ok(appContentService.getContentByType(type));
+    @GetMapping("/app-content")
+    public ResponseEntity<GeneralResponse<?>> getContent() {
+        return ResponseEntity.ok(appContentService.getAllContent());
     }
 }
