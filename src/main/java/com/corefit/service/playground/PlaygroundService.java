@@ -70,7 +70,7 @@ public class PlaygroundService {
         validateProvider(user);
 
         City city = cityService.findById(request.getCityId());
-        validateRequest(request);
+        validateRequest(request, false);
 
         Playground playground = buildPlayground(request, user, city);
         playgroundRepo.save(playground);
@@ -87,7 +87,7 @@ public class PlaygroundService {
         validateOwnership(playground, user);
 
         City city = cityService.findById(request.getCityId());
-        validateRequest(request);
+        validateRequest(request, true);
 
         updatePlayground(playground, request, city);
         playgroundRepo.save(playground);
@@ -214,7 +214,7 @@ public class PlaygroundService {
         }
     }
 
-    private void validateRequest(PlaygroundRequest request) {
+    private void validateRequest(PlaygroundRequest request, boolean isUpdate) {
         if (request.getImages() == null || request.getImages().isEmpty()) {
             throw new GeneralException("You must upload at least one image");
         }
@@ -227,7 +227,11 @@ public class PlaygroundService {
         validateShiftTimes(request);
 
         if (request.isPasswordEnabled()) {
-            if (request.getPassword() == null || !Pattern.compile("^\\d{6}$").matcher(request.getPassword().toString()).matches()) {
+            if (!isUpdate && request.getPassword() == null) {
+                throw new GeneralException("Password must be exactly 6 digits");
+            }
+
+            if (request.getPassword() != null && !Pattern.compile("^\\d{6}$").matcher(request.getPassword().toString()).matches()) {
                 throw new GeneralException("Password must be exactly 6 digits");
             }
         }
@@ -295,8 +299,15 @@ public class PlaygroundService {
         playground.setHasExtraPrice(request.isHasExtraPrice());
         playground.setImages(request.getImages());
         playground.setTeamMembers(request.getTeamMembers());
-        playground.setPassword(request.getPassword() != null ? passwordEncoder.encode(request.getPassword().toString()) : null);
-        playground.setPasswordEnabled(request.isPasswordEnabled());
+
+        if (request.isPasswordEnabled()) {
+            if (request.getPassword() != null)
+                playground.setPassword(passwordEncoder.encode(request.getPassword().toString()));
+            playground.setPasswordEnabled(true);
+        } else {
+            playground.setPassword(null);
+            playground.setPasswordEnabled(false);
+        }
     }
 
     private void cancelReservationBySystem(Playground playground, Reservation reservation, boolean isDeleteScenario) {
