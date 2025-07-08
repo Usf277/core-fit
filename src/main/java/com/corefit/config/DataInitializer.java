@@ -56,7 +56,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             AppContent terms = AppContent.builder()
-                    .type(AppContentType.TERMS)
+                    .type(AppContentType.TERMS_CONDITION)
                     .updatedAt(LocalDateTime.now())
                     .content("""
                             By using the CoreFit app, you agree to the following terms and conditions:
