@@ -1,5 +1,6 @@
 package com.corefit.repository.playground;
 
+import com.corefit.entity.auth.User;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.playground.PlaygroundRate;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface PlaygroundRateRepo extends JpaRepository<PlaygroundRate, Long> 
     List<PlaygroundRate> findByPlayground(Playground playground);
 
     long countByPlayground(Playground playground);
+
+    boolean existsByUserAndPlayground(User user, Playground playground);
 }

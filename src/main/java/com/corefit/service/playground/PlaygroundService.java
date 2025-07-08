@@ -2,6 +2,7 @@ package com.corefit.service.playground;
 
 import com.corefit.dto.request.playground.PlaygroundRequest;
 import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.response.playground.PlaygroundResponse;
 import com.corefit.entity.helper.City;
 import com.corefit.entity.playground.Playground;
 import com.corefit.entity.auth.User;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class PlaygroundService {
     private RedisTemplate<String, String> redisTemplate;
 
     @Transactional
-    public GeneralResponse<Playground> create(PlaygroundRequest request, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> create(PlaygroundRequest request, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         validateProvider(user);
 
@@ -73,11 +75,11 @@ public class PlaygroundService {
         Playground playground = buildPlayground(request, user, city);
         playgroundRepo.save(playground);
 
-        return new GeneralResponse<>("Playground added successfully", playground);
+        return new GeneralResponse<>("Playground added successfully", mapToResponse(playground));
     }
 
     @Transactional
-    public GeneralResponse<Playground> update(PlaygroundRequest request, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> update(PlaygroundRequest request, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         validateProvider(user);
 
@@ -90,7 +92,7 @@ public class PlaygroundService {
         updatePlayground(playground, request, city);
         playgroundRepo.save(playground);
 
-        return new GeneralResponse<>("Playground updated successfully", playground);
+        return new GeneralResponse<>("Playground updated successfully", mapToResponse(playground));
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +109,7 @@ public class PlaygroundService {
         playgrounds.forEach(pg -> pg.setFavourite(favIds.contains(pg.getId())));
 
         Map<String, Object> data = new HashMap<>();
-        data.put("playgrounds", playgrounds.getContent());
+        data.put("playgrounds", playgrounds.getContent().stream().map(this::mapToResponse).toList());
         data.put("totalElements", playgrounds.getTotalElements());
         data.put("totalPages", playgrounds.getTotalPages());
         data.put("pageSize", playgrounds.getSize());
@@ -117,7 +119,7 @@ public class PlaygroundService {
     }
 
     @Transactional(readOnly = true)
-    public GeneralResponse<Playground> getById(Long id, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> getById(Long id, HttpServletRequest httpRequest) {
         User user = authService.extractUserFromRequest(httpRequest);
         Playground playground = findById(id);
 
@@ -128,7 +130,7 @@ public class PlaygroundService {
         boolean isFavorite = playgroundFavouriteService.existsByUserIdAndPlaygroundId(user.getId(), playground.getId());
         playground.setFavourite(isFavorite);
 
-        return new GeneralResponse<>("Playground retrieved successfully", playground);
+        return new GeneralResponse<>("Playground retrieved successfully", mapToResponse(playground));
     }
 
     @Transactional
@@ -324,5 +326,38 @@ public class PlaygroundService {
                 .map(slot -> slot.getTime().toString())
                 .sorted()
                 .collect(Collectors.joining(", "));
+    }
+
+    public PlaygroundResponse mapToResponse(Playground playground) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        return PlaygroundResponse.builder()
+                .id(playground.getId())
+                .name(playground.getName())
+                .description(playground.getDescription())
+                .city(playground.getCity())
+                .address(playground.getAddress())
+                .lat(playground.getLat())
+                .lng(playground.getLng())
+
+                .morningShiftStart(playground.getMorningShiftStart().format(formatter))
+                .morningShiftEnd(playground.getMorningShiftEnd().format(formatter))
+                .nightShiftStart(playground.getNightShiftStart().format(formatter))
+                .nightShiftEnd(playground.getNightShiftEnd().format(formatter))
+
+                .bookingPrice(playground.getBookingPrice())
+                .hasExtraPrice(playground.isHasExtraPrice())
+                .extraNightPrice(playground.getExtraNightPrice())
+                .teamMembers(playground.getTeamMembers())
+
+                .passwordEnabled(playground.isPasswordEnabled())
+                .isOpened(playground.isOpened())
+                .isFavourite(playground.isFavourite())
+
+                .images(playground.getImages())
+                .avgRate(playground.getAvgRate())
+                .rateCount(playground.getRateCount())
+                .build();
     }
 }

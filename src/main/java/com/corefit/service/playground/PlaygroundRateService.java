@@ -52,9 +52,12 @@ public class PlaygroundRateService {
                 .orElseThrow(() -> new GeneralException("Playground not found"));
 
         User user = authService.extractUserFromRequest(httpRequest);
-        if (user.getType() == UserType.PROVIDER) {
-            throw new GeneralException("User not authorized to rate");
-        }
+        if (user.getType() == UserType.PROVIDER)
+            throw new GeneralException("Providers are not allowed to rate playgrounds.");
+
+        if (playgroundRateRepo.existsByUserAndPlayground(user, playground))
+            throw new GeneralException("You have already rated this playground.");
+
 
         PlaygroundRate rate = PlaygroundRate.builder()
                 .comment(request.getComment())
@@ -69,6 +72,7 @@ public class PlaygroundRateService {
         double avg = allRates.stream().mapToInt(PlaygroundRate::getRate).average().orElse(0.0);
 
         playground.setAvgRate((int) Math.round(avg));
+        playground.setRateCount(allRates.size());
         playgroundRepo.save(playground);
 
         return new GeneralResponse<>("Rate added successfully", mapToRateResponse(rate));
