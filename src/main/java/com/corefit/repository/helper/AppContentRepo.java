@@ -9,5 +9,4 @@ import java.util.Optional;
 
 @Repository
 public interface AppContentRepo extends JpaRepository<AppContent, Long> {
-    Optional<AppContent> findByType(AppContentType type);
 }
