@@ -46,7 +46,7 @@ public class SecurityConfig {
                                 "/cities",
                                 "/categories",
                                 "/uploads/**",
-                                "/verify-password"
+                                "/reservations/verify-password"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -80,7 +80,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 
     public static class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
         @Override

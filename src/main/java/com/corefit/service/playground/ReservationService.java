@@ -304,11 +304,11 @@ public class ReservationService {
     }
 
     @Transactional
-    public GeneralResponse<String> verifyPassword(Long playgroundId, String inputPassword) {
+    public boolean verifyPassword(Long playgroundId, String inputPassword) {
         Playground playground = playgroundService.findById(playgroundId);
 
         if (playground.isPasswordEnabled() && playground.getPassword() != null && passwordEncoder.matches(inputPassword, playground.getPassword())) {
-            return new GeneralResponse<>("Access granted using playground owner password", "true");
+            return true;
         }
 
         List<Reservation> reservations = reservationRepo.findActiveReservations(playground, LocalDate.now());
@@ -321,10 +321,10 @@ public class ReservationService {
                 reservationPasswordRepo.findByReservationId(reservation.getId())
                         .ifPresent(p -> reservationPasswordRepo.deleteById(p.getId()));
 
-                return new GeneralResponse<>("Access granted using temporary reservation password", "true");
+                return true;
             }
         }
-        return new GeneralResponse<>("Access denied: invalid or expired password", "false");
+        return false;
     }
 
     /// Helper Methods
