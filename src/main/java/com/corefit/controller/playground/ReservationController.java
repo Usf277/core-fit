@@ -63,7 +63,7 @@ public class ReservationController {
     }
 
     @PostMapping("/verify-password")
-    public GeneralResponse<String> verifyPassword(@RequestBody PasswordRequest request) {
+    public boolean verifyPassword(@RequestBody PasswordRequest request) {
         return reservationService.verifyPassword(request.getPlaygroundId(), request.getPassword());
     }
 }
