@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -144,22 +145,25 @@ public class AuthService {
     @Transactional
     public GeneralResponse<?> saveFcmToken(FcmRequest request, HttpServletRequest httpRequest) {
         User user = extractUserFromRequest(httpRequest);
-        FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
+        Optional<FcmToken> optionalToken = fcmTokenRepo.findByToken(request.getToken());
 
-        if (fcmToken == null) {
-            FcmToken fcmTokenNew = new FcmToken();
-
-            fcmTokenNew.setUser(user);
-            fcmTokenNew.setToken(request.getToken());
-
-            fcmTokenRepo.save(fcmTokenNew);
+        if (optionalToken.isEmpty()) {
+            FcmToken newToken = FcmToken.builder()
+                    .user(user)
+                    .token(request.getToken())
+                    .build();
+            fcmTokenRepo.save(newToken);
         } else {
-            fcmToken.setToken(request.getToken());
-            fcmTokenRepo.save(fcmToken);
+            FcmToken existingToken = optionalToken.get();
+            if (!existingToken.getUser().getId().equals(user.getId())) {
+                existingToken.setUser(user);
+                fcmTokenRepo.save(existingToken);
+            }
         }
 
-        return new GeneralResponse<>("Token successfully saved");
+        return new GeneralResponse<>("Token saved successfully");
     }
+
 
     /// Helper method
     public User createUser(RegisterRequest request) {
