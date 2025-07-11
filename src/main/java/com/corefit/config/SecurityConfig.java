@@ -70,7 +70,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://core-fit-gv4f.vercel.app"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "https://graduation-project-awy45giil-mounirs-projects-e285819f.vercel.app", "https://core-fit-gv4f.vercel.app"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
