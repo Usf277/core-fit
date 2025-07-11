@@ -161,6 +161,17 @@ public class AuthService {
         return new GeneralResponse<>("Token successfully saved");
     }
 
+    public GeneralResponse<?> getFcmToken(HttpServletRequest httpRequest) {
+        User user = extractUserFromRequest(httpRequest);
+        FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
+
+        if (fcmToken == null) {
+            throw new GeneralException("No token for this user");
+        } else {
+            return new GeneralResponse<>("Token return successfully", fcmToken);
+        }
+    }
+
     /// Helper method
     public User createUser(RegisterRequest request) {
         City city = cityService.findById(request.getCityId());

@@ -110,4 +110,10 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new GeneralResponse<>(e.getMessage()));
         }
     }
+
+    @GetMapping("user_firebase")
+    public ResponseEntity<GeneralResponse<?>> getFcmToken(HttpServletRequest httpRequest) {
+        GeneralResponse<?> response = authService.getFcmToken(httpRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
