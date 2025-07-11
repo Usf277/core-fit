@@ -145,23 +145,21 @@ public class AuthService {
     @Transactional
     public GeneralResponse<?> saveFcmToken(FcmRequest request, HttpServletRequest httpRequest) {
         User user = extractUserFromRequest(httpRequest);
-        Optional<FcmToken> optionalToken = fcmTokenRepo.findByToken(request.getToken());
+        FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
 
-        if (optionalToken.isEmpty()) {
-            FcmToken newToken = FcmToken.builder()
-                    .user(user)
-                    .token(request.getToken())
-                    .build();
-            fcmTokenRepo.save(newToken);
+        if (fcmToken == null) {
+            FcmToken fcmTokenNew = new FcmToken();
+
+            fcmTokenNew.setUser(user);
+            fcmTokenNew.setToken(request.getToken());
+
+            fcmTokenRepo.save(fcmTokenNew);
         } else {
-            FcmToken existingToken = optionalToken.get();
-            if (!existingToken.getUser().getId().equals(user.getId())) {
-                existingToken.setUser(user);
-                fcmTokenRepo.save(existingToken);
-            }
+            fcmToken.setToken(request.getToken());
+            fcmTokenRepo.save(fcmToken);
         }
 
-        return new GeneralResponse<>("Token saved successfully");
+        return new GeneralResponse<>("Token successfully saved");
     }
 
     public GeneralResponse<?> getFcmToken(HttpServletRequest httpRequest) {

@@ -20,7 +20,7 @@ public class FcmToken {
     @Column(unique = true, nullable = false, columnDefinition = "TEXT")
     private String token;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
     private User user;

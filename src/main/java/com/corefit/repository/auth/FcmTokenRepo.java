@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FcmTokenRepo extends JpaRepository<FcmToken, Long> {
 
-    public FcmToken findByUserId(Long userId);
+    FcmToken findByUserId(Long userId);
 }
