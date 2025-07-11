@@ -30,7 +30,7 @@ public class FCMService {
                     || e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
                 fcmTokenRepo.deleteByToken(token);
             }
-            throw new RuntimeException("FCM error: " + e.getMessage());
+            throw new RuntimeException("FCM error deletion: " + e.getMessage());
         }
     }
 }

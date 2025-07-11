@@ -93,7 +93,7 @@ public class NotificationService {
             try {
                 fcmService.sendNotification(title, message, token.getToken());
             } catch (RuntimeException e) {
-                System.err.println("FCM Error Failed to send notification to userId= " + token.getUser().getId() + ", reason= " + e.getMessage());
+                throw new GeneralException("FCM Error Failed to send notification to userId= " + token.getUser().getId() + ", reason= " + e.getMessage());
             }
         }
     }
