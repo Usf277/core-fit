@@ -86,16 +86,11 @@ public class NotificationService {
         notification.setTitle(title);
         notification.setUser(user);
         notification.setMessage(message);
-        notificationRepo.save(notification);
 
-        List<FcmToken> tokens = fcmTokenRepo.findAllByUser(user);
-        for (FcmToken token : tokens) {
-            try {
-                fcmService.sendNotification(title, message, token.getToken());
-            } catch (RuntimeException e) {
-                throw new GeneralException("FCM Error Failed to send notification to userId= " + token.getUser().getId() + ", reason= " + e.getMessage());
-            }
-        }
+        FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
+
+        notificationRepo.save(notification);
+        fcmService.sendNotification(title, message, fcmToken.getToken());
     }
 
     private NotificationResponse mapToNotificationResponse(Notification notification) {
