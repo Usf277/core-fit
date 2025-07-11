@@ -1,9 +1,13 @@
 package com.corefit.service.helper;
 
 import com.corefit.dto.response.GeneralResponse;
+import com.corefit.dto.response.MonthlyIncomeComparison;
 import com.corefit.dto.response.market.TopProductStats;
 import com.corefit.entity.auth.User;
 import com.corefit.entity.market.Market;
+import com.corefit.entity.market.Order;
+import com.corefit.entity.playground.Playground;
+import com.corefit.entity.playground.Reservation;
 import com.corefit.enums.UserType;
 import com.corefit.exceptions.GeneralException;
 import com.corefit.repository.market.OrderItemRepo;
@@ -34,20 +38,54 @@ public class ProviderStatisticsService {
                 .map(Market::getId)
                 .toList();
 
-        List<TopProductStats> topProducts = orderItemRepository.findTopProductsByMarketIds(marketIds)  .stream().limit(3).toList();;
+        List<TopProductStats> topProducts = orderItemRepository.findTopProductsByMarketIds(marketIds).stream().limit(3).toList();
 
-//        List<Map<String, Object>> formatted = topProducts.stream().map(stat -> {
-//            Map<String, Object> map = new HashMap<>();
-//            map.put("id", stat.getId());
-//            map.put("label", stat.getLabel());
-//            map.put("value", stat.getValue());
-//            return map;
-//        }).toList();
 
         Map<String, Object> data = new HashMap<>();
         data.put("topProducts", topProducts);
+        data.put("incomeComparison", getMonthlyIncome(user));
 
         return new GeneralResponse<>("Success", data);
     }
 
+    private List<MonthlyIncomeComparison> getMonthlyIncome(User user) {
+        Map<Integer, MonthlyIncomeComparison> incomeByMonth = new HashMap<>();
+
+        String[] monthNames = {
+                "Jan", "Feb", "Mar", "Apr", "May", "June",
+                "July", "Aug", "Sept", "Oct", "Nov", "Dec"
+        };
+
+        for (int i = 1; i <= 12; i++) {
+            incomeByMonth.put(i, new MonthlyIncomeComparison(monthNames[i - 1], 0.0, 0.0));
+        }
+
+        for (Market market : user.getMarket()) {
+            for (Order order : market.getOrders()) {
+                if (order.getCreatedAt() == null) continue;
+
+                int month = order.getCreatedAt().getMonthValue();
+                double orderIncome = order.getTotalPrice();
+
+                MonthlyIncomeComparison monthly = incomeByMonth.get(month);
+                monthly.setStoreIncome(monthly.getStoreIncome() + orderIncome);
+            }
+        }
+
+        Set<Playground> playgrounds = user.getPlaygrounds();
+
+        for (Playground playground : playgrounds) {
+            for (Reservation reservation : playground.getReservations()) {
+                if (reservation.getCreatedAt() == null) continue;
+
+                int month = reservation.getCreatedAt().getMonthValue();
+                double resIncome = reservation.getPrice();
+
+                MonthlyIncomeComparison monthly = incomeByMonth.get(month);
+                monthly.setReservationIncome(monthly.getReservationIncome() + resIncome);
+            }
+        }
+
+        return new ArrayList<>(incomeByMonth.values());
+    }
 }

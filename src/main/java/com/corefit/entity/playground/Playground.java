@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -91,4 +93,10 @@ public class Playground {
 
     @Transient
     private boolean isFavourite;
+
+    @OneToMany(mappedBy = "playground", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @Builder.Default
+    private Set<Reservation> reservations = new HashSet<>();
+
 }
