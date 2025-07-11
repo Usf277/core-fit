@@ -26,11 +26,7 @@ public class FCMService {
         try {
             FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
-            if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED
-                    || e.getMessagingErrorCode() == MessagingErrorCode.INVALID_ARGUMENT) {
-                fcmTokenRepo.deleteByToken(token);
-            }
-            throw new RuntimeException("FCM error deletion: " + e.getMessage());
+            throw new RuntimeException("FCM error: " + e.getMessage());
         }
     }
 }
