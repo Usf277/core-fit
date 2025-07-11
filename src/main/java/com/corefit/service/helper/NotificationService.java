@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -85,11 +86,16 @@ public class NotificationService {
         notification.setTitle(title);
         notification.setUser(user);
         notification.setMessage(message);
-
-        FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
-
         notificationRepo.save(notification);
-        fcmService.sendNotification(title, message, fcmToken.getToken());
+
+        List<FcmToken> tokens = fcmTokenRepo.findAllByUser(user);
+        for (FcmToken token : tokens) {
+            try {
+                fcmService.sendNotification(title, message, token.getToken());
+            } catch (RuntimeException e) {
+                throw new GeneralException("FCM Error Failed to send notification to userId= " + token.getUser().getId() + ", reason= " + e.getMessage());
+            }
+        }
     }
 
     private NotificationResponse mapToNotificationResponse(Notification notification) {
