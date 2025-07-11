@@ -17,6 +17,7 @@ import java.util.Set;
 @Builder
 @Table(name = "markets")
 public class Market {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -61,4 +62,8 @@ public class Market {
     @Builder.Default
     private Set<Rate> rates = new HashSet<>();
 
+    @OneToMany(mappedBy = "market", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @Builder.Default
+    private Set<Order> orders = new HashSet<>();
 }
