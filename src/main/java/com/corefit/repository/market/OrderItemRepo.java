@@ -23,7 +23,5 @@ public interface OrderItemRepo extends JpaRepository<OrderItem, Long> {
                 GROUP BY oi.product.id, oi.product.name
                 ORDER BY SUM(oi.quantity) DESC
             """)
-    List<TopProductStats> findTopProductsByMarketIds(
-            @Param("marketIds") List<Long> marketIds
-    );
+    List<TopProductStats> findTopProductsByMarketIds(@Param("marketIds") List<Long> marketIds);
 }

@@ -34,18 +34,18 @@ public class ProviderStatisticsService {
                 .map(Market::getId)
                 .toList();
 
-        List<TopProductStats> topProducts = orderItemRepository.findTopProductsByMarketIds(marketIds);
+        List<TopProductStats> topProducts = orderItemRepository.findTopProductsByMarketIds(marketIds)  .stream().limit(3).toList();;
 
-        List<Map<String, Object>> formatted = topProducts.stream().map(stat -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", stat.getId());
-            map.put("label", stat.getLabel());
-            map.put("value", stat.getValue());
-            return map;
-        }).toList();
+//        List<Map<String, Object>> formatted = topProducts.stream().map(stat -> {
+//            Map<String, Object> map = new HashMap<>();
+//            map.put("id", stat.getId());
+//            map.put("label", stat.getLabel());
+//            map.put("value", stat.getValue());
+//            return map;
+//        }).toList();
 
         Map<String, Object> data = new HashMap<>();
-        data.put("topProducts", formatted);
+        data.put("topProducts", topProducts);
 
         return new GeneralResponse<>("Success", data);
     }
