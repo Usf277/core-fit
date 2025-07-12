@@ -82,14 +82,20 @@ public class NotificationService {
 
     @Transactional
     public void pushNotification(User user, String title, String message) {
-        Notification notification = new Notification();
-        notification.setTitle(title);
-        notification.setUser(user);
-        notification.setMessage(message);
+        if (user == null || title == null || message == null) return;
 
         FcmToken fcmToken = fcmTokenRepo.findByUserId(user.getId());
 
+        Notification notification = new Notification();
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setUser(user);
         notificationRepo.save(notification);
+
+        if (fcmToken == null || fcmToken.getToken() == null || fcmToken.getToken().isBlank()) {
+            throw new GeneralException("⚠️ No FCM token found for user: " + user.getUsername() + " (" + user.getId() + ")");
+        }
+
         fcmService.sendNotification(title, message, fcmToken.getToken());
     }
 
