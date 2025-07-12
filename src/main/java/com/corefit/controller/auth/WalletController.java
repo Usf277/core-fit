@@ -41,6 +41,6 @@ public class WalletController {
     @PostMapping("/wallet/withdraw")
     public ResponseEntity<?> withdraw(@RequestBody DepositRequest depositRequest, HttpServletRequest request) {
         walletService.withdraw(request, depositRequest.getAmount(), "Stripe withdraw transaction");
-        return ResponseEntity.ok("Withdrawal successful");
+        return ResponseEntity.ok(new GeneralResponse<>("Withdrawal successful"));
     }
 }
