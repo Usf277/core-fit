@@ -18,7 +18,9 @@ public class UserResponse {
     private String email;
     private String phone;
     private LocalDate birthDate;
+    private Long governmentId;
     private String governorate;
+    private Long cityId;
     private String city;
     private Gender gender;
     private String imageUrl;
