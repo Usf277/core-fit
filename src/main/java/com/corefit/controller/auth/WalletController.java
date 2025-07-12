@@ -29,13 +29,18 @@ public class WalletController {
     }
 
     @PostMapping("/wallet/deposit")
-    public ResponseEntity<String> createDeposit(@RequestBody DepositRequest depositRequest,
-                                                HttpServletRequest httpRequest) {
+    public ResponseEntity<String> createDeposit(@RequestBody DepositRequest depositRequest, HttpServletRequest httpRequest) {
         return walletService.depositStripe(depositRequest, httpRequest);
     }
 
     @GetMapping("/wallet/deposit/success")
     public ResponseEntity<String> handleSuccess(@RequestParam("session_id") String sessionId) {
         return walletService.handleStripeSuccess(sessionId);
+    }
+
+    @PostMapping("/wallet/withdraw")
+    public ResponseEntity<?> withdraw(@RequestBody DepositRequest depositRequest, HttpServletRequest request) {
+        walletService.withdraw(request, depositRequest.getAmount(), "Stripe withdraw transaction");
+        return ResponseEntity.ok("Withdrawal successful");
     }
 }
