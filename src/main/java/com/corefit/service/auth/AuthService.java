@@ -241,11 +241,12 @@ public class AuthService {
                 user.getEmail(),
                 user.getPhone(),
                 user.getBirthDate(),
+                user.getGovernorate().getId(),
                 user.getGovernorate().getName(),
+                user.getCity().getId(),
                 user.getCity().getName(),
                 user.getGender(),
-                user.getImageUrl()
-        );
+                user.getImageUrl());
     }
 
     public void validateEmailAndPhone(String email, String phone) {
