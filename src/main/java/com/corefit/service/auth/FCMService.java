@@ -1,32 +1,30 @@
 package com.corefit.service.auth;
 
+import com.corefit.exceptions.GeneralException;
 import com.google.firebase.messaging.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.corefit.repository.auth.FcmTokenRepo;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class FCMService {
-    @Autowired
-    private final FcmTokenRepo fcmTokenRepo;
 
     public void sendNotification(String title, String body, String token) {
-        Notification notification = Notification.builder()
-                .setTitle(title)
-                .setBody(body)
-                .build();
-
-        Message message = Message.builder()
-                .setToken(token)
-                .setNotification(notification)
-                .build();
-
         try {
+            Notification notification = Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build();
+
+            Message message = Message.builder()
+                    .setToken(token)
+                    .setNotification(notification)
+                    .build();
+
             FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
-            throw new RuntimeException("FCM error: " + e.getMessage());
+            throw new GeneralException("❌ FCM failed: " + e.getMessage());
         }
     }
+
 }
