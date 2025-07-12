@@ -4,8 +4,8 @@ import com.corefit.dto.request.wallet.DepositRequest;
 import com.corefit.dto.response.GeneralResponse;
 import com.corefit.dto.response.WalletTransactionResponse;
 import com.corefit.entity.auth.User;
+import com.corefit.entity.auth.WalletPayment;
 import com.corefit.entity.auth.WalletTransaction;
-import com.corefit.entity.wallet.WalletPayment;
 import com.corefit.enums.PaymentStatus;
 import com.corefit.enums.WalletTransactionType;
 import com.corefit.exceptions.GeneralException;
@@ -24,7 +24,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -136,14 +135,14 @@ public class WalletService {
                 String.format("An amount of %.2f EGP has been added to your wallet.", amount));
     }
 
-    public ResponseEntity<String> depositStripe(DepositRequest depositRequest, HttpServletRequest httpRequest) {
+    public GeneralResponse<?> depositStripe(DepositRequest depositRequest, HttpServletRequest httpRequest) {
         try {
             Stripe.apiKey = stripeSecretKey;
 
             User user = authService.extractUserFromRequest(httpRequest);
 
             if (depositRequest.getAmount() == null || depositRequest.getAmount() <= 0) {
-                return ResponseEntity.badRequest().body("Invalid deposit amount");
+                throw new GeneralException("Invalid deposit amount");
             }
 
             BigDecimal amount = BigDecimal.valueOf(depositRequest.getAmount()).setScale(2, RoundingMode.HALF_UP);
@@ -185,28 +184,32 @@ public class WalletService {
 
             walletPaymentRepo.save(payment);
 
-            return ResponseEntity.ok(session.getUrl());
+            Map<String, Object> data = new HashMap<>();
+
+            data.put("stripe_web_view", session.getUrl());
+
+            return new GeneralResponse<>("success", data);
 
         } catch (StripeException e) {
-            return ResponseEntity.status(500).body("Stripe error: " + e.getMessage());
+            throw new GeneralException("Stripe error: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
+            throw new GeneralException("Internal server error: " + e.getMessage());
         }
     }
 
-    public ResponseEntity<String> handleStripeSuccess(String sessionId) {
+    public GeneralResponse<?> handleStripeSuccess(String sessionId) {
         try {
             Stripe.apiKey = stripeSecretKey;
 
             Optional<WalletPayment> existing = walletPaymentRepo.findBySessionId(sessionId);
             if (existing.isEmpty()) {
-                return ResponseEntity.status(422).body("Session not found or used before");
+                throw new GeneralException("Session not found or used before");
             }
 
             WalletPayment payment = existing.get();
 
             if (payment.getStatus() == PaymentStatus.PAID) {
-                return ResponseEntity.badRequest().body("This payment has already been processed");
+                throw new GeneralException("This payment has already been processed");
             }
 
             Session session = Session.retrieve(sessionId);
@@ -220,15 +223,15 @@ public class WalletService {
                 payment.setStatus(PaymentStatus.PAID);
                 walletPaymentRepo.save(payment);
 
-                return ResponseEntity.ok("Deposit successful");
+                return new GeneralResponse<>("Deposit successful");
             }
 
-            return ResponseEntity.status(400).body("Payment not completed");
+            throw new GeneralException("Payment not completed");
 
         } catch (StripeException e) {
-            return ResponseEntity.status(500).body("Stripe error: " + e.getMessage());
+            throw new GeneralException("Stripe error: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Internal server error: " + e.getMessage());
+            throw new GeneralException("Internal server error: " + e.getMessage());
         }
     }
 

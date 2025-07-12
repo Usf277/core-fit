@@ -1,6 +1,6 @@
 package com.corefit.repository.auth;
 
-import com.corefit.entity.wallet.WalletPayment;
+import com.corefit.entity.auth.WalletPayment;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

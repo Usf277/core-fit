@@ -1,6 +1,5 @@
-package com.corefit.entity.wallet;
+package com.corefit.entity.auth;
 
-import com.corefit.entity.auth.User;
 import com.corefit.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
