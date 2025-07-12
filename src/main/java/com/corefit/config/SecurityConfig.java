@@ -47,7 +47,7 @@ public class SecurityConfig {
                                 "/categories",
                                 "/uploads/**",
                                 "/reservations/verify-password",
-                                "/app-content"
+                                "/contact"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
