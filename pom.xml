@@ -31,6 +31,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Stripe payment gateway -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>24.16.0</version>
+        </dependency>
+
         <!-- Cloudinary Dependency -->
         <dependency>
             <groupId>com.cloudinary</groupId>
