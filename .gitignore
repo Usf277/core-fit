@@ -33,3 +33,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### MacOS ###
+.DS_Store
+
+### Terraform ###
+.terraform
+.terraform.lock.hcl
+Dockerrun.aws.json
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+*.auto.tfvars
