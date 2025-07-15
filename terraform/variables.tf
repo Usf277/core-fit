@@ -13,13 +13,13 @@ variable "app_name" {
 variable "mysql_database" {
   description = "MySQL database name"
   type        = string
-  default     = "corefit_db"
+  default     = "railway"
 }
 
 variable "mysql_user" {
   description = "MySQL username"
   type        = string
-  default     = "corefit_user"
+  default     = "root"
 }
 
 variable "mysql_password" {
@@ -78,6 +78,12 @@ variable "mail_username" {
 
 variable "mail_password" {
   description = "Email service password"
+  type        = string
+  sensitive   = true
+}
+
+variable "stripe_secret" {
+  description = "Stripe secret key"
   type        = string
   sensitive   = true
 }

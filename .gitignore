@@ -45,3 +45,5 @@ terraform.tfstate
 terraform.tfstate.backup
 *.tfvars
 *.auto.tfvars
+txt
+cleanup_aws_resources.sh

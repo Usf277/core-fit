@@ -32,9 +32,14 @@ module "vpc" {
   }
 }
 
-# Reference existing ECR Repository
-data "aws_ecr_repository" "app" {
-  name = "${var.app_name}-repo"
+# ECR Repository
+resource "aws_ecr_repository" "app" {
+  name                 = "${var.app_name}-repo"
+  image_tag_mutability = "MUTABLE"
+
+  tags = {
+    Name = "${var.app_name}-repo"
+  }
 }
 
 # RDS MySQL (Free Tier: db.t3.micro, 20GB storage)
@@ -123,10 +128,20 @@ resource "aws_elastic_beanstalk_application_version" "app_version" {
 # S3 Bucket for Application Bundle
 resource "aws_s3_bucket" "app_bundle" {
   bucket = "${var.app_name}-app-bundle-${random_string.suffix.result}"
-  acl    = "private"
 
   tags = {
     Name = "${var.app_name}-app-bundle"
+  }
+}
+
+# S3 Bucket Server-Side Encryption
+resource "aws_s3_bucket_server_side_encryption_configuration" "app_bundle_encryption" {
+  bucket = aws_s3_bucket.app_bundle.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
   }
 }
 
@@ -135,7 +150,6 @@ resource "aws_s3_object" "dockerrun" {
   bucket = aws_s3_bucket.app_bundle.id
   key    = "Dockerrun.aws.json"
   source = local_file.dockerrun.filename
-  acl    = "private"
 
   depends_on = [local_file.dockerrun]
 }
@@ -145,7 +159,7 @@ resource "local_file" "dockerrun" {
   content = jsonencode({
     AWSEBDockerrunVersion = "1"
     Image = {
-      Name = "${data.aws_ecr_repository.app.repository_url}:latest"
+      Name = "${aws_ecr_repository.app.repository_url}:latest"
     }
     Ports = [
       {
@@ -153,9 +167,8 @@ resource "local_file" "dockerrun" {
         HostPort      = 8000
       }
     ]
-    Volumes     = []
-    Logging     = "/var/log/nginx" # Note: Consider removing or adjusting this
-    Environment = local.eb_environment_variables
+    Volumes = []
+    Logging = "/var/log/nginx"
   })
   filename = "${path.module}/Dockerrun.aws.json"
 }
@@ -216,6 +229,12 @@ resource "aws_elastic_beanstalk_environment" "env" {
     value     = aws_iam_instance_profile.eb_profile.name
   }
 
+  setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "EC2KeyName"
+    value     = aws_key_pair.eb_ssh_key.key_name
+  }
+
   dynamic "setting" {
     for_each = local.eb_environment_variables
     content {
@@ -230,6 +249,14 @@ resource "aws_elastic_beanstalk_environment" "env" {
     name      = "DeploymentPolicy"
     value     = "Rolling"
   }
+
+  depends_on = [module.rds, aws_elasticache_cluster.redis]
+}
+
+# SSH Key Pair for EC2 access
+resource "aws_key_pair" "eb_ssh_key" {
+  key_name   = "usf277"
+  public_key = file("~/.ssh/id_rsa.pub") # Replace with your public key path
 }
 
 # IAM Role for Elastic Beanstalk
@@ -267,7 +294,7 @@ resource "aws_iam_policy" "ecr_access_policy" {
         Action = [
           "ecr:GetAuthorizationToken"
         ]
-        Resource = "*" # Allow token retrieval at account level
+        Resource = "*"
       },
       {
         Effect = "Allow"
@@ -276,7 +303,7 @@ resource "aws_iam_policy" "ecr_access_policy" {
           "ecr:BatchGetImage",
           "ecr:BatchCheckLayerAvailability"
         ]
-        Resource = data.aws_ecr_repository.app.arn
+        Resource = aws_ecr_repository.app.arn
       }
     ]
   })
@@ -321,7 +348,7 @@ resource "aws_security_group" "eb_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Restrict this in production
+    cidr_blocks = ["154.237.203.158/32"]
   }
 
   egress {
@@ -396,7 +423,7 @@ locals {
     SPRING_DATA_REDIS_HOST     = aws_elasticache_cluster.redis.cache_nodes[0].address
     SPRING_DATA_REDIS_PORT     = tostring(var.redis_port)
     SPRING_DATA_REDIS_PASSWORD = var.redis_password
-    SPRING_MAIL_HOST           = "smtp.titan.email"
+    SPRING_MAIL_HOST           = var.mail_username != "" ? "smtp.titan.email" : null
     SPRING_MAIL_PORT           = "587"
     SPRING_MAIL_USERNAME       = var.mail_username
     SPRING_MAIL_PASSWORD       = var.mail_password
@@ -405,12 +432,14 @@ locals {
     CLOUDINARY_API_SECRET      = var.cloudinary_api_secret
     FIREBASE_CONFIG            = local.firebase_config_base64
     SERVER_PORT                = "8000"
+    STRIPE_SECRET              = var.stripe_secret
+    # Removed PRODUCTION_DOMAIN to break the cycle
   }
 }
 
 # Outputs
 output "ecr_repository_url" {
-  value       = data.aws_ecr_repository.app.repository_url
+  value       = aws_ecr_repository.app.repository_url
   description = "URL of the ECR repository for the application"
 }
 
