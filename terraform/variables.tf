@@ -87,3 +87,8 @@ variable "stripe_secret" {
   type        = string
   sensitive   = true
 }
+variable "docker_image_tag" {
+  description = "Tag of the Docker image in ECR"
+  type        = string
+  default     = "v2"
+}

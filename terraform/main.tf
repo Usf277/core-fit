@@ -159,7 +159,7 @@ resource "local_file" "dockerrun" {
   content = jsonencode({
     AWSEBDockerrunVersion = "1"
     Image = {
-      Name = "${aws_ecr_repository.app.repository_url}:latest"
+      Name = "${aws_ecr_repository.app.repository_url}:${var.docker_image_tag}"
     }
     Ports = [
       {
